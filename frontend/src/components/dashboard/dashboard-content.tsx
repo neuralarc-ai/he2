@@ -19,13 +19,10 @@ import { config, isLocalMode, isStagingMode } from '@/lib/config';
 import { useInitiateAgentWithInvalidation } from '@/hooks/react-query/dashboard/use-initiate-agent';
 
 import { useAgents } from '@/hooks/react-query/agents/use-agents';
-import { cn } from '@/lib/utils';
 import { BillingModal } from '@/components/billing/billing-modal';
 import { useAgentSelection } from '@/lib/stores/agent-selection-store';
-import { Examples } from './examples';
 import { useThreadQuery } from '@/hooks/react-query/threads/use-threads';
 import { normalizeFilenameToNFC } from '@/lib/utils/unicode';
-import { KortixLogo } from '../sidebar/kortix-logo';
 import { AgentRunLimitDialog } from '@/components/thread/agent-run-limit-dialog';
 import { useFeatureFlag } from '@/lib/feature-flags';
 import { CustomAgentsSection } from './custom-agents-section';
@@ -248,12 +245,9 @@ export function DashboardContent() {
                     onConfigureAgent={(agentId) => router.push(`/agents/config/${agentId}`)}
                   />
                 </div>
-                <div className="w-full">
-                  <Examples onSelectPrompt={setInputValue} count={isMobile ? 3 : 4} />
-                </div>
               </div>
             </div>
-            {enabledEnvironment && customAgentsEnabled && (
+            {/* {enabledEnvironment && customAgentsEnabled && (
               <div className="w-full px-4 pb-8">
                 <div className="max-w-7xl mx-auto">
                   <CustomAgentsSection 
@@ -261,7 +255,7 @@ export function DashboardContent() {
                   />
                 </div>
               </div>
-            )}
+            )} */}
           </div>
         </div>
         

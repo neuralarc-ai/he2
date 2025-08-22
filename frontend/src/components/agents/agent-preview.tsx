@@ -1,6 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import {
   ChatInput,
@@ -14,7 +13,7 @@ import { useAddUserMessageMutation } from '@/hooks/react-query/threads/use-messa
 import { useStartAgentMutation, useStopAgentMutation } from '@/hooks/react-query/threads/use-agent-run';
 import { BillingError } from '@/lib/api';
 import { normalizeFilenameToNFC } from '@/lib/utils/unicode';
-import { KortixLogo } from '../sidebar/kortix-logo';
+import { HeliumLogo } from '../sidebar/helium-logo';
 
 interface Agent {
   agent_id: string;
@@ -61,7 +60,7 @@ export const AgentPreview = ({ agent, agentMetadata }: AgentPreviewProps) => {
 
   const agentAvatarComponent = React.useMemo(() => {
     if (isSunaAgent) {
-      return <KortixLogo size={16} />;
+      return <HeliumLogo size={16} />;
     }
     if (agent.profile_image_url) {
       return (
@@ -75,7 +74,7 @@ export const AgentPreview = ({ agent, agentMetadata }: AgentPreviewProps) => {
     if (avatar) {
       return <div className="text-base leading-none">{avatar}</div>;
     }
-    return <KortixLogo size={16} />;
+    return <HeliumLogo size={16} />;
   }, [agent.profile_image_url, agent.name, avatar, isSunaAgent]);
 
   const initiateAgentMutation = useInitiateAgentWithInvalidation();
@@ -351,7 +350,7 @@ export const AgentPreview = ({ agent, agentMetadata }: AgentPreviewProps) => {
               <div className="flex flex-col items-center text-center text-muted-foreground/80">
                 <div className="flex w-20 aspect-square items-center justify-center rounded-2xl bg-muted-foreground/10 p-4 mb-4">
                   {isSunaAgent ? (
-                    <KortixLogo size={36} />
+                    <HeliumLogo size={36} />
                   ) : agent.profile_image_url ? (
                     <img 
                       src={agent.profile_image_url} 

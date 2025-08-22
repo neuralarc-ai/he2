@@ -82,7 +82,7 @@ const INITIAL_COMPONENTS: Partial<Components> = {
   },
   h1: function H1({ children, ...props }: any) {
     return (
-      <h1 className="text-2xl font-bold my-3" {...props}>
+      <h1 className="text-2xl font-bold my-3 libre-baskerville-bold" {...props}>
         {children}
       </h1>
     );

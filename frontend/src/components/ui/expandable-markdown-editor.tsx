@@ -65,7 +65,7 @@ export const ExpandableMarkdownEditor: React.FC<ExpandableMarkdownEditorProps> =
     <ReactMarkdown 
       remarkPlugins={[remarkGfm]}
       components={{
-        h1: ({ children }) => <h1 className="text-2xl font-bold mb-4 text-foreground">{children}</h1>,
+        h1: ({ children }) => <h1 className="text-2xl font-bold mb-4 text-foreground libre-baskerville-bold">{children}</h1>,
         h2: ({ children }) => <h2 className="text-xl font-semibold mb-3 text-foreground">{children}</h2>,
         h3: ({ children }) => <h3 className="text-lg font-semibold mb-2 text-foreground">{children}</h3>,
         h4: ({ children }) => <h4 className="text-base font-semibold mb-2 text-foreground">{children}</h4>,
@@ -122,7 +122,7 @@ export const ExpandableMarkdownEditor: React.FC<ExpandableMarkdownEditorProps> =
         >
           <div className="p-4 max-h-32 overflow-hidden">
             {value ? (
-              <div className="prose prose-sm dark:prose-invert max-w-none text-sm">
+              <div className="prose prose-sm dark:prose-invert max-w-none text-sm chat-markdown">
                 {renderMarkdown(value, true)}
               </div>
             ) : (
@@ -192,7 +192,7 @@ export const ExpandableMarkdownEditor: React.FC<ExpandableMarkdownEditorProps> =
               <ScrollArea className="flex-1 h-[70vh]">
                 <div className="pr-6 py-2">
                   {value ? (
-                    <div className="prose prose-base dark:prose-invert max-w-none leading-relaxed">
+                    <div className="prose prose-base dark:prose-invert chat-markdown max-w-none leading-relaxed">
                       {renderMarkdown(value)}
                     </div>
                   ) : (

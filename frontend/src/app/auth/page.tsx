@@ -31,7 +31,6 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import GitHubSignIn from '@/components/GithubSignIn';
-
 import Image from 'next/image';
 import { ReleaseBadge } from '@/components/auth/release-badge';
 import LoginFooter from './login-footer/login-footer';

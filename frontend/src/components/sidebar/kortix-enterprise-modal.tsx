@@ -64,8 +64,8 @@ export function KortixEnterpriseModal({
             <div className="relative z-10 flex flex-col h-full">
               <div className="mb-6 flex-shrink-0">
                 <Image
-                  src={isDarkMode ? '/kortix-logo-white.svg' : '/kortix-logo.svg'}
-                  alt="Kortix Logo"
+                  src={isDarkMode ? '/logo-dark.svg' : '/logo-light.svg'}
+                  alt="Helium Logo"
                   width={80}
                   height={28}
                   className="h-7 w-auto"

@@ -38,7 +38,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useTheme } from 'next-themes';
 import ColorThief from 'colorthief';
-import { KortixLogo } from '@/components/sidebar/kortix-logo';
+import { HeliumLogo } from '@/components/sidebar/helium-logo';
 
 interface MarketplaceTemplate {
   template_id: string;
@@ -391,8 +391,8 @@ export default function TemplateSharePage() {
               <div className="flex items-center">
                 <Link href="/" className="flex items-center">
                   <img 
-                    src={resolvedTheme === 'dark' ? '/kortix-logo-white.svg' : '/kortix-logo.svg'} 
-                    alt="Kortix" 
+                    src={resolvedTheme === 'dark' ? '/logo-dark.svg' : '/logo-light.svg'} 
+                    alt="Helium" 
                     className="h-6 opacity-70"
                   />
                 </Link>

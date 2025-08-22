@@ -13,12 +13,12 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
   className = '' 
 }) => {
   return (
-    <div className={cn('prose prose-sm dark:prose-invert max-w-none', className)}>
+    <div className={cn('prose prose-sm dark:prose-invert max-w-none chat-markdown', className)}>
       <ReactMarkdown 
         remarkPlugins={[remarkGfm]}
         components={{
           // Custom styling for markdown elements
-          h1: ({ children }) => <h1 className="text-lg font-semibold mb-2">{children}</h1>,
+          h1: ({ children }) => <h1 className="text-lg font-semibold mb-2 libre-baskerville-bold">{children}</h1>,
           h2: ({ children }) => <h2 className="text-base font-semibold mb-2">{children}</h2>,
           h3: ({ children }) => <h3 className="text-sm font-semibold mb-1">{children}</h3>,
           p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,

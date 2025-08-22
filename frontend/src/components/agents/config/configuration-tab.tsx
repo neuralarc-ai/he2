@@ -8,7 +8,7 @@ import { AgentPlaybooksConfiguration } from '../playbooks/agent-playbooks-config
 import { AgentTriggersConfiguration } from '../triggers/agent-triggers-configuration';
 import { AgentModelSelector } from './model-selector';
 import { toast } from 'sonner';
-import { KortixLogo } from '../../sidebar/kortix-logo';
+import { HeliumLogo } from '../../sidebar/helium-logo';
 
 interface ConfigurationTabProps {
   agentId: string;
@@ -127,7 +127,7 @@ export function ConfigurationTab({
             <div className="p-4 bg-primary/10 border border-primary-200 rounded-xl">
               <div className="flex items-center gap-3 mb-2">
                 <div className="text-primary-600">
-                  <KortixLogo size={20} />
+                  <HeliumLogo size={20} />
                 </div>
                 <span className="font-semibold text-primary-800">Suna Default Agent</span>
               </div>

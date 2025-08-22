@@ -18,10 +18,9 @@ import {
   TrendingUp,
   Sparkles
 } from 'lucide-react';
-import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { KortixEnterpriseModal } from '@/components/sidebar/kortix-enterprise-modal';
-import { KortixLogo } from '@/components/sidebar/kortix-logo';
+import { HeliumLogo } from '@/components/sidebar/helium-logo';
 
 // Hero Section Component
 const CustomHeroSection = () => {
@@ -30,9 +29,9 @@ const CustomHeroSection = () => {
       <div className="relative flex flex-col items-center w-full px-6">
         <div className="relative z-10 pt-32 mx-auto h-full w-full max-w-6xl flex flex-col items-center justify-center">
           <div className="flex flex-col items-center justify-center gap-6 pt-12 max-w-4xl mx-auto">
-            {/* Kortix Logo */}
+            {/* Helium Logo */}
             <div className="mb-8">
-              <KortixLogo size={48} />
+              <HeliumLogo size={48} />
             </div>
             
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20">
