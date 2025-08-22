@@ -1,0 +1,22 @@
+/* .dark .auth-container {
+  background-color: #333;
+  color: #fff;
+}
+
+.dark .auth-card {
+  background-color: #444;
+}
+
+.dark .auth-input {
+  background-color: #555;
+  border-color: #666;
+  color: #fff;
+}
+
+.dark .auth-input::placeholder {
+  color: #aaa;
+} */
+
+.auth-button {
+  background: linear-gradient(94.26deg, #61C95C 16.42%, #14679B 53.4%, #FAE74E 101.69%);
+}
