@@ -315,7 +315,9 @@ function LoginContent() {
         </motion.div>
 
         {/* Right Section Container */}
-        <div className={`flex flex-col items-center w-full max-w-[500px] ${isSignUp ? 'mb-[2rem]' : 'mb-0'}`}>
+        <div
+          className={`flex flex-col items-center w-full max-w-[500px] ${isSignUp ? 'mb-[2rem]' : 'mb-0'}`}
+        >
           {/* Back to home button - Above the card */}
           <div className="hidden lg:flex w-full justify-center mb-4">
             <Link
@@ -330,12 +332,21 @@ function LoginContent() {
           <Link href="/">
             <div className="lg:hidden w-full mb-4 flex justify-center cursor-pointer">
               <div className="flex items-center gap-2">
+                {/* Light logo */}
                 <Image
-                  src="/auth/helium-logo.png"
-                  alt="Helium Logo"
+                  src="/logo-light.svg"
+                  alt="Helium Light Logo"
                   width={40}
                   height={40}
-                  className="mb-0"
+                  className="block dark:hidden mb-0"
+                />
+                {/* Dark logo */}
+                <Image
+                  src="/logo-dark.svg"
+                  alt="Helium Dark Logo"
+                  width={40}
+                  height={40}
+                  className="hidden dark:block mb-0"
                 />
               </div>
             </div>
@@ -502,7 +513,9 @@ function LoginContent() {
                         alt="Microsoft Login"
                         className="xs:w-5 xs:h-5"
                       />
-                      <span className="truncate">Continue with Microsoft Account</span>
+                      <span className="truncate">
+                        Continue with Microsoft Account
+                      </span>
                     </button>
                   </div>
                 </>
