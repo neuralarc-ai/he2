@@ -36,7 +36,7 @@ import {
   isNewXmlFormat,
 } from '@/components/thread/tool-views/xml-parser';
 import { ShowToolStream } from './ShowToolStream';
-import { PipedreamUrlDetector } from './pipedream-url-detector';
+import { ComposioUrlDetector } from './composio-url-detector';
 import { ThinkingAccordion } from './ThinkingAccordion';
 import { ThinkingAnimation } from '@/components/ui/ThinkingAnimation';
 import { HeliumLogo } from '@/components/sidebar/helium-logo';
@@ -184,7 +184,7 @@ export function renderMarkdownContent(
         const textBeforeBlock = content.substring(lastIndex, match.index);
         if (textBeforeBlock.trim()) {
           contentParts.push(
-            <PipedreamUrlDetector
+            <ComposioUrlDetector
               key={`md-${lastIndex}`}
               content={textBeforeBlock}
               className="text-sm xl:text-base prose prose-sm dark:prose-invert chat-markdown max-w-none break-words"
@@ -214,7 +214,7 @@ export function renderMarkdownContent(
           // Render ask tool content with attachment UI
           contentParts.push(
             <div key={`ask-${match.index}-${index}`} className="space-y-4">
-              <PipedreamUrlDetector
+              <ComposioUrlDetector
                 content={askText}
                 className="text-sm xl:text-base leading-tight prose prose-sm dark:prose-invert chat-markdown max-w-none break-words [&>:first-child]:mt-0 prose-headings:mt-3"
               />
@@ -245,7 +245,7 @@ export function renderMarkdownContent(
           // Render complete tool content with attachment UI
           contentParts.push(
             <div key={`complete-${match.index}-${index}`} className="space-y-4">
-              <PipedreamUrlDetector
+              <ComposioUrlDetector
                 content={completeText}
                 className="text-sm xl:text-base leading-tight prose prose-sm dark:prose-invert chat-markdown max-w-none break-words [&>:first-child]:mt-0 prose-headings:mt-3"
               />
@@ -333,7 +333,7 @@ export function renderMarkdownContent(
       const remainingText = content.substring(lastIndex);
       if (remainingText.trim()) {
         contentParts.push(
-          <PipedreamUrlDetector
+          <ComposioUrlDetector
             key={`md-${lastIndex}`}
             content={remainingText}
             className="text-sm xl:text-base leading-tight prose prose-sm dark:prose-invert chat-markdown max-w-none break-words"
@@ -345,7 +345,7 @@ export function renderMarkdownContent(
     return contentParts.length > 0 ? (
       contentParts
     ) : (
-      <PipedreamUrlDetector
+      <ComposioUrlDetector
         content={content}
         className="text-sm xl:text-base leading-tight prose prose-sm dark:prose-invert chat-markdown max-w-none break-words"
       />
@@ -362,10 +362,9 @@ export function renderMarkdownContent(
   // If no XML tags found, just return the full content as markdown
   if (!content.match(xmlRegex)) {
     return (
-      <PipedreamUrlDetector
+      <ComposioUrlDetector
         content={content}
         className="text-sm xl:text-base leading-tight prose prose-sm dark:prose-invert chat-markdown max-w-none break-words"
-        components={customTableComponents}
       />
     );
   }
@@ -375,7 +374,7 @@ export function renderMarkdownContent(
     if (match.index > lastIndex) {
       const textBeforeTag = content.substring(lastIndex, match.index);
       contentParts.push(
-        <PipedreamUrlDetector
+        <ComposioUrlDetector
           key={`md-${lastIndex}`}
           content={textBeforeTag}
           className="text-sm xl:text-base prose prose-sm dark:prose-invert chat-markdown max-w-none inline-block mr-1 break-words"
@@ -401,7 +400,7 @@ export function renderMarkdownContent(
       // Render <ask> tag content with attachment UI (using the helper)
       contentParts.push(
         <div key={`ask-${match.index}`} className="space-y-4">
-          <PipedreamUrlDetector
+          <ComposioUrlDetector
             content={askContent}
             className="text-sm xl:text-base leading-tight prose prose-sm dark:prose-invert chat-markdown max-w-none break-words [&>:first-child]:mt-0 prose-headings:mt-3"
           />
@@ -433,7 +432,7 @@ export function renderMarkdownContent(
       // Render <complete> tag content with attachment UI (using the helper)
       contentParts.push(
         <div key={`complete-${match.index}`} className="space-y-4">
-          <PipedreamUrlDetector
+          <ComposioUrlDetector
             content={completeContent}
             className="text-sm xl:text-base leading-tight prose prose-sm dark:prose-invert chat-markdown max-w-none break-words [&>:first-child]:mt-0 prose-headings:mt-3"
           />
@@ -505,7 +504,7 @@ export function renderMarkdownContent(
   // Add text after the last tag
   if (lastIndex < content.length) {
     contentParts.push(
-      <PipedreamUrlDetector
+      <ComposioUrlDetector
         key={`md-${lastIndex}`}
         content={content.substring(lastIndex)}
         className="text-sm xl:text-base leading-tight prose prose-sm dark:prose-invert chat-markdown max-w-none break-words"
@@ -1197,7 +1196,7 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                         : undefined
                                     }
                                   >
-                                    <PipedreamUrlDetector
+                                    <ComposioUrlDetector
                                       content={cleanContent}
                                       className="text-sm prose prose-sm chat-markdown max-w-none [&>:first-child]:mt-0 prose-headings:mt-3 break-words overflow-wrap-anywhere text-black xl:text-base"
                                     />
@@ -1815,7 +1814,7 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                       return (
                                         <>
                                           {textBeforeTag && (
-                                            <PipedreamUrlDetector
+                                            <ComposioUrlDetector
                                               content={textBeforeTag}
                                               className="text-sm xl:text-base leading-tight prose prose-sm dark:prose-invert chat-markdown max-w-none [&>:first-child]:mt-0 prose-headings:mt-3 break-words overflow-wrap-anywhere"
                                             />
@@ -1864,7 +1863,7 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
 
                                           {/* Show content after think tag if it exists */}
                                           {textAfterThink && (
-                                            <PipedreamUrlDetector
+                                            <ComposioUrlDetector
                                               content={textAfterThink}
                                               className="text-sm xl:text-base leading-tight prose prose-sm dark:prose-invert chat-markdown max-w-none [&>:first-child]:mt-0 prose-headings:mt-3 break-words overflow-wrap-anywhere"
                                             />
@@ -1962,7 +1961,7 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                           ) : (
                                             <>
                                               {textBeforeTag && (
-                                                <PipedreamUrlDetector
+                                                <ComposioUrlDetector
                                                   content={textBeforeTag}
                                                   className="text-sm xl:text-base leading-tight prose prose-sm dark:prose-invert chat-markdown max-w-none [&>:first-child]:mt-0 prose-headings:mt-3 break-words overflow-wrap-anywhere"
                                                 />
@@ -2003,7 +2002,7 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
 
                                               {/* Show content after think tag if it exists */}
                                               {textAfterThink && (
-                                                <PipedreamUrlDetector
+                                                <ComposioUrlDetector
                                                   content={textAfterThink}
                                                   className="text-sm xl:text-base leading-tight prose prose-sm dark:prose-invert chat-markdown max-w-none [&>:first-child]:mt-0 prose-headings:mt-3 break-words overflow-wrap-anywhere"
                                                 />
