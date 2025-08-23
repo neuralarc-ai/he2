@@ -47,6 +47,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { ThreadWithProject } from '@/hooks/react-query/sidebar/use-sidebar';
 import { processThreadsWithProjects, useDeleteMultipleThreads, useDeleteThread, useProjects, useThreads } from '@/hooks/react-query/sidebar/use-sidebar';
 import { projectKeys, threadKeys } from '@/hooks/react-query/sidebar/keys';
+import { Separator } from '@radix-ui/react-dropdown-menu';
 
 export function NavAgents() {
   const { isMobile, state, setOpenMobile } = useSidebar()
@@ -349,7 +350,8 @@ export function NavAgents() {
   return (
     <SidebarGroup>
       <div className="flex justify-between items-center">
-        <SidebarGroupLabel>Tasks</SidebarGroupLabel>
+        
+        <SidebarGroupLabel>Chat History</SidebarGroupLabel>
         {(state !== 'collapsed' || isMobile) ? (
           <div className="flex items-center space-x-1">
             {selectedThreads.size > 0 ? (

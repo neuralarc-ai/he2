@@ -181,10 +181,10 @@ export function NavUserWithTeams({
                     {getInitials(user.name)}
                   </AvatarFallback>
                 </Avatar> */}
-                <div className="grid flex-1 text-left text-sm leading-tight ml-2">
-                  <span className="truncate font-medium">Settings</span>
+                <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:text-center group-data-[collapsible=icon]:ml-0 ml-2">
+                  <span className="truncate font-medium group-data-[collapsible=icon]:hidden">Settings</span>
                 </div>
-                <EllipsisIcon className="ml-auto size-4" />
+                <EllipsisIcon className="ml-auto size-4 group-data-[collapsible=icon]:mr-2" />
               </SidebarMenuButton>
             </DropdownMenuTrigger>
             <DropdownMenuContent
@@ -212,7 +212,7 @@ export function NavUserWithTeams({
               {/* Teams Section */}
               {personalAccount && (
                 <>
-                  <DropdownMenuLabel className="text-muted-foreground text-xs">
+                  <DropdownMenuLabel className="text-muted-foreground text-sm">
                     Personal Account
                   </DropdownMenuLabel>
                   <DropdownMenuItem
@@ -227,10 +227,10 @@ export function NavUserWithTeams({
                         personal_account: true,
                       })
                     }
-                    className="gap-2 p-2"
+                    className="gap-1 px-2"
                   >
-                    <div className="flex size-6 items-center justify-center rounded-xs border">
-                      <Command className="size-4 shrink-0" />
+                    <div className="flex size-4 items-center justify-center">
+                      <Command className="size-3 shrink-0" />
                     </div>
                     {personalAccount.name}
                     <DropdownMenuShortcut>⌘1</DropdownMenuShortcut>
@@ -256,7 +256,7 @@ export function NavUserWithTeams({
                           personal_account: false,
                         })
                       }
-                      className="gap-2 p-2"
+                      className="gap-1 p-2"
                     >
                       <div className="flex size-6 items-center justify-center rounded-xs border">
                         <AudioWaveform className="size-4 shrink-0" />
@@ -283,37 +283,36 @@ export function NavUserWithTeams({
                 </DropdownMenuItem>
               </DialogTrigger> */}
               <DropdownMenuSeparator />
+              
 
               {/* User Settings Section */}
               <DropdownMenuGroup>
                 <DropdownMenuItem asChild>
                   <Link href="/settings/billing">
-                    <CreditCard className="h-4 w-4" />
+                  <CreditCard className="h-4 w-4" />
                     Billing
                   </Link>
                 </DropdownMenuItem>
                 {!flagLoading && customAgentsEnabled && (
                   <DropdownMenuItem asChild>
                     <Link href="/settings/credentials">
-                      <Plug className="h-4 w-4" />
+                    <Plug className="h-4 w-4" />
                       Integrations
                     </Link>
                   </DropdownMenuItem>
                 )}
-                {!flagLoading && customAgentsEnabled && (
+                {/* {!flagLoading && customAgentsEnabled && (
                   <DropdownMenuItem asChild>
                     <Link href="/settings/api-keys">
-                      <Key className="h-4 w-4" />
                       API Keys (Admin)
                     </Link>
                   </DropdownMenuItem>
                 )}
                 {isLocalMode() && <DropdownMenuItem asChild>
                   <Link href="/settings/env-manager">
-                    <KeyRound className="h-4 w-4" />
                     Local .Env Manager
                   </Link>
-                </DropdownMenuItem>}
+                </DropdownMenuItem>} */}
                 {/* <DropdownMenuItem asChild>
                   <Link href="/settings">
                     <Settings className="mr-2 h-4 w-4" />
