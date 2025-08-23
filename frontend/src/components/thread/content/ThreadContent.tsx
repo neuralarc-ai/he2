@@ -1531,306 +1531,191 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                       </span>
                                     </div>
 
-                                        return (
-                                            <div key={group.key} className="space-y-3">
-                                                {/* All file attachments rendered outside message bubble */}
-                                                {renderStandaloneAttachments(attachments as string[], handleOpenFileViewer, sandboxId, project, true)}
-                                                
-                                                <div className="flex justify-end">
-                                                    <div className="flex max-w-[85%] rounded-3xl rounded-br-lg bg-card border px-4 py-3 break-words overflow-hidden">
-                                                        <div className="space-y-3 min-w-0 flex-1">
-                                                            {cleanContent && (
-                                                                <ComposioUrlDetector content={cleanContent} className="text-sm xl:text-base leading-tight prose prose-sm dark:prose-invert chat-markdown max-w-none [&>:first-child]:mt-0 prose-headings:mt-3 break-words overflow-wrap-anywhere" />
-                                                            )}
+                                    {/* Right side - Action buttons */}
+                                    <div className="flex items-center gap-1">
+                                      {/* Copy Button */}
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-8 w-8 p-0 hover:bg-accent cursor-pointer"
+                                            onClick={() => {
+                                              const el =
+                                                groupContentRefs.current[
+                                                  groupIndex
+                                                ];
+                                              if (el) {
+                                                const text =
+                                                  el.textContent || '';
+                                                navigator.clipboard.writeText(
+                                                  text,
+                                                );
+                                                setCopied(true);
+                                                toast.success(
+                                                  'Copied to clipboard',
+                                                );
+                                                setTimeout(
+                                                  () => setCopied(false),
+                                                  1500,
+                                                );
+                                              }
+                                            }}
+                                          >
+                                            {copied ? (
+                                              <Check className="h-4 w-4" />
+                                            ) : (
+                                              <Copy className="h-4 w-4" />
+                                            )}
+                                          </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                          <p>Copy</p>
+                                        </TooltipContent>
+                                      </Tooltip>
 
-                                                            {/* Use the helper function to render regular (non-spreadsheet) attachments */}
-                                                            {renderAttachments(attachments as string[], handleOpenFileViewer, sandboxId, project)}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        );
-                                    } else if (group.type === 'assistant_group') {
-                                        // Get agent_id from the first assistant message in this group
-                                        const firstAssistantMsg = group.messages.find(m => m.type === 'assistant');
-                                        const groupAgentId = firstAssistantMsg?.agent_id;
-                                        
-                                        return (
-                                            <div key={group.key} ref={groupIndex === groupedMessages.length - 1 ? latestMessageRef : null}>
-                                                <div className="flex flex-col gap-2">
-                                                    {/* <div className="flex items-center">
-                                                        <div className="rounded-md flex items-center justify-center relative">
-                                                            {groupAgentId ? (
-                                                                <AgentAvatar agentId={groupAgentId} size={20} className="h-5 w-5" />
-                                                            ) : (
-                                                                getAgentInfo().avatar
-                                                            )}
-                                                        </div>
-                                                        <p className='ml-2 text-sm text-muted-foreground'>
-                                                            {groupAgentId ? (
-                                                                <AgentName agentId={groupAgentId} fallback={getAgentInfo().name} />
-                                                            ) : (
-                                                                getAgentInfo().name
-                                                            )}
-                                                        </p>
-                                                    </div> */}
+                                      {/* Thumbs Up */}
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className={cn(
+                                              'h-8 w-8 p-0 cursor-pointer',
+                                              feedback === 'down' &&
+                                                'opacity-50 pointer-events-none',
+                                            )}
+                                            onClick={() => {
+                                              setFeedback(
+                                                feedback === 'up' ? null : 'up',
+                                              );
+                                              toast.success(
+                                                feedback === 'up'
+                                                  ? 'Feedback removed'
+                                                  : 'Good response',
+                                              );
+                                            }}
+                                          >
+                                            {feedback === 'up' ? (
+                                              <ThumbsUpFilled
+                                                fill="currentColor"
+                                                className="h-4 w-4"
+                                              />
+                                            ) : (
+                                              <ThumbsUp className="h-4 w-4" />
+                                            )}
+                                          </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                          <p>Good response</p>
+                                        </TooltipContent>
+                                      </Tooltip>
 
-                                                    {/* Message content - ALL messages in the group */}
-                                                    <div className="flex max-w-[90%] text-sm break-words overflow-hidden">
-                                                        <div className="space-y-2 min-w-0 flex-1">
-                                                            {(() => {
-                                                                // In debug mode, just show raw messages content
-                                                                if (debugMode) {
-                                                                    return group.messages.map((message, msgIndex) => {
-                                                                        const msgKey = message.message_id || `raw-msg-${msgIndex}`;
-                                                                        return (
-                                                                            <div key={msgKey} className="mb-4">
-                                                                                <div className="text-xs font-medium text-muted-foreground mb-1">
-                                                                                    Type: {message.type} | ID: {message.message_id || 'no-id'}
-                                                                                </div>
-                                                                                <pre className="text-xs font-mono whitespace-pre-wrap overflow-x-auto p-2 border border-border rounded-md bg-muted/30">
-                                                                                    {JSON.stringify(message.content, null, 2)}
-                                                                                </pre>
-                                                                                {message.metadata && message.metadata !== '{}' && (
-                                                                                    <div className="mt-2">
-                                                                                        <div className="text-xs font-medium text-muted-foreground mb-1">
-                                                                                            Metadata:
-                                                                                        </div>
-                                                                                        <pre className="text-xs font-mono whitespace-pre-wrap overflow-x-auto p-2 border border-border rounded-md bg-muted/30">
-                                                                                            {JSON.stringify(message.metadata, null, 2)}
-                                                                                        </pre>
-                                                                                    </div>
-                                                                                )}
-                                                                            </div>
-                                                                        );
-                                                                    });
-                                                                }
+                                      {/* Thumbs Down */}
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className={cn(
+                                              'h-8 w-8 p-0 cursor-pointer',
+                                              feedback === 'up' &&
+                                                'opacity-50 pointer-events-none',
+                                            )}
+                                            onClick={() => {
+                                              setFeedback(
+                                                feedback === 'down'
+                                                  ? null
+                                                  : 'down',
+                                              );
+                                              toast.success(
+                                                feedback === 'down'
+                                                  ? 'Feedback removed'
+                                                  : 'Bad response',
+                                              );
+                                            }}
+                                          >
+                                            {feedback === 'down' ? (
+                                              <ThumbsDownFilled
+                                                fill="currentColor"
+                                                className="h-4 w-4"
+                                              />
+                                            ) : (
+                                              <ThumbsDown className="h-4 w-4" />
+                                            )}
+                                          </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                          <p>Bad response</p>
+                                        </TooltipContent>
+                                      </Tooltip>
 
-                                                                const toolResultsMap = new Map<string | null, UnifiedMessage[]>();
-                                                                group.messages.forEach(msg => {
-                                                                    if (msg.type === 'tool') {
-                                                                        const meta = safeJsonParse<ParsedMetadata>(msg.metadata, {});
-                                                                        const assistantId = meta.assistant_message_id || null;
-                                                                        if (!toolResultsMap.has(assistantId)) {
-                                                                            toolResultsMap.set(assistantId, []);
-                                                                        }
-                                                                        toolResultsMap.get(assistantId)?.push(msg);
-                                                                    }
-                                                                });
-
-                                                                const elements: React.ReactNode[] = [];
-                                                                let assistantMessageCount = 0; // Move this outside the loop
-
-                                                                group.messages.forEach((message, msgIndex) => {
-                                                                    if (message.type === 'assistant') {
-                                                                        const parsedContent = safeJsonParse<ParsedContent>(message.content, {});
-                                                                        const msgKey = message.message_id || `submsg-assistant-${msgIndex}`;
-
-                                                                        if (!parsedContent.content) return;
-
-                                                                        const renderedContent = renderMarkdownContent(
-                                                                            parsedContent.content,
-                                                                            handleToolClick,
-                                                                            message.message_id,
-                                                                            handleOpenFileViewer,
-                                                                            sandboxId,
-                                                                            project,
-                                                                            debugMode
-                                                                        );
-
-                                                                        elements.push(
-                                                                            <div key={msgKey} className={assistantMessageCount > 0 ? "mt-4" : ""}>
-                                                                                <div className="text-sm xl:text-base leading-tight prose prose-sm dark:prose-invert chat-markdown max-w-none [&>:first-child]:mt-0 prose-headings:mt-3 break-words overflow-hidden">
-                                                                                    {renderedContent}
-                                                                                </div>
-                                                                            </div>
-                                                                        );
-
-                                                                        assistantMessageCount++; // Increment after adding the element
-                                                                    }
-                                                                });
-
-                                                                return elements;
-                                                            })()}
-
-                                                            {groupIndex === finalGroupedMessages.length - 1 && !readOnly && (streamHookStatus === 'streaming' || streamHookStatus === 'connecting') && (
-                                                                <div className="mt-2">
-                                                                    {(() => {
-                                                                        // In debug mode, show raw streaming content
-                                                                        if (debugMode && streamingTextContent) {
-                                                                            return (
-                                                                                <pre className="text-xs font-mono whitespace-pre-wrap overflow-x-auto p-2 border border-border rounded-md bg-muted/30">
-                                                                                    {streamingTextContent}
-                                                                                </pre>
-                                                                            );
-                                                                        }
-
-                                                                        let detectedTag: string | null = null;
-                                                                        let tagStartIndex = -1;
-                                                                        if (streamingTextContent) {
-                                                                            // First check for new format
-                                                                            const functionCallsIndex = streamingTextContent.indexOf('<function_calls>');
-                                                                            if (functionCallsIndex !== -1) {
-                                                                                detectedTag = 'function_calls';
-                                                                                tagStartIndex = functionCallsIndex;
-                                                                            } else {
-                                                                                // Fall back to old format detection
-                                                                                for (const tag of HIDE_STREAMING_XML_TAGS) {
-                                                                                    const openingTagPattern = `<${tag}`;
-                                                                                    const index = streamingTextContent.indexOf(openingTagPattern);
-                                                                                    if (index !== -1) {
-                                                                                        detectedTag = tag;
-                                                                                        tagStartIndex = index;
-                                                                                        break;
-                                                                                    }
-                                                                                }
-                                                                            }
-                                                                        }
-
-
-                                                                        const textToRender = streamingTextContent || '';
-                                                                        const textBeforeTag = detectedTag ? textToRender.substring(0, tagStartIndex) : textToRender;
-                                                                        const showCursor =
-                                                                          (streamHookStatus ===
-                                                                            'streaming' ||
-                                                                            streamHookStatus ===
-                                                                              'connecting') &&
-                                                                          !detectedTag;
-
-                                                                        return (
-                                                                            <>
-                                                                                {textBeforeTag && (
-                                                                                    <ComposioUrlDetector content={textBeforeTag} className="text-sm xl:text-base leading-tight prose prose-sm dark:prose-invert chat-markdown max-w-none [&>:first-child]:mt-0 prose-headings:mt-3 break-words overflow-wrap-anywhere" />
-                                                                                )}
-                                                                                {showCursor && (
-                                                                                    <span className="inline-block h-4 w-0.5 bg-primary ml-0.5 -mb-1 animate-pulse" />
-                                                                                )}
-
-                                                                                {detectedTag && (
-                                                                                    <ShowToolStream
-                                                                                        content={textToRender.substring(tagStartIndex)}
-                                                                                        messageId={visibleMessages && visibleMessages.length > 0 ? visibleMessages[visibleMessages.length - 1].message_id : "playback-streaming"}
-                                                                                        onToolClick={handleToolClick}
-                                                                                        showExpanded={true}
-                                                                                        startTime={Date.now()}
-                                                                                    />
-                                                                                )}
-
-
-                                                                            </>
-                                                                        );
-                                                                    })()}
-                                                                </div>
-                                                            )}
-
-                                                            {/* For playback mode, show streaming text and tool calls */}
-                                                            {readOnly && groupIndex === finalGroupedMessages.length - 1 && isStreamingText && (
-                                                                <div className="mt-2">
-                                                                    {(() => {
-                                                                        let detectedTag: string | null = null;
-                                                                        let tagStartIndex = -1;
-                                                                        if (streamingText) {
-                                                                            // First check for new format
-                                                                            const functionCallsIndex = streamingText.indexOf('<function_calls>');
-                                                                            if (functionCallsIndex !== -1) {
-                                                                                detectedTag = 'function_calls';
-                                                                                tagStartIndex = functionCallsIndex;
-                                                                            } else {
-                                                                                // Fall back to old format detection
-                                                                                for (const tag of HIDE_STREAMING_XML_TAGS) {
-                                                                                    const openingTagPattern = `<${tag}`;
-                                                                                    const index = streamingText.indexOf(openingTagPattern);
-                                                                                    if (index !== -1) {
-                                                                                        detectedTag = tag;
-                                                                                        tagStartIndex = index;
-                                                                                        break;
-                                                                                    }
-                                                                                }
-                                                                            }
-                                                                        }
-
-                                                                        const textToRender = streamingText || '';
-                                                                        const textBeforeTag = detectedTag ? textToRender.substring(0, tagStartIndex) : textToRender;
-                                                                        const showCursor = isStreamingText && !detectedTag;
-
-                                                                        return (
-                                                                            <>
-                                                                                {/* In debug mode, show raw streaming content */}
-                                                                                {debugMode && streamingText ? (
-                                                                                    <pre className="text-xs font-mono whitespace-pre-wrap overflow-x-auto p-2 border border-border rounded-md bg-muted/30">
-                                                                                        {streamingText}
-                                                                                    </pre>
-                                                                                ) : (
-                                                                                    <>
-                                                                                        {textBeforeTag && (
-                                                                                            <ComposioUrlDetector content={textBeforeTag} className="text-sm xl:text-base leading-tight prose prose-sm dark:prose-invert chat-markdown max-w-none [&>:first-child]:mt-0 prose-headings:mt-3 break-words overflow-wrap-anywhere" />
-                                                                                        )}
-                                                                                        {showCursor && (
-                                                                                            <span className="inline-block h-4 w-0.5 bg-primary ml-0.5 -mb-1 animate-pulse" />
-                                                                                        )}
-
-                                                                                        {detectedTag && (
-                                                                                            <ShowToolStream
-                                                                                                content={textToRender.substring(tagStartIndex)}
-                                                                                                messageId="streamingTextContent"
-                                                                                                onToolClick={handleToolClick}
-                                                                                                showExpanded={true}
-                                                                                                startTime={Date.now()} // Tool just started now
-                                                                                            />
-                                                                                        )}
-                                                                                    </>
-                                                                                )}
-                                                                            </>
-                                                                        );
-                                                                    })()}
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                        
-                                                    </div>
-                                                    <div className="flex items-center">
-                                                        <div className="rounded-md flex items-center justify-center relative">
-                                                            {groupAgentId ? (
-                                                                <AgentAvatar agentId={groupAgentId} size={20} className="h-5 w-5" />
-                                                            ) : (
-                                                                getAgentInfo().avatar
-                                                            )}
-                                                        </div>
-                                                        <p className='ml-2 text-sm text-muted-foreground'>
-                                                            {groupAgentId ? (
-                                                                <AgentName agentId={groupAgentId} fallback={getAgentInfo().name} />
-                                                            ) : (
-                                                                getAgentInfo().name
-                                                            )}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        );
-                                    }
-                                    return null;
-                                });
-                            })()}
-                            {((agentStatus === 'running' || agentStatus === 'connecting') && !streamingTextContent &&
-                                !readOnly &&
-                                (messages.length === 0 || messages[messages.length - 1].type === 'user')) && (
-                                    <div ref={latestMessageRef} className='w-full h-22 rounded'>
-                                        <div className="flex flex-col gap-2">
-                                            {/* Logo positioned above the loader */}
-                                            <div className="flex items-center">
-                                                <div className="rounded-md flex items-center justify-center">
-                                                    {getAgentInfo().avatar}
-                                                </div>
-                                                <p className='ml-2 text-sm text-muted-foreground'>
-                                                    {getAgentInfo().name}
-                                                </p>
-                                            </div>
-
-                                            {/* Loader content */}
-                                            <div className="space-y-2 w-full h-12">
-                                                <AgentLoader />
-                                            </div>
-                                        </div>
+                                      {/* Retry Button */}
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-8 px-2 hover:bg-accent cursor-pointer"
+                                            onClick={() => {
+                                              if (!onSubmit) return;
+                                              // Find the user group just before this assistant group
+                                              const userGroup =
+                                                finalGroupedMessages
+                                                  .slice(0, groupIndex)
+                                                  .reverse()
+                                                  .find(
+                                                    (g) => g.type === 'user',
+                                                  );
+                                              if (!userGroup) return;
+                                              const userMessage =
+                                                userGroup.messages[0];
+                                              let prompt =
+                                                typeof userMessage.content ===
+                                                'string'
+                                                  ? userMessage.content
+                                                  : '';
+                                              try {
+                                                const parsed =
+                                                  JSON.parse(prompt);
+                                                if (
+                                                  parsed &&
+                                                  typeof parsed.content ===
+                                                    'string'
+                                                ) {
+                                                  prompt = parsed.content;
+                                                }
+                                              } catch (e) {}
+                                              // Remove attachment info from prompt
+                                              prompt = prompt
+                                                .replace(
+                                                  /\[Uploaded File: .*?\]/g,
+                                                  '',
+                                                )
+                                                .trim();
+                                              if (
+                                                typeof setInputValue ===
+                                                'function'
+                                              )
+                                                setInputValue(prompt);
+                                              toast.success(
+                                                'Retrying previous prompt...',
+                                              );
+                                              onSubmit(prompt);
+                                              // Auto-scroll to bottom after retry
+                                              setTimeout(
+                                                () => scrollToBottom('smooth'),
+                                                100,
+                                              );
+                                            }}
+                                          >
+                                            <RotateCcw className="h-4 w-4 mr-1" />
+                                          </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                          <p>Retry</p>
+                                        </TooltipContent>
+                                      </Tooltip>
                                     </div>
                                   </div>
                                 )}
