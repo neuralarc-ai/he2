@@ -392,15 +392,15 @@ export const ChatInput = forwardRef<ChatInputHandles, ChatInputProps>(
                 <div className="absolute inset-0 rounded-[inherit] overflow-hidden">
                   <BorderBeam 
                     duration={4}
-                    borderWidth={0.5}
-                    size={220}
+                    borderWidth={1}
+                    size={240}
                     className="from-transparent via-helium-blue to-transparent"
                   />
                   <BorderBeam 
                     duration={4}
-                    borderWidth={0.5}
+                    borderWidth={1}
                     delay={2}
-                    size={220}
+                    size={240}
                     className="from-transparent via-helium-green to-transparent"
                   />
                 </div>
