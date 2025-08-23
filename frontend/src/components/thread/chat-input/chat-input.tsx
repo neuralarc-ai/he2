@@ -30,6 +30,7 @@ import { isLocalMode } from '@/lib/config';
 import { BillingModal } from '@/components/billing/billing-modal';
 import { useRouter } from 'next/navigation';
 import posthog from 'posthog-js';
+import { BorderBeam } from '@/components/magicui/border-beam';
 
 export interface ChatInputHandles {
   getPendingFiles: () => File[];
@@ -328,6 +329,12 @@ export const ChatInput = forwardRef<ChatInputHandles, ChatInputProps>(
       setIsDraggingOver(false);
     };
 
+    const handleStopAgent = () => {
+      if (onStopAgent) {
+        onStopAgent();
+        // setWasManuallyStopped(true);
+      }
+    };
 
 
     return (
@@ -380,13 +387,29 @@ export const ChatInput = forwardRef<ChatInputHandles, ChatInputProps>(
             }}
           >
             <div className="w-full text-sm flex flex-col justify-between items-start rounded-lg">
-              <CardContent className={`w-full p-1.5 pb-2 ${bgColor} border rounded-3xl`}>
+              <CardContent className={`w-full p-2 pb-3 ${bgColor} rounded-3xl relative overflow-hidden`}>
+                {/* Border Beam Effect */}
+                <div className="absolute inset-0 rounded-[inherit] overflow-hidden">
+                  <BorderBeam 
+                    duration={6}
+                    borderWidth={1}
+                    size={200}
+                    className="from-transparent via-helium-blue to-transparent"
+                  />
+                  <BorderBeam 
+                    duration={6}
+                    borderWidth={1}
+                    delay={3}
+                    size={200}
+                    className="from-transparent via-helium-green to-transparent"
+                  />
+                </div>
                 <AttachmentGroup
                   files={uploadedFiles || []}
                   sandboxId={sandboxId}
                   onRemove={removeUploadedFile}
                   layout="inline"
-                  maxHeight="216px"
+                  maxHeight="180px"
                   showPreviews={true}
                 />
                 <MessageInput
@@ -399,7 +422,7 @@ export const ChatInput = forwardRef<ChatInputHandles, ChatInputProps>(
                   loading={loading}
                   disabled={disabled}
                   isAgentRunning={isAgentRunning}
-                  onStopAgent={onStopAgent}
+                  onStopAgent={handleStopAgent}
                   isDraggingOver={isDraggingOver}
                   uploadedFiles={uploadedFiles}
 

@@ -3,6 +3,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Square, Loader2, ArrowUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTheme } from 'next-themes';
 import { UploadedFile } from './chat-input';
 import { FileUploadHandler } from './file-upload-handler';
 import { VoiceRecorder } from './voice-recorder';
@@ -95,6 +96,7 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
     const [billingModalOpen, setBillingModalOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
     const { enabled: customAgentsEnabled, loading: flagsLoading } = useFeatureFlag('custom_agents');
+    const { resolvedTheme } = useTheme();
 
     useEffect(() => {
       setMounted(true);
@@ -193,7 +195,7 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
             onPaste={handlePaste}
             placeholder={placeholder}
             className={cn(
-              'w-full bg-transparent dark:bg-transparent border-none shadow-none focus-visible:ring-0 px-0.5 pb-6 pt-4 !text-[15px] min-h-[36px] max-h-[200px] overflow-y-auto resize-none',
+              'w-full bg-transparent dark:bg-transparent border-none shadow-none focus-visible:ring-0 px-1 pb-8 pt-5 min-h-[86px] max-h-[240px] overflow-y-auto resize-none',
               isDraggingOver ? 'opacity-40' : '',
             )}
             disabled={loading || (disabled && !isAgentRunning)}
@@ -247,30 +249,35 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
               disabled={loading || (disabled && !isAgentRunning)}
             />}
 
-            <Button
-              type="submit"
-              onClick={isAgentRunning && onStopAgent ? onStopAgent : onSubmit}
-              size="sm"
-              className={cn(
-                'w-8 h-8 flex-shrink-0 self-end rounded-xl',
-                (!value.trim() && uploadedFiles.length === 0 && !isAgentRunning) ||
-                  loading ||
-                  (disabled && !isAgentRunning)
-                  ? 'opacity-50'
-                  : '',
-              )}
-              disabled={
-                (!value.trim() && uploadedFiles.length === 0 && !isAgentRunning) ||
-                loading ||
-                (disabled && !isAgentRunning)
-              }
-            >
+                                                 <Button
+               type="submit"
+               onClick={isAgentRunning && onStopAgent ? onStopAgent : onSubmit}
+               size="icon"
+               className={cn(
+                 'w-8 h-8 flex-shrink-0 rounded-full cursor-pointer',
+                 resolvedTheme === 'dark' 
+                   ? 'bg-helium-yellow hover:bg-helium-yellow/80' 
+                   : 'bg-helium-blue hover:bg-helium-blue/80',
+                 (!value.trim() && uploadedFiles.length === 0 && !isAgentRunning) ||
+                   loading ||
+                   (disabled && !isAgentRunning)
+                     ? 'opacity-50'
+                     : '',
+               )}
+               disabled={
+                 (!value.trim() && uploadedFiles.length === 0 && !isAgentRunning) ||
+                 loading ||
+                 (disabled && !isAgentRunning)
+               }
+             >
               {loading ? (
                 <Loader2 className="h-5 w-5 animate-spin" />
               ) : isAgentRunning ? (
                 <div className="min-h-[14px] min-w-[14px] w-[14px] h-[14px] rounded-sm bg-current" />
               ) : (
-                <ArrowUp className="h-5 w-5" />
+                <div className={mounted && resolvedTheme === 'light' ? 'text-black' : ''}>
+                  <ArrowUp className="h-5 w-5" />
+                </div>
               )}
             </Button>
           </div>
