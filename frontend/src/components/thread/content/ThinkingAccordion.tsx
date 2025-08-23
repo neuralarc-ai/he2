@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ChevronUp, ChevronDown, Brain, CircleDashed } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { PipedreamUrlDetector } from './pipedream-url-detector';
+import { ComposioUrlDetector } from './composio-url-detector';
 
 interface ThinkingAccordionProps {
   content: string;
