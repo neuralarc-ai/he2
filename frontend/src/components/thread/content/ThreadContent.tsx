@@ -10,6 +10,7 @@ import {
   Pencil,
   X,
 } from 'lucide-react';
+import Image from 'next/image';
 import {
   ThumbsUp as ThumbsUpFilled,
   ThumbsDown as ThumbsDownFilled,
@@ -1241,9 +1242,41 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                       }}
                                     >
                                       {copiedPromptIdx === groupIndex ? (
-                                        <Check className="h-4 w-4" />
+                                        <>
+                                        <Image
+                                      src="/icons/check-light.svg"
+                                      alt="check Light Logo"
+                                      width={20}
+                                      height={20}
+                                      className="block dark:hidden mb-0"
+                                    />
+                                    <Image
+                                      src="/icons/check-dark.svg"
+                                      alt="check Dark Logo"
+                                      width={20}
+                                      height={20}
+                                      className="hidden dark:block mb-0"
+                                    /></>
+                                      
                                       ) : (
-                                        <Copy className="h-4 w-4" />
+                                       <>
+                                         <Image
+                                                                        src="/icons/copy-light.svg"
+                                                                        alt="copy Light Logo"
+                                                                        width={20}
+                                                                        height={20}
+                                                                        className="block dark:hidden mb-0"
+                                                                      />
+                                                                      {/* Dark logo */}
+                                                                      <Image
+                                                                        src="/icons/copy-dark.svg"
+                                                                        alt="copy Dark Logo"
+                                                                        width={20}
+                                                                        height={20}
+                                                                        className="hidden dark:block mb-0"
+                                                                      />
+                                       </>
+                                      
                                       )}
                                     </Button>
                                   </TooltipTrigger>
@@ -1280,7 +1313,20 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                           }}
                                           disabled={editValue.trim() === ''}
                                         >
-                                          <Check className="h-4 w-4" />
+                                         <Image
+                                      src="/icons/check-light.svg"
+                                      alt="check Light Logo"
+                                      width={20}
+                                      height={20}
+                                      className="block dark:hidden mb-0"
+                                    />
+                                    <Image
+                                      src="/icons/check-dark.svg"
+                                      alt="check Dark Logo"
+                                      width={20}
+                                      height={20}
+                                      className="hidden dark:block mb-0"
+                                    />
                                         </Button>
                                       </TooltipTrigger>
                                       <TooltipContent>
@@ -1310,7 +1356,20 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                             }
                                           }}
                                         >
-                                          <X className="h-4 w-4" />
+                                         <Image
+                                      src="/icons/cancel-light.svg"
+                                      alt="cross Light Logo"
+                                      width={18}
+                                      height={18}
+                                      className="block dark:hidden mb-0"
+                                    />
+                                    <Image
+                                      src="/icons/cancel-dark.svg"
+                                      alt="cross Dark Logo"
+                                      width={18}
+                                      height={18}
+                                      className="hidden dark:block mb-0"
+                                    />
                                         </Button>
                                       </TooltipTrigger>
                                       <TooltipContent>
@@ -1359,7 +1418,20 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                           }
                                         }}
                                       >
-                                        <Pencil className="h-4 w-4" />
+                                        <Image
+                                      src="/icons/pencil-light.svg"
+                                      alt="pencil Light Logo"
+                                      width={21}
+                                      height={21}
+                                      className="block dark:hidden mb-0"
+                                    />
+                                    <Image
+                                      src="/icons/pencil-dark.svg"
+                                      alt="pencil Dark Logo"
+                                      width={21}  
+                                      height={21}
+                                      className="hidden dark:block mb-0"
+                                    />
                                       </Button>
                                     </TooltipTrigger>
                                     <TooltipContent>
@@ -1559,9 +1631,40 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                             }}
                                           >
                                             {copied ? (
-                                              <Check className="h-4 w-4" />
+                                              <>
+                                              <Image
+                                            src="/icons/check-light.svg"
+                                            alt="check Light Logo"
+                                            width={20}
+                                            height={20}
+                                            className="block dark:hidden mb-0"
+                                          />
+                                          <Image
+                                            src="/icons/check-dark.svg"
+                                            alt="check Dark Logo"
+                                            width={20}
+                                            height={20}
+                                            className="hidden dark:block mb-0"
+                                          /></>
                                             ) : (
-                                              <Copy className="h-4 w-4" />
+                                              <>
+                                              <Image
+                                                                        src="/icons/copy-light.svg"
+                                                                        alt="copy Light Logo"
+                                                                        width={22}
+                                                                        height={22}
+                                                                        className="block dark:hidden mb-0"
+                                                                      />
+                                                                      {/* Dark logo */}
+                                                                      <Image
+                                                                        src="/icons/copy-dark.svg"
+                                                                        alt="copy Dark Logo"
+                                                                        width={22}
+                                                                        height={22}
+                                                                        className="hidden dark:block mb-0"
+                                                                      />
+                                              </>
+                                              
                                             )}
                                           </Button>
                                         </TooltipTrigger>
@@ -1705,7 +1808,20 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                               );
                                             }}
                                           >
-                                            <RotateCcw className="h-4 w-4 mr-1" />
+                                           <Image
+                                            src="/icons/rotate-ccw-light.svg"
+                                            alt="rotate Light Logo"
+                                            width={18}
+                                            height={18}
+                                            className="block dark:hidden mb-0"
+                                          />
+                                          <Image
+                                            src="/icons/rotate-ccw-dark.svg"
+                                            alt="rotate Dark Logo"
+                                            width={18}
+                                            height={18}
+                                            className="hidden dark:block mb-0"
+                                          />
                                           </Button>
                                         </TooltipTrigger>
                                         <TooltipContent>

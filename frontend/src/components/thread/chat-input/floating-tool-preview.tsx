@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronUp, Check, ListTodo, Loader, XCircle, CircleDashed } from 'lucide-react';
 import { getUserFriendlyToolName } from '@/components/thread/utils';
 import { cn } from '@/lib/utils';
-
+import Image from 'next/image';
 export type AgentStatus = 'running' | 'stopped' | 'idle' | 'completed';
 
 export interface ToolCallInput {
@@ -276,7 +276,9 @@ export const FloatingToolPreview: React.FC<FloatingToolPreviewProps> = ({
                 </span>
 
                 {/* Expand button */}
-                <ChevronUp className="h-4 w-4 text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors" />
+                {/* <ChevronUp className="h-4 w-4 text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors" /> */}
+                <Image src="/icons/chevron-up-light.svg" alt="expand" width={20} height={20} className="block dark:hidden mb-0" />  
+                <Image src="/icons/chevron-up-dark.svg" alt="expand" width={20} height={20} className="hidden dark:block mb-0" />
               </div>
             </div>
           </motion.div>

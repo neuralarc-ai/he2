@@ -752,7 +752,8 @@ export function ToolCallSidePanel({
                       className="h-8 w-8"
                       title="Minimize to floating preview"
                     >
-                      <Minimize2 className="h-4 w-4" />
+                    <Image src="/icons/minimize2-light.svg" alt="expand" width={18} height={18} className="block dark:hidden mb-0" />  
+                    <Image src="/icons/minimize2-dark.svg" alt="expand" width={18} height={18} className="hidden dark:block mb-0" />
                     </Button>
                   </div>
                 </div>
@@ -1014,7 +1015,8 @@ export function ToolCallSidePanel({
                   className="h-8 w-8 ml-1"
                   title="Minimize to floating preview"
                 >
-                  <Minimize2 className="h-4 w-4" />
+                 <Image src="/icons/minimize2-light.svg" alt="expand" width={20} height={20} className="block dark:hidden mb-0" />  
+                 <Image src="/icons/minimize2-dark.svg" alt="expand" width={20} height={20} className="hidden dark:block mb-0" />
                 </Button>
               </div>
             )}
@@ -1032,7 +1034,8 @@ export function ToolCallSidePanel({
                   className="h-8 w-8 ml-1"
                   title="Minimize to floating preview"
                 >
-                  <Minimize2 className="h-4 w-4" />
+                  <Image src="/icons/minimize2-light.svg" alt="expand" width={20} height={20} className="block dark:hidden mb-0" />  
+                  <Image src="/icons/minimize2-dark.svg" alt="expand" width={20} height={20} className="hidden dark:block mb-0" />
                 </Button>
               </div>
             )}
@@ -1045,7 +1048,8 @@ export function ToolCallSidePanel({
                 className="h-8 w-8"
                 title="Minimize to floating preview"
               >
-                <Minimize2 className="h-4 w-4" />
+              <Image src="/icons/minimize2-light.svg" alt="expand" width={20} height={20} className="block dark:hidden mb-0" />  
+              <Image src="/icons/minimize2-dark.svg" alt="expand" width={20} height={20} className="hidden dark:block mb-0" />
               </Button>
             )}
           </div>
