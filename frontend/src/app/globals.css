@@ -9,6 +9,7 @@
   --color-helium-green: var(--helium-green);
   --color-helium-yellow: var(--helium-yellow);
   --color-helium-blue: var(--helium-blue);
+  --color-helium-teal: var(--helium-teal);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
@@ -277,6 +278,7 @@
   --helium-yellow: oklch(0.9699 0.1925 109.51);
   --helium-blue: oklch(0.5608 0.2416 270.34);
   --helium-green: oklch(0.9024 0.2346 134.77);
+  --helium-teal: oklch(0.7197 0.1217 174.92);
 }
 
 .dark {
@@ -315,6 +317,7 @@
   --helium-yellow: oklch(0.9699 0.1925 109.51);
   --helium-blue: oklch(0.5608 0.2416 270.34);
   --helium-green: oklch(0.9024 0.2346 134.77);
+  --helium-teal: oklch(0.7197 0.1217 174.92);
 }
 
 @layer base {

@@ -21,6 +21,8 @@ export interface UnifiedMessage {
   updated_at: string; // ISO timestamp string
   agent_id?: string; // ID of the agent associated with this message
   agents?: {
+    avatar_color: any;
+    avatar: any;
     name: string;
     profile_image_url?: string;
   }; // Agent information from join

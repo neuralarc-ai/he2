@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSidebar } from '@/components/ui/sidebar';
 import { SiteHeader } from '@/components/thread/thread-site-header';
 import { FileViewerModal } from '@/components/thread/file-viewer-modal';
 import { ToolCallSidePanel } from '@/components/thread/tool-call-side-panel';
@@ -6,7 +7,8 @@ import { BillingErrorAlert } from '@/components/billing/usage-limit-alert';
 import { Project } from '@/lib/api';
 import { ApiMessageType, BillingData } from '../_types';
 import { ToolCallInput } from '@/components/thread/tool-call-side-panel';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useMediumScreen } from '@/hooks/react-query/use-medium-screen';
+import { useCustomBreakpoint } from '@/hooks/use-custom-breakpoints';
 
 interface ThreadLayoutProps {
   children: React.ReactNode;
@@ -41,6 +43,7 @@ interface ThreadLayoutProps {
   initialLoadCompleted: boolean;
   agentName?: string;
   disableInitialAnimation?: boolean;
+  agentRunId?: string;
 }
 
 export function ThreadLayout({
@@ -75,10 +78,30 @@ export function ThreadLayout({
   isMobile,
   initialLoadCompleted,
   agentName,
-  disableInitialAnimation = false
+  disableInitialAnimation = false,
+  agentRunId
 }: ThreadLayoutProps) {
-  const isActuallyMobile = useIsMobile();
-  
+  const { state: leftSidebarState } = useSidebar();
+  const isLeftSidebarExpanded = leftSidebarState === 'expanded';
+  const isMediumScreen = useMediumScreen();
+  const isCustomBreakpoint = useCustomBreakpoint();
+
+   // Determine when to apply margin-right
+   const shouldApplyMarginRight = React.useMemo(() => {
+    // Don't apply margin if:
+    // 1. Not initialized yet
+    // 2. Panel is closed
+    if (!initialLoadCompleted || !isSidePanelOpen) return false;
+    
+    // Don't apply margin in these cases:
+    // 1. On medium screens (768px-934px)
+    // 2. On custom breakpoint (1024px-1227px) when sidebar is expanded
+    if (isMediumScreen) return false;
+    if (isCustomBreakpoint && isLeftSidebarExpanded) return false;
+    
+    // Apply margin in all other cases
+    return true;
+  }, [initialLoadCompleted, isSidePanelOpen, isMediumScreen, isCustomBreakpoint, isLeftSidebarExpanded]);
   return (
     <div className="flex h-screen">
       {debugMode && (
@@ -87,11 +110,12 @@ export function ThreadLayout({
         </div>
       )}
 
-      <div
-        className={`flex flex-col flex-1 overflow-hidden transition-all duration-200 ease-in-out ${(!initialLoadCompleted || (isSidePanelOpen && !isActuallyMobile))
-          ? 'mr-[90%] sm:mr-[450px] md:mr-[500px] lg:mr-[550px] xl:mr-[650px]'
-          : ''
-          }`}
+<div
+        className={`flex flex-col flex-1 overflow-hidden transition-[margin] duration-200 ease-in-out will-change-[margin] ${
+          shouldApplyMarginRight
+            ? (isLeftSidebarExpanded ? 'mr-[45vw]' : 'mr-[50vw]')
+            : ''
+        }`}
       >
         <SiteHeader
           threadId={threadId}
@@ -123,6 +147,9 @@ export function ThreadLayout({
         onFileClick={onViewFiles}
         agentName={agentName}
         disableInitialAnimation={disableInitialAnimation}
+        isLeftSidebarExpanded={isLeftSidebarExpanded}
+        threadId={threadId}
+        agentRunId={agentRunId}
       />
 
       {sandboxId && (
