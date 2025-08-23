@@ -1158,11 +1158,7 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                         <div className="flex flex-col gap-1 items-end max-w-[85%]">
                           <div className={cn('flex w-fit')}>
                             <div
-                              style={{
-                                background: '#FFFFFF',
-                                color: 'black',
-                              }}
-                              className="break-words overflow-hidden border border-black/5 rounded-l-2xl rounded-tr-2xl rounded-br-sm px-4 py-2 w-full"
+                              className="break-words overflow-hidden bg-white dark:bg-[#2C2C2C] text-black dark:text-white border border-black/5  rounded-l-2xl rounded-tr-2xl rounded-br-sm px-4 py-2 w-full"
                             >
                               <div className="space-y-4 min-w-0 flex-1">
                                 {cleanContent && (
@@ -1198,7 +1194,7 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                   >
                                     <ComposioUrlDetector
                                       content={cleanContent}
-                                      className="text-sm prose prose-sm chat-markdown max-w-none [&>:first-child]:mt-0 prose-headings:mt-3 break-words overflow-wrap-anywhere text-black xl:text-base"
+                                      className="text-sm prose prose-sm chat-markdown max-w-none [&>:first-child]:mt-0 prose-headings:mt-3 break-words overflow-wrap-anywhere text-black dark:text-white xl:text-base"
                                     />
                                   </div>
                                 )}
