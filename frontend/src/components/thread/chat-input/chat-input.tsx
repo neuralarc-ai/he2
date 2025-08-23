@@ -18,7 +18,7 @@ import { useModelSelection } from './_use-model-selection';
 import { useFileDelete } from '@/hooks/react-query/files';
 import { useQueryClient } from '@tanstack/react-query';
 import { ToolCallInput } from './floating-tool-preview';
-import { ChatSnack } from './chat-snack';
+import { ChatSnack,type AgentStatus } from './chat-snack';
 import { Brain, Zap, Workflow, Database, ArrowDown } from 'lucide-react';
 import { useComposioToolkitIcon } from '@/hooks/react-query/composio/use-composio';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -143,7 +143,7 @@ export const ChatInput = forwardRef<ChatInputHandles, ChatInputProps>(
     const [showSnackbar, setShowSnackbar] = useState(defaultShowSnackbar);
     const [userDismissedUsage, setUserDismissedUsage] = useState(false);
     const [billingModalOpen, setBillingModalOpen] = useState(false);
-
+    const [wasManuallyStopped, setWasManuallyStopped] = useState(false);
     const {
       selectedModel,
       setSelectedModel: handleModelChange,
@@ -163,7 +163,18 @@ export const ChatInput = forwardRef<ChatInputHandles, ChatInputProps>(
     const { data: googleDriveIcon } = useComposioToolkitIcon('googledrive', { enabled: shouldFetchIcons });
     const { data: slackIcon } = useComposioToolkitIcon('slack', { enabled: shouldFetchIcons });
     const { data: notionIcon } = useComposioToolkitIcon('notion', { enabled: shouldFetchIcons });
-
+    const agentStatus: AgentStatus = (() => {
+      if (isAgentRunning || loading) {
+        return 'running';
+      }
+      if (wasManuallyStopped) {
+        return 'stopped';
+      }
+      if (toolCalls && toolCalls.length > 0) {
+        return 'completed';
+      }
+      return 'idle';
+    })();
     // Show usage preview logic:
     // - Always show to free users when showToLowCreditUsers is true
     // - For paid users, only show when they're at 70% or more of their cost limit (30% or below remaining)
@@ -226,11 +237,11 @@ export const ChatInput = forwardRef<ChatInputHandles, ChatInputProps>(
       )
         return;
 
-      if (isAgentRunning && onStopAgent) {
-        onStopAgent();
-        return;
-      }
-
+      // if (isAgentRunning && onStopAgent) {
+      //   onStopAgent();
+      //   return;
+      // }
+      setWasManuallyStopped(false);
       let message = value;
 
       if (uploadedFiles.length > 0) {
@@ -261,7 +272,12 @@ export const ChatInput = forwardRef<ChatInputHandles, ChatInputProps>(
 
       setUploadedFiles([]);
     };
-
+    const handleStopAgent = () => {
+      if (onStopAgent) {
+        onStopAgent();
+        setWasManuallyStopped(true);
+      }
+    };
     const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       const newValue = e.target.value;
       if (isControlled) {
@@ -344,6 +360,7 @@ export const ChatInput = forwardRef<ChatInputHandles, ChatInputProps>(
             toolCalls={toolCalls}
             toolCallIndex={toolCallIndex}
             onExpandToolPreview={onExpandToolPreview}
+            agentStatus={agentStatus}
             agentName={agentName}
             showToolPreview={showToolPreview}
             showUsagePreview={showSnackbar}
