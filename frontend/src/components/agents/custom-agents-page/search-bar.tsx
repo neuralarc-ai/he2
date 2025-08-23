@@ -20,7 +20,7 @@ export const SearchBar = ({ placeholder, value, onChange, className }: SearchBar
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="pl-12 h-12 rounded-xl bg-muted/50 border-0 focus:bg-background focus:ring-2 focus:ring-primary/20 transition-all"
+        className="pl-12 h-12 rounded-full bg-background border border-foreground/10 focus:bg-background focus:ring-primary/20 transition-all"
       />
     </div>
   );

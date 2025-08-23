@@ -14,7 +14,7 @@ import type { MarketplaceTemplate } from '@/components/agents/installation/types
 
 import { AgentsParams } from '@/hooks/react-query/agents/utils';
 
-import { AgentsPageHeader } from '@/components/agents/custom-agents-page/header';
+
 import { TabsNavigation } from '@/components/agents/custom-agents-page/tabs-navigation';
 import { MyAgentsTab } from '@/components/agents/custom-agents-page/my-agents-tab';
 import { MarketplaceTab } from '@/components/agents/custom-agents-page/marketplace-tab';
@@ -91,7 +91,10 @@ export default function AgentsPage() {
   const [agentLimitError, setAgentLimitError] = useState<AgentCountLimitError | null>(null);
 
   const activeTab = useMemo(() => {
-    return searchParams.get('tab') || 'my-agents';
+    const tab = searchParams.get('tab');
+    // Map 'marketplace' URL parameter to 'explore' tab for display
+    if (tab === 'marketplace') return 'explore';
+    return tab || 'explore';
   }, [searchParams]);
 
   const agentsQueryParams: AgentsParams = useMemo(() => {
@@ -226,7 +229,9 @@ export default function AgentsPage() {
 
   const handleTabChange = (newTab: string) => {
     const params = new URLSearchParams(searchParams.toString());
-    params.set('tab', newTab);
+    // Map 'explore' tab to 'marketplace' for URL compatibility
+    const urlTab = newTab === 'explore' ? 'marketplace' : newTab;
+    params.set('tab', urlTab);
     router.replace(`${pathname}?${params.toString()}`);
   };
 
@@ -323,7 +328,7 @@ export default function AgentsPage() {
     // Update URL with agent parameter for sharing
     const currentUrl = new URL(window.location.href);
     currentUrl.searchParams.set('agent', agent.id);
-    currentUrl.searchParams.set('tab', 'marketplace');
+    currentUrl.searchParams.set('tab', 'explore');
     router.replace(currentUrl.toString(), { scroll: false });
   };
 
@@ -538,13 +543,14 @@ export default function AgentsPage() {
   if (flagLoading) {
     return (
       <div className="min-h-screen">
-        <div className="container max-w-7xl mx-auto px-4 py-8">
-          <AgentsPageHeader />
-        </div>
-        
         <div className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border/40 shadow-sm">
-          <div className="container max-w-7xl mx-auto px-4 py-4">
-            <TabsNavigation activeTab={activeTab} onTabChange={handleTabChange} onCreateAgent={handleCreateNewAgent} />
+          <div className="container max-w-7xl mx-auto px-4 py-6">
+            <div className="space-y-6">
+              <div className="text-4xl font-semibold tracking-tight">
+                <span className="text-primary">AI Agents</span>
+              </div>
+              <TabsNavigation activeTab={activeTab} onTabChange={handleTabChange} onCreateAgent={handleCreateNewAgent} />
+            </div>
           </div>
         </div>
 
@@ -561,17 +567,15 @@ export default function AgentsPage() {
 
   return (
     <div className="min-h-screen">
-      <div className="container mx-auto max-w-7xl px-4 py-8">
-        <AgentsPageHeader />
-      </div>
       <div className="sticky top-0 z-50">
-        <div className="absolute inset-0 backdrop-blur-md" style={{
-          maskImage: 'linear-gradient(to bottom, black 0%, black 60%, transparent 100%)',
-          WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 60%, transparent 100%)'
-        }}></div>
         <div className="relative bg-gradient-to-b from-background/95 via-background/70 to-transparent">
-          <div className="container mx-auto max-w-7xl px-4 py-4">
-            <TabsNavigation activeTab={activeTab} onTabChange={handleTabChange} onCreateAgent={handleCreateNewAgent} />
+          <div className="container mx-auto max-w-7xl px-4 py-6">
+            <div className="space-y-6">
+              <div className="text-2xl font-semibold tracking-tight">
+                <span className="text-primary">AI Agents</span>
+              </div>
+              <TabsNavigation activeTab={activeTab} onTabChange={handleTabChange} onCreateAgent={handleCreateNewAgent} />
+            </div>
           </div>
         </div>
       </div>
@@ -604,7 +608,7 @@ export default function AgentsPage() {
             />
           )}
 
-          {activeTab === "marketplace" && (
+          {activeTab === "explore" && (
             <MarketplaceTab
               marketplaceSearchQuery={marketplaceSearchQuery}
               setMarketplaceSearchQuery={setMarketplaceSearchQuery}

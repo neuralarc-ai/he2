@@ -1,8 +1,9 @@
 'use client';
 
 import React from 'react';
-import { Bot, ShoppingBag, FileText, Plus } from 'lucide-react';
+import { Bot, ShoppingBag, Plus } from 'lucide-react';
 import { FancyTabs, TabConfig } from '@/components/ui/fancy-tabs';
+import { Button } from '@/components/ui/button';
 
 interface TabsNavigationProps {
   activeTab: string;
@@ -12,7 +13,7 @@ interface TabsNavigationProps {
 
 const agentTabs: TabConfig[] = [
   {
-    value: 'marketplace',
+    value: 'explore',
     icon: ShoppingBag,
     label: 'Explore',
     shortLabel: 'Explore',
@@ -25,29 +26,26 @@ const agentTabs: TabConfig[] = [
 ]; 
 
 export const TabsNavigation = ({ activeTab, onTabChange, onCreateAgent }: TabsNavigationProps) => {
-  const tabs = React.useMemo(() => {
-    if (onCreateAgent) {
-      return [
-        ...agentTabs,
-        { value: 'create-agent', icon: Plus, label: 'Create Agent' }
-      ];
-    }
-    return agentTabs;
-  }, [onCreateAgent]);
-
-  const handleTabSelection = (value: string) => {
-    if (value === 'create-agent') {
-      onCreateAgent?.();
-    } else {
-      onTabChange(value);
-    }
-  };
-
   return (
-    <FancyTabs
-      tabs={tabs}
-      activeTab={activeTab}
-      onTabChange={handleTabSelection}
-    />
-);
-}
+    <div className="flex items-center justify-between w-full">
+      <div className="flex-1">
+        <FancyTabs
+          tabs={agentTabs}
+          activeTab={activeTab}
+          onTabChange={onTabChange}
+          className="max-w-xs"
+        />
+      </div>
+      
+      <div className="flex-shrink-0">
+        <Button 
+          onClick={onCreateAgent}
+          className="flex items-center gap-1 rounded-full px-4 py-2 font-bold"
+        >
+          <Plus className="h-4 w-4" />
+          Create
+        </Button>
+      </div>
+    </div>
+  );
+};

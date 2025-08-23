@@ -178,26 +178,114 @@ export function FullScreenPresentationViewer({
 
   const currentSlideData = slides.find(slide => slide.number === currentSlide);
 
+  // Memoized slide iframe component with proper scaling (matching PresentationViewer)
+  const SlideIframe = useMemo(() => {
+    const SlideIframeComponent = React.memo(({ slide }: { slide: SlideMetadata & { number: number } }) => {
+      const [containerRef, setContainerRef] = useState<HTMLDivElement | null>(null);
+      const [scale, setScale] = useState(1);
+
+      useEffect(() => {
+        if (containerRef) {
+          const updateScale = () => {
+            const containerWidth = containerRef.offsetWidth;
+            const containerHeight = containerRef.offsetHeight;
+            
+            // Calculate scale to fit 1920x1080 into container while maintaining aspect ratio
+            const scaleX = containerWidth / 1920;
+            const scaleY = containerHeight / 1080;
+            const newScale = Math.min(scaleX, scaleY);
+            
+            // Only update if scale actually changed to prevent unnecessary re-renders
+            if (Math.abs(newScale - scale) > 0.001) {
+              setScale(newScale);
+            }
+          };
+
+          // Use a debounced version for resize events to prevent excessive updates
+          let resizeTimeout: NodeJS.Timeout;
+          const debouncedUpdateScale = () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(updateScale, 100);
+          };
+
+          updateScale();
+          window.addEventListener('resize', debouncedUpdateScale);
+          return () => {
+            window.removeEventListener('resize', debouncedUpdateScale);
+            clearTimeout(resizeTimeout);
+          };
+        }
+      }, [containerRef, scale]);
+
+      if (!sandboxUrl) {
+        return (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center">
+              <Presentation className="h-12 w-12 mx-auto mb-4 text-zinc-400" />
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">No slide content to preview</p>
+            </div>
+          </div>
+        );
+      }
+
+      const slideUrl = constructHtmlPreviewUrl(sandboxUrl, slide.file_path);
+      // Add cache-busting to iframe src to ensure fresh content
+      const slideUrlWithCacheBust = `${slideUrl}?t=${refreshTimestamp}`;
+
+      return (
+        <div className="w-full h-full flex items-center justify-center bg-transparent">
+          <div 
+            ref={setContainerRef}
+            className="relative bg-white dark:bg-zinc-900 rounded-lg overflow-hidden border border-zinc-200/40 dark:border-zinc-800/40"
+            style={{
+              width: '100%',
+              maxWidth: '100%',
+              aspectRatio: '16 / 9',
+              maxHeight: '100%',
+              containIntrinsicSize: '1920px 1080px',
+              contain: 'layout style'
+            }}
+          >
+            <iframe
+              key={`slide-${slide.number}-${refreshTimestamp}`} // Key with stable timestamp ensures iframe refreshes when metadata changes
+              src={slideUrlWithCacheBust}
+              title={`Slide ${slide.number}: ${slide.title}`}
+              className="border-0 rounded-xl"
+              sandbox="allow-same-origin allow-scripts"
+              style={{
+                width: '1920px',
+                height: '1080px',
+                border: 'none',
+                display: 'block',
+                transform: `scale(${scale})`,
+                transformOrigin: '0 0',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                willChange: 'transform',
+                backfaceVisibility: 'hidden',
+                WebkitBackfaceVisibility: 'hidden'
+              }}
+            />
+          </div>
+        </div>
+      );
+    }, (prevProps, nextProps) => {
+      // Custom comparison function - only re-render if slide number or file_path changes
+      return prevProps.slide.number === nextProps.slide.number && 
+             prevProps.slide.file_path === nextProps.slide.file_path;
+    });
+    
+    SlideIframeComponent.displayName = 'SlideIframeComponent';
+    return SlideIframeComponent;
+  }, [sandboxUrl, refreshTimestamp]);
+
   // Render slide iframe with proper scaling
   const renderSlide = useMemo(() => {
     if (!currentSlideData || !sandboxUrl) return null;
 
-    const slideUrl = constructHtmlPreviewUrl(sandboxUrl, currentSlideData.file_path);
-    const slideUrlWithCacheBust = `${slideUrl}?t=${refreshTimestamp}`;
-
-    return (
-      <div className="w-full h-full flex items-center justify-center bg-white dark:bg-zinc-900">
-        <iframe
-          key={`slide-${currentSlide}-${refreshTimestamp}`}
-          src={slideUrlWithCacheBust}
-          title={`Slide ${currentSlide}: ${currentSlideData.title}`}
-          className="w-full h-full border-0"
-          style={{ aspectRatio: '16 / 9' }}
-          sandbox="allow-same-origin allow-scripts"
-        />
-      </div>
-    );
-  }, [currentSlideData, sandboxUrl, currentSlide, refreshTimestamp]);
+    return <SlideIframe slide={currentSlideData} />;
+  }, [currentSlideData, sandboxUrl, SlideIframe]);
 
   if (!isOpen) return null;
 
