@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { Settings, Trash2, Star, MessageCircle, Wrench, Globe, GlobeLock, Download, Shield, AlertTriangle, GitBranch } from 'lucide-react';
+import { Trash2, GlobeLock, Download, Shield, GitBranch, Settings2, MessageSquareText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Dialog, DialogContent, DialogTitle, DialogHeader, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { useRouter } from 'next/navigation';
-import { useCreateTemplate, useUnpublishTemplate } from '@/hooks/react-query/secure-mcp/use-secure-mcp';
+import { useUnpublishTemplate } from '@/hooks/react-query/secure-mcp/use-secure-mcp';
 import { toast } from 'sonner';
 import { AgentCard } from './custom-agents-page/agent-card';
 import { HeliumLogo } from '../sidebar/helium-logo';
@@ -90,7 +90,7 @@ const AgentModal: React.FC<AgentModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md p-0 overflow-hidden border-none">
+      <DialogContent className="max-w-md p-4 overflow-hidden border-none rounded-4xl bg-muted/50 backdrop-blur-3xl">
         <DialogTitle className="sr-only">Agent actions</DialogTitle>
         <div className="relative">
           <div className={`p-4 h-24 flex items-start justify-start relative`}>
@@ -135,16 +135,16 @@ const AgentModal: React.FC<AgentModalProps> = ({
               <Button
                 onClick={() => onCustomize(agent.agent_id)}
                 variant="outline"
-                className="flex-1 gap-2"
+                className="flex-1 gap-2 rounded-full shadow-none border-foreground"
               >
-                <Wrench className="h-4 w-4" />
-                Customize
+                <Settings2 className="h-4 w-4" />
+                Edit
               </Button>
               <Button
                 onClick={() => onChat(agent.agent_id)}
-                className="flex-1 gap-2 bg-primary hover:bg-primary/90"
+                className="flex-1 gap-2 bg-primary hover:bg-primary/90 rounded-full shadow-none"
               >
-                <MessageCircle className="h-4 w-4" />
+                <MessageSquareText className="h-4 w-4" />
                 Chat
               </Button>
             </div>

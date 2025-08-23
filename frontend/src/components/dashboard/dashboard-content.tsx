@@ -58,6 +58,21 @@ export function DashboardContent() {
   const initiateAgentMutation = useInitiateAgentWithInvalidation();
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
+  // Fixed welcome message
+  const welcomeMessage = "What shall we focus on today, {name}?";
+
+  const [currentWelcomeMessage, setCurrentWelcomeMessage] = useState('');
+
+  // Set welcome message with user's name
+  useEffect(() => {
+    // Get user's first name from personal account
+    const firstName = personalAccount?.name?.split(' ')[0] || 'there';
+    
+    // Replace {name} placeholder with actual name
+    const personalizedMessage = welcomeMessage.replace('{name}', firstName);
+    setCurrentWelcomeMessage(personalizedMessage);
+  }, [personalAccount?.name]);
+
   // Feature flag for custom agents section
   const { enabled: customAgentsEnabled } = useFeatureFlag('custom_agents');
 
@@ -218,16 +233,16 @@ export function DashboardContent() {
       <div className="flex flex-col h-screen w-full overflow-hidden">
         <div className="flex-1 overflow-y-auto">
           <div className="min-h-full flex flex-col">
-            {customAgentsEnabled && (
+            {/* {customAgentsEnabled && (
               <div className="flex justify-center px-4 pt-4 md:pt-8">
                 <ReleaseBadge text="Custom Agents, Playbooks, and more!" link="/agents?tab=my-agents" />
               </div>
-            )}
+            )} */}
             <div className="flex-1 flex items-center justify-center px-4 py-8">
-              <div className="w-full max-w-[650px] flex flex-col items-center justify-center space-y-4 md:space-y-6">
+              <div className="w-full max-w-[650px] flex flex-col items-center justify-center space-y-1 md:space-y-2">
                 <div className="flex flex-col items-center text-center w-full">
-                  <p className="tracking-tight text-2xl md:text-3xl font-normal text-foreground/90">
-                    What would you like to do today?
+                  <p className="tracking-tight text-2xl md:text-3xl font-normal text-foreground/90 libre-baskerville-regular">
+                    {currentWelcomeMessage}
                   </p>
                 </div>
                 <div className="w-full">

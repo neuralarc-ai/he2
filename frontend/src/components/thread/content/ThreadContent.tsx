@@ -791,7 +791,7 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                         return (
                                             <div key={group.key} ref={groupIndex === groupedMessages.length - 1 ? latestMessageRef : null}>
                                                 <div className="flex flex-col gap-2">
-                                                    <div className="flex items-center">
+                                                    {/* <div className="flex items-center">
                                                         <div className="rounded-md flex items-center justify-center relative">
                                                             {groupAgentId ? (
                                                                 <AgentAvatar agentId={groupAgentId} size={20} className="h-5 w-5" />
@@ -806,7 +806,7 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                                                 getAgentInfo().name
                                                             )}
                                                         </p>
-                                                    </div>
+                                                    </div> */}
 
                                                     {/* Message content - ALL messages in the group */}
                                                     <div className="flex max-w-[90%] text-sm break-words overflow-hidden">
@@ -1019,6 +1019,23 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                                                 </div>
                                                             )}
                                                         </div>
+                                                        
+                                                    </div>
+                                                    <div className="flex items-center">
+                                                        <div className="rounded-md flex items-center justify-center relative">
+                                                            {groupAgentId ? (
+                                                                <AgentAvatar agentId={groupAgentId} size={20} className="h-5 w-5" />
+                                                            ) : (
+                                                                getAgentInfo().avatar
+                                                            )}
+                                                        </div>
+                                                        <p className='ml-2 text-sm text-muted-foreground'>
+                                                            {groupAgentId ? (
+                                                                <AgentName agentId={groupAgentId} fallback={getAgentInfo().name} />
+                                                            ) : (
+                                                                getAgentInfo().name
+                                                            )}
+                                                        </p>
                                                     </div>
                                                 </div>
                                             </div>
