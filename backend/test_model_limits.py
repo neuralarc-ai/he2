@@ -21,6 +21,8 @@ def test_model_limits():
         'gpt-5', 
         'sonnet-3.5', 
         'gemini-2.5-pro', 
+        'gemini-2.5-flash',
+        'gemini-2.0-flash',
         'claude-sonnet-4', 
         'grok-4', 
         'unknown-model',
@@ -33,7 +35,7 @@ def test_model_limits():
         print(f'{model}: {window:,} tokens')
 
     print("\n=== Context Manager Logic Simulation ===")
-    for model in ['gpt-5', 'anthropic/claude-sonnet-4', 'gemini/gemini-2.5-pro', 'unknown-model']:
+    for model in ['gpt-5', 'anthropic/claude-sonnet-4', 'gemini/gemini-2.5-pro', 'gemini/gemini-2.5-flash', 'gemini/gemini-2.0-flash', 'unknown-model']:
         context_window = get_model_context_window(model)
         
         # Simulate the logic from context manager

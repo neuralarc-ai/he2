@@ -30,6 +30,7 @@ import { isLocalMode } from '@/lib/config';
 import { BillingModal } from '@/components/billing/billing-modal';
 import { useRouter } from 'next/navigation';
 import posthog from 'posthog-js';
+import { BorderBeam } from '@/components/magicui/border-beam';
 
 export interface ChatInputHandles {
   getPendingFiles: () => File[];
@@ -344,10 +345,16 @@ export const ChatInput = forwardRef<ChatInputHandles, ChatInputProps>(
       setIsDraggingOver(false);
     };
 
+    const handleStopAgent = () => {
+      if (onStopAgent) {
+        onStopAgent();
+        // setWasManuallyStopped(true);
+      }
+    };
 
 
     return (
-      <div className="mx-auto w-full max-w-4xl relative">
+      <div className="mx-auto w-full max-w-5xl relative">
         <div className="relative">
           <ChatSnack
             toolCalls={toolCalls}
@@ -375,7 +382,7 @@ export const ChatInput = forwardRef<ChatInputHandles, ChatInputProps>(
             </button>
           )}
           <Card
-            className={`-mb-2 shadow-none w-full max-w-4xl mx-auto bg-transparent border-none overflow-visible ${enableAdvancedConfig && selectedAgentId ? '' : 'rounded-3xl'} relative z-10`}
+            className={`-mb-2 shadow-none w-full max-w-5xl mx-auto bg-transparent border-none overflow-visible ${enableAdvancedConfig && selectedAgentId ? '' : 'rounded-3xl'} relative z-10`}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={(e) => {
@@ -397,13 +404,29 @@ export const ChatInput = forwardRef<ChatInputHandles, ChatInputProps>(
             }}
           >
             <div className="w-full text-sm flex flex-col justify-between items-start rounded-lg">
-              <CardContent className={`w-full p-1.5 pb-2 ${bgColor} border rounded-3xl`}>
+              <CardContent className={`w-full p-2 pt-0 pb-3 bg-white dark:bg-sidebar-accent rounded-3xl relative overflow-hidden`}>
+                {/* Border Beam Effect */}
+                <div className="absolute inset-0 rounded-[inherit] overflow-hidden">
+                  <BorderBeam 
+                    duration={4}
+                    borderWidth={0.5}
+                    size={220}
+                    className="from-transparent via-helium-blue to-transparent"
+                  />
+                  <BorderBeam 
+                    duration={4}
+                    borderWidth={0.5}
+                    delay={2}
+                    size={220}
+                    className="from-transparent via-helium-green to-transparent"
+                  />
+                </div>
                 <AttachmentGroup
                   files={uploadedFiles || []}
                   sandboxId={sandboxId}
                   onRemove={removeUploadedFile}
                   layout="inline"
-                  maxHeight="216px"
+                  maxHeight="180px"
                   showPreviews={true}
                 />
                 <MessageInput

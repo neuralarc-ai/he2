@@ -69,6 +69,8 @@ def get_openrouter_fallback(model_name: str) -> Optional[str]:
         "anthropic/claude-sonnet-4-20250514": "openrouter/anthropic/claude-sonnet-4",
         "xai/grok-4": "openrouter/x-ai/grok-4",
         "gemini/gemini-2.5-pro": "openrouter/google/gemini-2.5-pro",
+        "gemini/gemini-2.5-flash": "openrouter/google/gemini-2.5-flash",
+        "gemini/gemini-2.0-flash": "openrouter/google/gemini-2.0-flash",
     }
     
     # Check for exact match first
@@ -202,6 +204,21 @@ def _configure_kimi_k2(params: Dict[str, Any], model_name: str) -> None:
         "order": ["groq", "moonshotai"] #, "groq", "together/fp8", "novita/fp8", "baseten/fp8", 
     }
 
+def _configure_gemini(params: Dict[str, Any], model_name: str) -> None:
+    """Configure Gemini-specific parameters."""
+    if not model_name.startswith("gemini/"):
+        return
+    
+    # Set the API key for Gemini models
+    if config.GEMINI_API_KEY:
+        params["api_key"] = config.GEMINI_API_KEY
+        logger.debug("Added Gemini API key to parameters")
+    
+    # Gemini models use different parameter names
+    if "max_tokens" in params:
+        params["max_output_tokens"] = params.pop("max_tokens")
+        logger.debug("Converted max_tokens to max_output_tokens for Gemini model")
+
 def _configure_thinking(params: Dict[str, Any], model_name: str, enable_thinking: Optional[bool], reasoning_effort: Optional[str]) -> None:
     """Configure reasoning/thinking parameters for supported models."""
     if not enable_thinking:
@@ -291,6 +308,8 @@ def prepare_params(
     _configure_openai_gpt5(params, model_name)
     # Add Kimi K2-specific parameters
     _configure_kimi_k2(params, model_name)
+    # Add Gemini-specific parameters
+    _configure_gemini(params, model_name)
     _configure_thinking(params, model_name, enable_thinking, reasoning_effort)
 
     return params

@@ -282,7 +282,7 @@
 }
 
 .dark {
-  --background: oklch(0.2686 0 0);
+  --background: oklch(0.1872 0.002 286.2);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.2 0.005 285.823);
   --card-foreground: oklch(0.985 0 0);
@@ -306,7 +306,7 @@
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.235 0 0);
+  --sidebar: oklch(0.1638 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.488 0.243 264.376);
   --sidebar-primary-foreground: oklch(0.985 0 0);
@@ -367,6 +367,53 @@
       Consolas, 'Liberation Mono', 'Courier New', monospace,
       'Noto Sans Mono CJK JP', 'Noto Sans Mono CJK KR', 'Noto Sans Mono CJK SC',
       'Noto Sans Mono CJK TC';
+  }
+
+  /* Custom text selection color using helium-blue */
+  ::selection {
+    background-color: var(--helium-blue);
+    color: white;
+  }
+
+  ::-moz-selection {
+    background-color: var(--helium-blue);
+    color: white;
+  }
+
+  /* Force override Fustat font for markdown content */
+  .prose,
+  .prose *,
+  .markdown-content,
+  .markdown-content * {
+    font-family: 
+      -apple-system, 
+      BlinkMacSystemFont, 
+      'Segoe UI', 
+      Roboto, 
+      'Helvetica Neue', 
+      Arial, 
+      'Noto Sans',
+      'Noto Sans CJK JP',
+      'Noto Sans CJK KR',
+      'Noto Sans CJK SC',
+      'Noto Sans CJK TC',
+      sans-serif !important;
+  }
+
+  /* Ensure headings in markdown use Libre Baskerville */
+  .prose h1,
+  .prose h2,
+  .prose h3,
+  .prose h4,
+  .prose h5,
+  .prose h6,
+  .markdown-content h1,
+  .markdown-content h2,
+  .markdown-content h3,
+  .markdown-content h4,
+  .markdown-content h5,
+  .markdown-content h6 {
+    font-family: "Libre Baskerville", serif !important;
   }
 }
 

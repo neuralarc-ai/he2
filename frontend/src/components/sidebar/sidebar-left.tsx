@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { Bot, Menu, Store, Plus, Zap, ChevronRight, Loader2 } from 'lucide-react';
+import { Bot, Menu, Store, Plus, Zap, Loader2 } from 'lucide-react';
 
 import { NavAgents } from '@/components/sidebar/nav-agents';
 import { NavUserWithTeams } from '@/components/sidebar/nav-user-with-teams';
@@ -14,22 +14,12 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarHeader,
-  SidebarMenu,
   SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
   SidebarRail,
   SidebarTrigger,
   useSidebar,
 } from '@/components/ui/sidebar';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
-import { NewAgentDialog } from '@/components/agents/new-agent-dialog';
+
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import {
@@ -88,10 +78,9 @@ export function SidebarLeft({
 
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { flags, loading: flagsLoading } = useFeatureFlags(['custom_agents', 'agent_marketplace']);
+  const { flags, loading: flagsLoading } = useFeatureFlags(['custom_agents']);
   const customAgentsEnabled = flags.custom_agents;
-  const marketplaceEnabled = flags.agent_marketplace;
-  const [showNewAgentDialog, setShowNewAgentDialog] = useState(false);
+
 
   // Close mobile menu on page navigation
   useEffect(() => {
@@ -144,13 +133,13 @@ export function SidebarLeft({
   return (
     <Sidebar
       collapsible="icon"
-      className="border-r-0 bg-background/95 backdrop-blur-sm [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']"
+      className="bg-background/95 backdrop-blur-sm [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']"
       {...props}
     >
       <SidebarHeader className="px-2 py-2">
         <div className="flex h-[40px] items-center px-1 relative">
           <Link href="/dashboard" className="flex-shrink-0" onClick={() => isMobile && setOpenMobile(false)}>
-            <HeliumLogo size={24} />
+            <HeliumLogo size={18} />
           </Link>
           {state !== 'collapsed' && (
             <div className="ml-2 transition-all duration-200 ease-in-out whitespace-nowrap">
@@ -173,7 +162,7 @@ export function SidebarLeft({
           <Link href="/dashboard">
             <SidebarMenuButton 
               className={cn('touch-manipulation', {
-                'bg-accent text-accent-foreground font-medium': pathname === '/dashboard',
+                'bg-accent px-4 text-accent-foreground font-medium': pathname === '/dashboard',
               })} 
               onClick={() => {
                 posthog.capture('new_task_clicked');
@@ -187,62 +176,21 @@ export function SidebarLeft({
             </SidebarMenuButton>
           </Link>
           {!flagsLoading && customAgentsEnabled && (
-            <SidebarMenu>
-              <Collapsible
-                defaultOpen={pathname?.includes('/agents')}
-                className="group/collapsible"
+            <Link href="/agents?tab=my-agents">
+              <SidebarMenuButton 
+                className={cn('touch-manipulation', {
+                  'bg-accent text-accent-foreground font-medium': pathname === '/agents' && (searchParams.get('tab') === 'my-agents' || searchParams.get('tab') === null),
+                })} 
+                onClick={() => {
+                  if (isMobile) setOpenMobile(false);
+                }}
               >
-                <SidebarMenuItem>
-                  <CollapsibleTrigger asChild>
-                    <SidebarMenuButton
-                      tooltip="Agents"
-                      onClick={() => {
-                        if (state === 'collapsed') {
-                          setOpen(true);
-                        }
-                      }}
-                    >
-                      <Bot className="h-4 w-4 mr-1" />
-                      <span>Agents</span>
-                      <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                    </SidebarMenuButton>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <SidebarMenuSub>
-                      <SidebarMenuSubItem>
-                        <SidebarMenuSubButton className={cn('pl-3 touch-manipulation', {
-                          'bg-accent text-accent-foreground font-medium': pathname === '/agents' && searchParams.get('tab') === 'marketplace',
-                        })} asChild>
-                          <Link href="/agents?tab=marketplace" onClick={() => isMobile && setOpenMobile(false)}>
-                            <span>Explore</span>
-                          </Link>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                      <SidebarMenuSubItem>
-                        <SidebarMenuSubButton className={cn('pl-3 touch-manipulation', {
-                          'bg-accent text-accent-foreground font-medium': pathname === '/agents' && (searchParams.get('tab') === 'my-agents' || searchParams.get('tab') === null),
-                        })} asChild>
-                          <Link href="/agents?tab=my-agents" onClick={() => isMobile && setOpenMobile(false)}>
-                            <span>My Agents</span>
-                          </Link>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                      <SidebarMenuSubItem>
-                        <SidebarMenuSubButton 
-                          onClick={() => {
-                            setShowNewAgentDialog(true);
-                            if (isMobile) setOpenMobile(false);
-                          }}
-                          className="cursor-pointer pl-3 touch-manipulation"
-                        >
-                          <span>New Agent</span>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                    </SidebarMenuSub>
-                  </CollapsibleContent>
-                </SidebarMenuItem>
-              </Collapsible>
-            </SidebarMenu>
+                <Bot className="h-4 w-4 mr-1" />
+                <span className="flex items-center justify-between w-full">
+                  My Agents
+                </span>
+              </SidebarMenuButton>
+            </Link>
           )}
 
         </SidebarGroup>
@@ -267,10 +215,7 @@ export function SidebarLeft({
         <NavUserWithTeams user={user} />
       </SidebarFooter>
       <SidebarRail />
-      <NewAgentDialog 
-        open={showNewAgentDialog} 
-        onOpenChange={setShowNewAgentDialog}
-      />
+
     </Sidebar>
   );
 }

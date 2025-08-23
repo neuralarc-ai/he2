@@ -74,6 +74,24 @@ MODELS = {
         "context_window": 2_000_000,  # 2M tokens
         "tier_availability": ["paid"]
     },
+    "gemini/gemini-2.5-flash": {
+        "aliases": ["google/gemini-2.5-flash"],
+        "pricing": {
+            "input_cost_per_million_tokens": 0.15,
+            "output_cost_per_million_tokens": 0.60
+        },
+        "context_window": 2_000_000,  # 2M tokens
+        "tier_availability": ["paid"]
+    },
+    "gemini/gemini-2.0-flash": {
+        "aliases": ["google/gemini-2.0-flash"],
+        "pricing": {
+            "input_cost_per_million_tokens": 0.15,
+            "output_cost_per_million_tokens": 0.60
+        },
+        "context_window": 1_000_000,  # 1M tokens
+        "tier_availability": ["paid"]
+    },
     # "openai/gpt-4o": {
     #     "aliases": ["gpt-4o"],
     #     "pricing": {

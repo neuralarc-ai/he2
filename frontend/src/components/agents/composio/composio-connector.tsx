@@ -585,7 +585,7 @@ export const ComposioConnector: React.FC<ComposioConnectorProps> = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={cn(
-        "overflow-hidden gap-0",
+        "overflow-hidden gap-0 rounded-4xl",
         currentStep === Step.ToolsSelection ? "max-w-2xl h-[85vh] p-0 flex flex-col" : 
         currentStep === Step.ProfileSelect ? "max-w-2xl p-0" : "max-w-lg p-0"
       )}>
