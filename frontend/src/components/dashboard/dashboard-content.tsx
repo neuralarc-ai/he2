@@ -239,7 +239,7 @@ export function DashboardContent() {
               </div>
             )} */}
             <div className="flex-1 flex items-center justify-center px-4 py-8">
-              <div className="w-full max-w-[650px] flex flex-col items-center justify-center space-y-1 md:space-y-2">
+              <div className="w-full max-w-[800px] flex flex-col items-center justify-center space-y-1 md:space-y-2">
                 <div className="flex flex-col items-center text-center w-full">
                   <p className="tracking-tight text-2xl md:text-3xl font-normal text-foreground/90 libre-baskerville-regular">
                     {currentWelcomeMessage}
@@ -250,7 +250,7 @@ export function DashboardContent() {
                     ref={chatInputRef}
                     onSubmit={handleSubmit}
                     loading={isSubmitting}
-                    placeholder="Describe what you need help with..."
+                    placeholder="Assign a task or ask anything..."
                     value={inputValue}
                     onChange={setInputValue}
                     hideAttachments={false}
