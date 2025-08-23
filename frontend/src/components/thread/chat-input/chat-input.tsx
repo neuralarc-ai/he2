@@ -345,14 +345,6 @@ export const ChatInput = forwardRef<ChatInputHandles, ChatInputProps>(
       setIsDraggingOver(false);
     };
 
-    const handleStopAgent = () => {
-      if (onStopAgent) {
-        onStopAgent();
-        // setWasManuallyStopped(true);
-      }
-    };
-
-
     return (
       <div className="mx-auto w-full max-w-5xl relative">
         <div className="relative">
