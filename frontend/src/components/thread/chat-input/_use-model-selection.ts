@@ -64,6 +64,18 @@ export const MODELS = {
     recommended: false,
     lowQuality: false
   },
+  'google/gemini-2.5-flash': { 
+    tier: 'premium', 
+    priority: 95,
+    recommended: false,
+    lowQuality: false
+  },
+  'google/gemini-2.0-flash': { 
+    tier: 'premium', 
+    priority: 94,
+    recommended: false,
+    lowQuality: false
+  },
   'grok-4': { 
     tier: 'premium', 
     priority: 94,
