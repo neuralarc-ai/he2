@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import Image from 'next/image';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -170,7 +171,22 @@ const LoggedInMenu: React.FC<UnifiedConfigMenuProps> = ({
                                 <span className="truncate text-sm">
                                     {displayAgent?.name || 'Suna'}
                                 </span>
-                                <ChevronDown size={12} className="opacity-60" />
+                                {/* <ChevronDown size={12} className="opacity-60" /> */}
+                                 <Image
+                                                                src="/icons/chevron-down-light.svg"
+                                                                alt="chevron down Light Logo"
+                                                                width={20}
+                                                                height={20}
+                                                                className="block dark:hidden mb-0"
+                                                              />
+                                                              {/* Dark logo */}
+                                                              <Image
+                                                                src="/icons/chevron-down-dark.svg"
+                                                                alt="chevron down Dark Logo"
+                                                                width={20}
+                                                                height={20}
+                                                                className="hidden dark:block mb-0"
+                                                              />
                             </div>
                         ) : (
                             <div className="flex items-center gap-1.5">

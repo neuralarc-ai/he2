@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import Image from 'next/image';
 import {
   ArrowUpRight,
   Link as LinkIcon,
@@ -362,7 +363,20 @@ export function NavAgents() {
                   onClick={deselectAllThreads}
                   className="h-7 w-7"
                 >
-                  <X className="h-4 w-4" />
+                <Image
+                src="/icons/cancel-light.svg"
+                alt="cancel Light Logo"
+                width={18}
+                height={18}
+                className="block dark:hidden mb-0"
+              />
+              <Image
+                src="/icons/cancel-dark.svg"
+                alt="cancel Dark Logo"
+                width={18}
+                height={18}
+                className="hidden dark:block mb-0"
+              />
                 </Button>
                 <Button
                   variant="ghost"
@@ -371,7 +385,20 @@ export function NavAgents() {
                   disabled={selectedThreads.size === combinedThreads.length}
                   className="h-7 w-7"
                 >
-                  <Check className="h-4 w-4" />
+                 <Image
+                 src="/icons/check-light.svg"
+                 alt="check Light Logo"
+                 width={19}
+                 height={19}
+                 className="block dark:hidden mb-0"
+               />
+               <Image
+                 src="/icons/check-dark.svg"
+                 alt="check Dark Logo"
+                 width={19}
+                 height={19}
+                 className="hidden dark:block mb-0"
+               />
                 </Button>
                 <Button
                   variant="ghost"
@@ -464,7 +491,21 @@ export function NavAgents() {
                                   document.body.style.pointerEvents = 'auto';
                                 }}
                               >
-                                <MoreHorizontal className="h-4 w-4" />
+                                {/* <MoreHorizontal className="h-4 w-4" /> */}
+                                <Image
+                                src="/icons/more-horizontal-light.svg"
+                                alt="menu Light Logo"
+                                width={20}
+                                height={20}
+                                className="block dark:hidden mb-0"
+                              />
+                              <Image
+                                src="/icons/more-horizontal-dark.svg"
+                                alt="menu Dark Logo"
+                                width={20}
+                                height={20}
+                                className="hidden dark:block mb-0"
+                              />
                                 <span className="sr-only">More actions</span>
                               </button>
                             </DropdownMenuTrigger>
@@ -477,7 +518,20 @@ export function NavAgents() {
                                 setSelectedItem({ threadId: thread?.threadId, projectId: thread?.projectId })
                                 setShowShareModal(true)
                               }}>
-                                <Share2 className="text-muted-foreground" />
+                                <Image
+                                src="/icons/share-light.svg"
+                                alt="share Light Logo"
+                                width={15}
+                                height={15}
+                                className="block dark:hidden mb-0"
+                              />
+                              <Image
+                                src="/icons/share-dark.svg"
+                                alt="share Dark Logo"
+                                width={15}
+                                height={15}
+                                className="hidden dark:block mb-0"
+                              />
                                 <span>Share Chat</span>
                               </DropdownMenuItem>
                               <DropdownMenuItem asChild>
@@ -486,7 +540,20 @@ export function NavAgents() {
                                   target="_blank"
                                   rel="noopener noreferrer"
                                 >
-                                  <ArrowUpRight className="text-muted-foreground" />
+                                 <Image
+                                 src="/icons/arrow-up-right-light.svg"
+                                 alt="arrow-up-right Light Logo"
+                                 width={20}
+                                 height={20}
+                                 className="block dark:hidden mb-0"
+                               />
+                               <Image
+                                 src="/icons/arrow-up-right-dark.svg"
+                                 alt="arrow-up-right Dark Logo"
+                                 width={20}
+                                 height={20}
+                                 className="hidden dark:block mb-0"
+                               />
                                   <span>Open in New Tab</span>
                                 </a>
                               </DropdownMenuItem>
@@ -499,7 +566,20 @@ export function NavAgents() {
                                   )
                                 }
                               >
-                                <Trash2 className="text-muted-foreground" />
+                               <Image
+                               src="/icons/trash-light.svg"
+                               alt="trash Light Logo"
+                               width={17}
+                               height={17}
+                               className="block dark:hidden mb-0"
+                             />
+                             <Image
+                               src="/icons/trash-dark.svg"
+                               alt="trash Dark Logo"
+                               width={17}
+                               height={17}
+                               className="hidden dark:block mb-0"
+                             />
                                 <span>Delete</span>
                               </DropdownMenuItem>
                             </DropdownMenuContent>

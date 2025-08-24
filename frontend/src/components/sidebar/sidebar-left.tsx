@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Bot, Menu, Store, Plus, Zap, Loader2 } from 'lucide-react';
 
 import { NavAgents } from '@/components/sidebar/nav-agents';
@@ -47,10 +48,26 @@ function FloatingMobileMenuButton() {
           <Button
             onClick={() => setOpenMobile(true)}
             size="icon"
-            className="h-12 w-12 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-all duration-200 hover:scale-105 active:scale-95 touch-manipulation"
+            className="h-12 w-12 rounded-full dark:!bg-primarytext-primary-foreground shadow-lg  transition-all duration-200 hover:scale-105 active:scale-95 touch-manipulation"
             aria-label="Open menu"
           >
             <Menu className="h-5 w-5" />
+            {/* <Image
+                                src="/icons/menu-light.svg"
+                                alt="menu Light Logo"
+                                width={20}
+                                height={20}
+                                className="block dark:hidden mb-0"
+                              />
+                           
+                              <Image
+                                src="/icons/menu-dark.svg"
+                                alt="menu Dark Logo"
+                                width={20}
+                                height={20}
+                                className="hidden dark:block mb-0"
+                              /> */}
+                             
           </Button>
         </TooltipTrigger>
         <TooltipContent side="bottom">
@@ -169,7 +186,22 @@ export function SidebarLeft({
                 if (isMobile) setOpenMobile(false);
               }}
             >
-              <Plus className="h-4 w-4 mr-1" />
+              {/* <Plus className="h-4 w-4 mr-1" /> */}
+               <Image
+                                src="/icons/plus-light.svg"
+                                alt="plus Light Logo"
+                                width={20}
+                                height={20}
+                                className="block dark:hidden mb-0"
+                              />
+                              {/* Dark logo */}
+                              <Image
+                                src="/icons/plus-dark.svg"
+                                alt="plus Dark Logo"
+                                width={20}
+                                height={20}
+                                className="hidden dark:block mb-0"
+                              />
               <span className="flex items-center justify-between w-full">
                 New Task
               </span>
