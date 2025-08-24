@@ -45,17 +45,17 @@ MODELS = {
     #     },
     #     "tier_availability": ["free", "paid"]
     # },
-    "openrouter/moonshotai/kimi-k2": {
-        "aliases": ["moonshotai/kimi-k2"],
-        "pricing": {
-            "input_cost_per_million_tokens": 1.00,
-            "output_cost_per_million_tokens": 3.00
-        },
-        "context_window": 200_000,  # 200k tokens
-        "tier_availability": ["free", "paid"]
-    },
+    # "openrouter/moonshotai/kimi-k2": {
+    #     "aliases": ["moonshotai/kimi-k2"],
+    #     "pricing": {
+    #         "input_cost_per_million_tokens": 1.00,
+    #         "output_cost_per_million_tokens": 3.00
+    #     },
+    #     "context_window": 200_000,  # 200k tokens
+    #     "tier_availability": ["free", "paid"]
+    # },
     "openrouter/anthropic/claude-sonnet-4": {
-        "aliases": ["openrouter/claude-sonnet-4"],
+        "aliases": ["openrouter/claude-sonnet-4", "claude-sonnet-4"],
         "pricing": {
             "input_cost_per_million_tokens": 3.00,
             "output_cost_per_million_tokens": 15.00
