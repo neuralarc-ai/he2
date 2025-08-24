@@ -511,17 +511,17 @@ export function FileAttachment({
     const getIconPath = () => {
         switch (fileType) {
             case 'pdf':
-                return '/pdf.png';
+                return '/icons/pdf.svg';
             case 'markdown':
-                return '/html.png';
+                return '/icons/html.svg';
             case 'csv':
-                return '/csv.png';
+                return '/icons/csv.svg';
             case 'document':
-                return '/doc.png';
+                return '/icons/doc.svg';
             case 'html':
-                return '/html.png';
+                return '/icons/html.svg';
             case 'spreadsheet':
-                return '/csv.png';
+                return '/icons/csv.svg';
             case 'image':
                 return '/icons/image-icon.svg';
             case 'code':
@@ -557,7 +557,7 @@ export function FileAttachment({
                     onError={(e) => {
                         // Fallback to default icon if custom icon fails to load
                         const target = e.target as HTMLImageElement;
-                        target.src = '/html.png';
+                        target.src = '/icons/html.svg';
                     }}
                 />
             </div>
