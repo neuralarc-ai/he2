@@ -2,15 +2,15 @@
 MODELS = {
     # Free tier models
 
-    "anthropic/claude-sonnet-4-20250514": {
-        "aliases": ["claude-sonnet-4"],
-        "pricing": {
-            "input_cost_per_million_tokens": 3.00,
-            "output_cost_per_million_tokens": 15.00
-        },
-        "context_window": 200_000,  # 200k tokens
-        "tier_availability": ["paid"]
-    },
+    # "anthropic/claude-sonnet-4-20250514": {
+    #     "aliases": ["claude-sonnet-4"],
+    #     "pricing": {
+    #         "input_cost_per_million_tokens": 3.00,
+    #         "output_cost_per_million_tokens": 15.00
+    #     },
+    #     "context_window": 200_000,  # 200k tokens
+    #     "tier_availability": ["paid"]
+    # },
     # "openrouter/deepseek/deepseek-chat": {
     #     "aliases": ["deepseek"],
     #     "pricing": {
@@ -55,7 +55,7 @@ MODELS = {
     #     "tier_availability": ["free", "paid"]
     # },
     "openrouter/anthropic/claude-sonnet-4": {
-        "aliases": ["openrouter/claude-sonnet-4", "claude-sonnet-4"],
+        "aliases": ["claude-sonnet-4", "openrouter/claude-sonnet-4"],
         "pricing": {
             "input_cost_per_million_tokens": 3.00,
             "output_cost_per_million_tokens": 15.00
