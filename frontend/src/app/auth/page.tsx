@@ -279,7 +279,7 @@ function LoginContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#EDEDED] relative dark:bg-[#2E2E2E]">
+    <div className="min-h-screen bg-[#EDEDED] relative dark:bg-background">
       <div className="flex min-h-screen items-center justify-center gap-15 px-2 xs:px-4 sm:px-6 lg:px-0">
         {/* Left Section - Image (No card background) */}
         <motion.div
@@ -360,18 +360,18 @@ function LoginContent() {
               ease: [0.4, 0, 0.2, 1],
               delay: 0.4,
             }}
-            className={`bg-white rounded-[24px] shadow-lg flex flex-col justify-center w-full lg:w-[500px] ${isSignUp ? 'min-h-[650px] lg:h-[650px]' : 'min-h-[600px] lg:h-[600px]'}`}
+            className={`bg-white rounded-[24px] shadow-lg flex flex-col justify-center w-full lg:w-[500px] ${isSignUp ? 'min-h-[550px] lg:h-[550px]' : 'min-h-[540px] lg:h-[540px]'}`}
             style={{
               paddingLeft: '16px',
               paddingRight: '16px',
             }}
           >
             <div className="w-full px-2 sm:px-4 lg:px-0">
-              <form className={`mb-4 ${isSignUp ? 'space-y-2' : 'space-y-3'}`}>
-                <div className="space-y-2">
+              <form className={`mb-3 ${isSignUp ? 'space-y-1.5' : 'space-y-2'}`}>
+                <div className="space-y-1.5">
                   <label
                     htmlFor="email"
-                    className="text-sm font-normal text-black mb-2 block"
+                    className="text-sm font-normal text-black mb-1.5 block"
                   >
                     Email
                   </label>
@@ -388,9 +388,9 @@ function LoginContent() {
                     required
                   />
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <div className="flex justify-between items-center">
-                    <label
+                                        <label
                       htmlFor="password"
                       className="text-sm font-normal text-black"
                     >
@@ -420,10 +420,10 @@ function LoginContent() {
                   />
                 </div>
                 {isSignUp && (
-                  <div className="space-y-2">
+                  <div className="space-y-1.5">
                     <label
                       htmlFor="confirmPassword"
-                      className="text-sm font-medium text-black mb-2 block"
+                      className="text-sm font-medium text-black mb-1.5 block"
                     >
                       Confirm Password
                     </label>
@@ -441,7 +441,7 @@ function LoginContent() {
                     />
                   </div>
                 )}
-                <div className="pt-2">
+                <div className="pt-1">
                   <div className="relative">
                     <SubmitButton
                       formAction={isSignUp ? handleSignUp : handleSignIn}
@@ -484,18 +484,18 @@ function LoginContent() {
                   </Link>
                 </div>
               )}
-              {/* Social login section - only show if not in production */}
-              {!isProduction && (
+              {/* Social login section */}
+              {
                 <>
-                  <div className="relative my-4">
+                  <div className="relative my-3">
                     <div className="relative flex justify-center text-sm">
                       <span className="px-2 text-black font-medium">OR</span>
                     </div>
                   </div>
 
-                  <div className="space-y-3">
+                  <div className="space-y-2.5">
                     <GoogleSignIn returnUrl={returnUrl || undefined} />
-                    <button className="w-full h-10 xs:h-11 sm:h-12 border border-gray-200 bg-white text-black rounded-lg flex items-center justify-center gap-2 text-xs xs:text-sm sm:text-base hover:bg-gray-50 transition-colors">
+                    <button className="w-full h-10 xs:h-11 sm:h-12 border border-gray-200 bg-white text-black rounded-full flex items-center justify-center gap-2 text-xs xs:text-sm sm:text-base hover:bg-gray-50 transition-colors">
                       <Image
                         src="/auth/apple-login.svg"
                         width="18"
@@ -505,7 +505,7 @@ function LoginContent() {
                       />
                       <span className="truncate">Continue with Apple</span>
                     </button>
-                    <button className="w-full h-10 xs:h-11 sm:h-12 border border-gray-200 bg-white text-black rounded-lg flex items-center justify-center gap-2 text-xs xs:text-sm sm:text-base hover:bg-gray-50 transition-colors">
+                    <button className="w-full h-10 xs:h-11 sm:h-12 border border-gray-200 bg-white text-black rounded-full flex items-center justify-center gap-2 text-xs xs:text-sm sm:text-base hover:bg-gray-50 transition-colors">
                       <Image
                         src="/auth/microsoft-login.svg"
                         width="18"
@@ -519,7 +519,7 @@ function LoginContent() {
                     </button>
                   </div>
                 </>
-              )}
+              }
             </div>
           </motion.div>
         </div>
