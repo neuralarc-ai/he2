@@ -63,44 +63,44 @@ MODELS = {
         "context_window": 200_000,  # 200k tokens
         "tier_availability": ["free", "paid"]
     },
-    "xai/grok-4": {
-        "aliases": ["grok-4", "x-ai/grok-4"],
-        "pricing": {
-            "input_cost_per_million_tokens": 5.00,
-            "output_cost_per_million_tokens": 15.00
-        },
-        "context_window": 128_000,  # 128k tokens
-        "tier_availability": ["paid"]
-    },
+    # "xai/grok-4": {
+    #     "aliases": ["grok-4", "x-ai/grok-4"],
+    #     "pricing": {
+    #         "input_cost_per_million_tokens": 5.00,
+    #         "output_cost_per_million_tokens": 15.00
+    #     },
+    #     "context_window": 128_000,  # 128k tokens
+    #     "tier_availability": ["paid"]
+    # },
     
     # Paid tier only models
-    "gemini/gemini-2.5-pro": {
-        "aliases": ["google/gemini-2.5-pro"],
-        "pricing": {
-            "input_cost_per_million_tokens": 1.25,
-            "output_cost_per_million_tokens": 10.00
-        },
-        "context_window": 2_000_000,  # 2M tokens
-        "tier_availability": ["paid"]
-    },
-    "gemini/gemini-2.5-flash": {
-        "aliases": ["google/gemini-2.5-flash"],
-        "pricing": {
-            "input_cost_per_million_tokens": 0.15,
-            "output_cost_per_million_tokens": 0.60
-        },
-        "context_window": 2_000_000,  # 2M tokens
-        "tier_availability": ["paid"]
-    },
-    "gemini/gemini-2.0-flash": {
-        "aliases": ["google/gemini-2.0-flash"],
-        "pricing": {
-            "input_cost_per_million_tokens": 0.15,
-            "output_cost_per_million_tokens": 0.60
-        },
-        "context_window": 1_000_000,  # 1M tokens
-        "tier_availability": ["paid"]
-    },
+    # "gemini/gemini-2.5-pro": {
+    #     "aliases": ["google/gemini-2.5-pro"],
+    #     "pricing": {
+    #         "input_cost_per_million_tokens": 1.25,
+    #         "output_cost_per_million_tokens": 10.00
+    #     },
+    #     "context_window": 2_000_000,  # 2M tokens
+    #     "tier_availability": ["paid"]
+    # },
+    # "gemini/gemini-2.5-flash": {
+    #     "aliases": ["google/gemini-2.5-flash"],
+    #     "pricing": {
+    #         "input_cost_per_million_tokens": 0.15,
+    #         "output_cost_per_million_tokens": 0.60
+    #     },
+    #     "context_window": 2_000_000,  # 2M tokens
+    #     "tier_availability": ["paid"]
+    # },
+    # "gemini/gemini-2.0-flash": {
+    #     "aliases": ["google/gemini-2.0-flash"],
+    #     "pricing": {
+    #         "input_cost_per_million_tokens": 0.15,
+    #         "output_cost_per_million_tokens": 0.60
+    #     },
+    #     "context_window": 1_000_000,  # 1M tokens
+    #     "tier_availability": ["paid"]
+    # },
     # "openai/gpt-4o": {
     #     "aliases": ["gpt-4o"],
     #     "pricing": {
@@ -117,24 +117,24 @@ MODELS = {
     #     },
     #     "tier_availability": ["paid"]
     # },
-    "openai/gpt-5": {
-        "aliases": ["gpt-5"],
-        "pricing": {
-            "input_cost_per_million_tokens": 1.25,
-            "output_cost_per_million_tokens": 10.00
-        },
-        "context_window": 400_000,  # 400k tokens
-        "tier_availability": ["paid"]
-    },
-    "openai/gpt-5-mini": {
-        "aliases": ["gpt-5-mini"],
-        "pricing": {
-            "input_cost_per_million_tokens": 0.25,
-            "output_cost_per_million_tokens": 2.00
-        },
-        "context_window": 400_000,  # 400k tokens
-        "tier_availability": ["free", "paid"]
-    },
+    # "openai/gpt-5": {
+    #     "aliases": ["gpt-5"],
+    #     "pricing": {
+    #         "input_cost_per_million_tokens": 1.25,
+    #         "output_cost_per_million_tokens": 10.00
+    #     },
+    #     "context_window": 400_000,  # 400k tokens
+    #     "tier_availability": ["paid"]
+    # },
+    # "openai/gpt-5-mini": {
+    #     "aliases": ["gpt-5-mini"],
+    #     "pricing": {
+    #         "input_cost_per_million_tokens": 0.25,
+    #         "output_cost_per_million_tokens": 2.00
+    #     },
+    #     "context_window": 400_000,  # 400k tokens
+    #     "tier_availability": ["free", "paid"]
+    # },
     # "openai/gpt-4.1-mini": {
     #     "aliases": ["gpt-4.1-mini"],
     #     "pricing": {
@@ -143,24 +143,24 @@ MODELS = {
     #     },
     #     "tier_availability": ["paid"]
     # },
-    "anthropic/claude-3-7-sonnet-latest": {
-        "aliases": ["sonnet-3.7"],
-        "pricing": {
-            "input_cost_per_million_tokens": 3.00,
-            "output_cost_per_million_tokens": 15.00
-        },
-        "context_window": 200_000,  # 200k tokens
-        "tier_availability": ["paid"]
-    },
-    "anthropic/claude-3-5-sonnet-latest": {
-        "aliases": ["sonnet-3.5"],
-        "pricing": {
-            "input_cost_per_million_tokens": 3.00,
-            "output_cost_per_million_tokens": 15.00
-        },
-        "context_window": 200_000,  # 200k tokens
-        "tier_availability": ["paid"]
-    },   
+    # "anthropic/claude-3-7-sonnet-latest": {
+    #     "aliases": ["sonnet-3.7"],
+    #     "pricing": {
+    #         "input_cost_per_million_tokens": 3.00,
+    #         "output_cost_per_million_tokens": 15.00
+    #     },
+    #     "context_window": 200_000,  # 200k tokens
+    #     "tier_availability": ["paid"]
+    # },
+    # "anthropic/claude-3-5-sonnet-latest": {
+    #     "aliases": ["sonnet-3.5"],
+    #     "pricing": {
+    #         "input_cost_per_million_tokens": 3.00,
+    #         "output_cost_per_million_tokens": 15.00
+    #     },
+    #     "context_window": 200_000,  # 200k tokens
+    #     "tier_availability": ["paid"]
+    # },   
 }
 
 # Derived structures (auto-generated from MODELS)
