@@ -532,7 +532,7 @@ export default function ThreadPage({
       const isFreeTier = subscriptionStatus === 'no_subscription';
       const isProduction = isProductionMode();
       const currentUsage = subscriptionData?.current_usage || 0;
-      const usageOver5Dollars = currentUsage > 5;
+      const usageOver5Dollars = currentUsage > 500;
       
       // DISABLED: Billing check functionality for production
       // Only show upgrade dialog if:
