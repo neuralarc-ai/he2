@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { Bot, Menu, Store, Plus, Zap, Loader2 } from 'lucide-react';
+import { Bot, Menu, Store, Plus, Zap, Loader2, BookOpen } from 'lucide-react';
 
 import { NavAgents } from '@/components/sidebar/nav-agents';
 import { NavUserWithTeams } from '@/components/sidebar/nav-user-with-teams';
@@ -192,6 +192,22 @@ export function SidebarLeft({
               </SidebarMenuButton>
             </Link>
           )}
+
+          <Link href="/knowledge-base">
+            <SidebarMenuButton 
+              className={cn('touch-manipulation', {
+                'bg-accent px-4 text-accent-foreground font-medium': pathname === '/knowledge-base',
+              })} 
+              onClick={() => {
+                if (isMobile) setOpenMobile(false);
+              }}
+            >
+              <BookOpen className="h-4 w-4 mr-1" />
+              <span className="flex items-center justify-between w-full">
+                Knowledge Base
+              </span>
+            </SidebarMenuButton>
+          </Link>
 
         </SidebarGroup>
         <NavAgents />

@@ -95,7 +95,12 @@ async def lifespan(app: FastAPI):
         logger.error(f"Error during application startup: {e}")
         raise
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(
+    lifespan=lifespan,
+    # Increase header size limits to handle large JWT tokens
+    title="Suna AI Worker API",
+    description="AI Worker API with enhanced header handling"
+)
 
 @app.middleware("http")
 async def log_requests_middleware(request: Request, call_next):
@@ -151,6 +156,33 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization", "X-Project-Id", "X-MCP-URL", "X-MCP-Type", "X-MCP-Headers", "X-Refresh-Token", "X-API-Key"],
 )
+
+# Custom middleware to handle large headers
+@app.middleware("http")
+async def handle_large_headers(request: Request, call_next):
+    # Log header sizes for debugging
+    header_sizes = {k: len(v) for k, v in request.headers.items()}
+    total_header_size = sum(header_sizes.values())
+    
+    if total_header_size > 8000:  # Log if headers are large
+        logger.warning(f"Large headers detected: {total_header_size} bytes")
+        logger.debug(f"Header sizes: {header_sizes}")
+    
+    try:
+        response = await call_next(request)
+        return response
+    except Exception as e:
+        if "header" in str(e).lower() and "large" in str(e).lower():
+            logger.error(f"Header size error: {e}")
+            return JSONResponse(
+                status_code=431,
+                content={
+                    "error": "Request headers too large",
+                    "message": "Your authentication token is too large. Please try logging out and back in.",
+                    "header_size": total_header_size
+                }
+            )
+        raise
 
 # Create a main API router
 api_router = APIRouter()

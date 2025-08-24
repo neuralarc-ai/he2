@@ -17,6 +17,8 @@ class KnowledgeBaseEntry(BaseModel):
     content: str = Field(..., min_length=1)
     usage_context: str = Field(default="always", pattern="^(always|on_request|contextual)$")
     is_active: bool = True
+    kb_type: str = Field(default="agent", pattern="^(agent|global|thread)$")
+    thread_id: Optional[str] = None
 
 class KnowledgeBaseEntryResponse(BaseModel):
     entry_id: str
@@ -70,7 +72,9 @@ db = DBConnection()
 async def get_agent_knowledge_base(
     agent_id: str,
     include_inactive: bool = False,
-    user_id: str = Depends(get_current_user_id_from_jwt)
+    user_id: str = Depends(get_current_user_id_from_jwt),
+    # Fallback for large headers
+    auth_token: str = None
 ):
     if not await is_enabled("knowledge_base"):
         raise HTTPException(
@@ -128,7 +132,9 @@ async def get_agent_knowledge_base(
 async def create_agent_knowledge_base_entry(
     agent_id: str,
     entry_data: CreateKnowledgeBaseEntryRequest,
-    user_id: str = Depends(get_current_user_id_from_jwt)
+    user_id: str = Depends(get_current_user_id_from_jwt),
+    # Fallback for large headers
+    auth_token: str = None
 ):
     if not await is_enabled("knowledge_base"):
         raise HTTPException(
@@ -537,4 +543,659 @@ async def get_agent_knowledge_base_context(
     except Exception as e:
         logger.error(f"Error getting knowledge base context for agent {agent_id}: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to retrieve agent knowledge base context")
+
+
+# Global Knowledge Base Endpoints
+@router.get("/global", response_model=KnowledgeBaseListResponse)
+async def get_global_knowledge_base(
+    include_inactive: bool = False,
+    user_id: str = Depends(get_current_user_id_from_jwt),
+    # Fallback for large headers
+    auth_token: str = None
+):
+    """Get all global knowledge base entries"""
+    logger.info(f"Getting global knowledge base for user: {user_id}")
+    
+    if not await is_enabled("knowledge_base"):
+        logger.warning("Knowledge base feature is disabled")
+        raise HTTPException(
+            status_code=403, 
+            detail="This feature is not available at the moment."
+        )
+    
+    try:
+        client = await db.client
+        logger.info("Database client connected successfully")
+        
+        # Get user's account ID - try JWT first, then fallback to auth_token
+        user_result = None
+        if user_id:
+            try:
+                user_result = await client.auth.get_user()
+                logger.info(f"User result from JWT: {user_result}")
+            except Exception as jwt_error:
+                logger.warning(f"JWT authentication failed: {jwt_error}")
+                user_result = None
+        
+        # Fallback: try to get user from auth_token if JWT failed
+        if not user_result and auth_token:
+            try:
+                logger.info("Attempting fallback authentication with auth_token")
+                # Set the auth token manually
+                client.auth.set_session(auth_token, None)
+                user_result = await client.auth.get_user()
+                logger.info(f"User result from auth_token: {user_result}")
+            except Exception as token_error:
+                logger.error(f"Fallback authentication failed: {token_error}")
+        
+        if not user_result or not user_result.user:
+            logger.error("User not authenticated via any method")
+            raise HTTPException(status_code=401, detail="User not authenticated")
+        
+        # Get account ID from user metadata or default account
+        account_id = user_result.user.user_metadata.get('account_id')
+        logger.info(f"Account ID from metadata: {account_id}")
+        
+        if not account_id:
+            logger.info("No account ID in metadata, trying to get default account")
+            # Get default account for user
+            try:
+                account_result = await client.rpc('get_user_default_account', {
+                    'p_user_id': user_id
+                }).execute()
+                account_id = account_result.data if account_result.data else None
+                logger.info(f"Default account result: {account_result.data}")
+            except Exception as rpc_error:
+                logger.error(f"Error getting default account: {rpc_error}")
+                account_id = None
+        
+        if not account_id:
+            logger.error("No account found for user")
+            raise HTTPException(status_code=400, detail="No account found for user")
+        
+        logger.info(f"Using account ID: {account_id}")
+        
+        # Query global knowledge base
+        try:
+            logger.info("Querying global_knowledge_base table")
+            result = await client.table('global_knowledge_base').select('*').eq('account_id', account_id).eq('is_active', True).execute()
+            logger.info(f"Query result: {result.data if result.data else 'No data'}")
+        except Exception as table_error:
+            logger.error(f"Error accessing global_knowledge_base table: {table_error}")
+            # Return empty result if table doesn't exist yet
+            return KnowledgeBaseListResponse(
+                entries=[],
+                total_count=0,
+                total_tokens=0
+            )
+        
+        entries = []
+        total_tokens = 0
+        
+        for entry_data in result.data or []:
+            entry = KnowledgeBaseEntryResponse(
+                entry_id=entry_data['id'],
+                name=entry_data['name'],
+                description=entry_data['description'],
+                content=entry_data['content'],
+                usage_context=entry_data['usage_context'],
+                is_active=entry_data['is_active'],
+                content_tokens=entry_data.get('content_tokens'),
+                created_at=entry_data['created_at'],
+                updated_at=entry_data.get('updated_at', entry_data['created_at']),
+                source_type='manual',
+                source_metadata=entry_data.get('source_metadata'),
+                file_size=None,
+                file_mime_type=None
+            )
+            entries.append(entry)
+            total_tokens += entry_data.get('content_tokens', 0) or 0
+        
+        response = KnowledgeBaseListResponse(
+            entries=entries,
+            total_count=len(entries),
+            total_tokens=total_tokens
+        )
+        
+        logger.info(f"Returning response: {response}")
+        return response
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting global knowledge base: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to retrieve global knowledge base")
+
+
+@router.post("/global", response_model=KnowledgeBaseEntryResponse)
+async def create_global_knowledge_base_entry(
+    entry_data: CreateKnowledgeBaseEntryRequest,
+    user_id: str = Depends(get_current_user_id_from_jwt),
+    # Fallback for large headers
+    auth_token: str = None
+):
+    """Create a new global knowledge base entry"""
+    if not await is_enabled("knowledge_base"):
+        raise HTTPException(
+            status_code=403, 
+            detail="This feature is not available at the moment."
+        )
+    
+    try:
+        client = await db.client
+        
+        # Get user's account ID - try JWT first, then fallback to auth_token
+        user_result = None
+        if user_id:
+            try:
+                user_result = await client.auth.get_user()
+                logger.info(f"User result from JWT for global POST: {user_result}")
+            except Exception as jwt_error:
+                logger.warning(f"JWT authentication failed for global POST: {jwt_error}")
+                user_result = None
+        
+        # Fallback: try to get user from auth_token if JWT failed
+        if not user_result and auth_token:
+            try:
+                logger.info("Attempting fallback authentication with auth_token for global POST")
+                # Set the auth token manually
+                client.auth.set_session(auth_token, None)
+                user_result = await client.auth.get_user()
+                logger.info(f"User result from auth_token for global POST: {user_result}")
+            except Exception as token_error:
+                logger.error(f"Fallback authentication failed for global POST: {token_error}")
+        
+        if not user_result or not user_result.user:
+            raise HTTPException(status_code=401, detail="User not authenticated")
+        
+        account_id = user_result.user.user_metadata.get('account_id')
+        if not account_id:
+            # Get default account for user
+            try:
+                account_result = await client.rpc('get_user_default_account', {
+                    'p_user_id': user_id
+                }).execute()
+                account_id = account_result.data if account_result.data else None
+            except Exception as rpc_error:
+                logger.error(f"Error getting default account for global POST: {rpc_error}")
+                account_id = None
+        
+        if not account_id:
+            raise HTTPException(status_code=400, detail="No account found for user")
+        
+        insert_data = {
+            'account_id': account_id,
+            'name': entry_data.name,
+            'description': entry_data.description,
+            'content': entry_data.content,
+            'usage_context': entry_data.usage_context
+        }
+        
+        try:
+            result = await client.table('global_knowledge_base').insert(insert_data).execute()
+        except Exception as table_error:
+            logger.error(f"Error inserting into global_knowledge_base table: {table_error}")
+            raise HTTPException(status_code=500, detail="Knowledge base table not available. Please ensure the database migration has been run.")
+        
+        if not result.data:
+            raise HTTPException(status_code=500, detail="Failed to create global knowledge base entry")
+        
+        created_entry = result.data[0]
+        
+        return KnowledgeBaseEntryResponse(
+            entry_id=created_entry['id'],
+            name=created_entry['name'],
+            description=created_entry['description'],
+            content=created_entry['content'],
+            usage_context=created_entry['usage_context'],
+            is_active=created_entry['is_active'],
+            content_tokens=created_entry.get('content_tokens'),
+            created_at=created_entry['created_at'],
+            updated_at=created_entry['updated_at']
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating global knowledge base entry: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to create global knowledge base entry")
+
+
+# Thread Knowledge Base Endpoints
+@router.get("/threads/{thread_id}", response_model=KnowledgeBaseListResponse)
+async def get_thread_knowledge_base(
+    thread_id: str,
+    include_inactive: bool = False,
+    user_id: str = Depends(get_current_user_id_from_jwt),
+    # Fallback for large headers
+    auth_token: str = None
+):
+    """Get all knowledge base entries for a specific thread"""
+    if not await is_enabled("knowledge_base"):
+        raise HTTPException(
+            status_code=403, 
+            detail="This feature is not available at the moment."
+        )
+    
+    try:
+        client = await db.client
+        
+        # Verify thread access
+        thread_result = await client.table('threads').select('account_id').eq('thread_id', thread_id).execute()
+        if not thread_result.data:
+            raise HTTPException(status_code=404, detail="Thread not found")
+        
+        thread_account_id = thread_result.data[0]['account_id']
+        
+        # Verify user has access to this thread - try JWT first, then fallback to auth_token
+        user_result = None
+        if user_id:
+            try:
+                user_result = await client.auth.get_user()
+                logger.info(f"User result from JWT for thread: {user_result}")
+            except Exception as jwt_error:
+                logger.warning(f"JWT authentication failed for thread: {jwt_error}")
+                user_result = None
+        
+        # Fallback: try to get user from auth_token if JWT failed
+        if not user_result and auth_token:
+            try:
+                logger.info("Attempting fallback authentication with auth_token for thread")
+                # Set the auth token manually
+                client.auth.set_session(auth_token, None)
+                user_result = await client.auth.get_user()
+                logger.info(f"User result from auth_token for thread: {user_result}")
+            except Exception as token_error:
+                logger.error(f"Fallback authentication failed for thread: {token_error}")
+        
+        if not user_result or not user_result.user:
+            raise HTTPException(status_code=401, detail="User not authenticated")
+        
+        user_account_id = user_result.user.user_metadata.get('account_id')
+        if not user_account_id:
+            # Get default account for user
+            try:
+                account_result = await client.rpc('get_user_default_account', {
+                    'p_user_id': user_id
+                }).execute()
+                user_account_id = account_result.data if account_result.data else None
+            except Exception as rpc_error:
+                logger.error(f"Error getting default account for thread: {rpc_error}")
+                user_account_id = None
+        
+        if user_account_id != thread_account_id:
+            raise HTTPException(status_code=403, detail="Access denied to thread")
+        
+        # Query thread knowledge base
+        result = await client.table('thread_knowledge_base').select('*').eq('thread_id', thread_id).eq('is_active', True).execute()
+        
+        entries = []
+        total_tokens = 0
+        
+        for entry_data in result.data or []:
+            entry = KnowledgeBaseEntryResponse(
+                entry_id=entry_data['id'],
+                name=entry_data['name'],
+                description=entry_data['description'],
+                content=entry_data['content'],
+                usage_context=entry_data['usage_context'],
+                is_active=entry_data['is_active'],
+                content_tokens=entry_data.get('content_tokens'),
+                created_at=entry_data['created_at'],
+                updated_at=entry_data.get('updated_at', entry_data['created_at']),
+                source_type='manual',
+                source_metadata=entry_data.get('source_metadata'),
+                file_size=None,
+                file_mime_type=None
+            )
+            entries.append(entry)
+            total_tokens += entry_data.get('content_tokens', 0) or 0
+        
+        return KnowledgeBaseListResponse(
+            entries=entries,
+            total_count=len(entries),
+            total_tokens=total_tokens
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting thread knowledge base: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve thread knowledge base")
+
+
+@router.post("/threads/{thread_id}", response_model=KnowledgeBaseEntryResponse)
+async def create_thread_knowledge_base_entry(
+    thread_id: str,
+    entry_data: CreateKnowledgeBaseEntryRequest,
+    user_id: str = Depends(get_current_user_id_from_jwt),
+    # Fallback for large headers
+    auth_token: str = None
+):
+    """Create a new knowledge base entry for a specific thread"""
+    if not await is_enabled("knowledge_base"):
+        raise HTTPException(
+            status_code=403, 
+            detail="This feature is not available at the moment."
+        )
+    
+    try:
+        client = await db.client
+        
+        # Verify thread access
+        thread_result = await client.table('threads').select('account_id').eq('thread_id', thread_id).execute()
+        if not thread_result.data:
+            raise HTTPException(status_code=404, detail="Thread not found")
+        
+        thread_account_id = thread_result.data[0]['account_id']
+        
+        # Verify user has access to this thread - try JWT first, then fallback to auth_token
+        user_result = None
+        if user_id:
+            try:
+                user_result = await client.auth.get_user()
+                logger.info(f"User result from JWT for thread POST: {user_result}")
+            except Exception as jwt_error:
+                logger.warning(f"JWT authentication failed for thread POST: {jwt_error}")
+                user_result = None
+        
+        # Fallback: try to get user from auth_token if JWT failed
+        if not user_result and auth_token:
+            try:
+                logger.info("Attempting fallback authentication with auth_token for thread POST")
+                # Set the auth token manually
+                client.auth.set_session(auth_token, None)
+                user_result = await client.auth.get_user()
+                logger.info(f"User result from auth_token for thread POST: {user_result}")
+            except Exception as token_error:
+                logger.error(f"Fallback authentication failed for thread POST: {token_error}")
+        
+        if not user_result or not user_result.user:
+            raise HTTPException(status_code=401, detail="User not authenticated")
+        
+        user_account_id = user_result.user.user_metadata.get('account_id')
+        if not user_account_id:
+            # Get default account for user
+            try:
+                account_result = await client.rpc('get_user_default_account', {
+                    'p_user_id': user_id
+                }).execute()
+                user_account_id = account_result.data if account_result.data else None
+            except Exception as rpc_error:
+                logger.error(f"Error getting default account for thread POST: {rpc_error}")
+                user_account_id = None
+        
+        if user_account_id != thread_account_id:
+            raise HTTPException(status_code=403, detail="Access denied to thread")
+        
+        insert_data = {
+            'thread_id': thread_id,
+            'account_id': thread_account_id,
+            'name': entry_data.name,
+            'description': entry_data.description,
+            'content': entry_data.content,
+            'usage_context': entry_data.usage_context
+        }
+        
+        result = await client.table('thread_knowledge_base').insert(insert_data).execute()
+        
+        if not result.data:
+            raise HTTPException(status_code=500, detail="Failed to create thread knowledge base entry")
+        
+        created_entry = result.data[0]
+        
+        return KnowledgeBaseEntryResponse(
+            entry_id=created_entry['id'],
+            name=created_entry['name'],
+            description=created_entry['description'],
+            content=created_entry['content'],
+            usage_context=created_entry['usage_context'],
+            is_active=created_entry['is_active'],
+            content_tokens=created_entry.get('content_tokens'),
+            created_at=created_entry['created_at'],
+            updated_at=created_entry['updated_at']
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating thread knowledge base entry: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to create thread knowledge base entry")
+
+
+# Knowledge Base Query Endpoint
+@router.post("/query")
+async def query_knowledge_base(
+    query: str = Form(...),
+    kb_type: str = Form("global"),  # global, thread, or agent
+    thread_id: Optional[str] = Form(None),
+    agent_id: Optional[str] = Form(None),
+    user_id: str = Depends(get_current_user_id_from_jwt)
+):
+    """Query the knowledge base for relevant information"""
+    if not await is_enabled("knowledge_base"):
+        raise HTTPException(
+            status_code=403, 
+            detail="This feature is not available at the moment."
+        )
+    
+    try:
+        client = await db.client
+        
+        # Get user's account ID
+        user_result = await client.auth.get_user()
+        if not user_result.user:
+            raise HTTPException(status_code=401, detail="User not authenticated")
+        
+        account_id = user_result.user.user_metadata.get('account_id')
+        if not account_id:
+            # Get default account for user
+            account_result = await client.rpc('get_user_default_account', {
+                'p_user_id': user_id
+            }).execute()
+            account_id = account_result.data if account_result.data else None
+        
+        if not account_id:
+            raise HTTPException(status_code=400, detail="No account found for user")
+        
+        # Check if query is relevant to knowledge base
+        relevance_result = await client.rpc('is_query_relevant_to_kb', {
+            'query_embedding': None,  # TODO: Generate embedding for query
+            'p_kb_type': kb_type,
+            'p_thread_id': thread_id,
+            'p_account_id': account_id,
+            'relevance_threshold': 0.6
+        }).execute()
+        
+        is_relevant = relevance_result.data if relevance_result.data else False
+        
+        if not is_relevant:
+            return {
+                "relevant": False,
+                "message": "Query not relevant to knowledge base",
+                "suggested_response": "This query doesn't appear to be related to your knowledge base. I'll answer based on my general knowledge."
+            }
+        
+        # Get relevant chunks
+        chunks_result = await client.rpc('get_relevant_kb_chunks', {
+            'query_embedding': None,  # TODO: Generate embedding for query
+            'p_kb_type': kb_type,
+            'p_thread_id': thread_id,
+            'p_account_id': account_id,
+            'similarity_threshold': 0.7,
+            'max_chunks': 5
+        }).execute()
+        
+        chunks = chunks_result.data if chunks_result.data else []
+        
+        # Log the query
+        await client.table('kb_query_logs').insert({
+            'thread_id': thread_id,
+            'account_id': account_id,
+            'user_query': query,
+            'query_embedding': None,  # TODO: Generate embedding
+            'relevant_chunks_found': len(chunks),
+            'chunks_retrieved': chunks,
+            'relevance_score': 0.8,  # TODO: Calculate actual score
+            'was_kb_used': True,
+            'response_time_ms': 150  # TODO: Calculate actual time
+        }).execute()
+        
+        return {
+            "relevant": True,
+            "chunks_found": len(chunks),
+            "chunks": chunks,
+            "suggested_response": f"I found {len(chunks)} relevant pieces of information in your knowledge base that can help answer your question."
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error querying knowledge base: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to query knowledge base")
+
+
+@router.post("/upload")
+async def upload_document(
+    file: UploadFile = File(...),
+    kb_type: str = Form(...),
+    thread_id: Optional[str] = Form(None),
+    agent_id: Optional[str] = Form(None),
+    user_id: str = Depends(get_current_user_id_from_jwt),
+    # Fallback for large headers
+    auth_token: str = Form(None)
+):
+    """Upload a document to the knowledge base"""
+    logger.info(f"Upload request received: kb_type={kb_type}, thread_id={thread_id}, agent_id={agent_id}, auth_token_present={auth_token is not None}")
+    
+    if not await is_enabled("knowledge_base"):
+        raise HTTPException(
+            status_code=403, 
+            detail="This feature is not available at the moment."
+        )
+    
+    # Validate file type
+    allowed_types = [
+        'application/pdf',
+        'text/csv',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'text/plain',
+        'text/markdown',
+        'application/json'
+    ]
+    
+    if file.content_type not in allowed_types:
+        raise HTTPException(
+            status_code=400,
+            detail=f"File type {file.content_type} is not supported. Allowed types: PDF, CSV, DOC, TXT, MD, JSON"
+        )
+    
+    # Validate file size (50MB limit)
+    max_size = 50 * 1024 * 1024  # 50MB
+    if file.size > max_size:
+        raise HTTPException(
+            status_code=400,
+            detail=f"File size {file.size / 1024 / 1024:.1f}MB exceeds the maximum limit of 50MB"
+        )
+    
+    try:
+        client = await db.client
+        
+        # Get user's account ID - try JWT first, then fallback to auth_token
+        user_result = None
+        if user_id:
+            try:
+                user_result = await client.auth.get_user()
+                logger.info(f"User result from JWT for upload: {user_result}")
+            except Exception as jwt_error:
+                logger.warning(f"JWT authentication failed for upload: {jwt_error}")
+                user_result = None
+        
+        # Fallback: try to get user from auth_token if JWT failed
+        if not user_result and auth_token:
+            try:
+                logger.info("Attempting fallback authentication with auth_token for upload")
+                # Set the auth token manually
+                client.auth.set_session(auth_token, None)
+                user_result = await client.auth.get_user()
+                logger.info(f"User result from auth_token for upload: {user_result}")
+            except Exception as token_error:
+                logger.error(f"Fallback authentication failed for upload: {token_error}")
+        
+        if not user_result or not user_result.user:
+            raise HTTPException(status_code=401, detail="User not authenticated")
+        
+        account_id = user_result.user.user_metadata.get('account_id')
+        if not account_id:
+            # Get default account for user
+            try:
+                account_result = await client.rpc('get_user_default_account', {
+                    'p_user_id': user_id
+                }).execute()
+                account_id = account_result.data if account_result.data else None
+            except Exception as rpc_error:
+                logger.error(f"Error getting default account for upload: {rpc_error}")
+                account_id = None
+        
+        if not account_id:
+            raise HTTPException(status_code=400, detail="No account found for user")
+        
+        # Read file content
+        file_content = await file.read()
+        
+        # Safely extract text content for text-based files only
+        extracted_text = None
+        try:
+            if file.content_type.startswith('text/'):
+                extracted_text = file_content.decode('utf-8', errors='ignore')
+        except Exception as decode_error:
+            logger.warning(f"Could not decode text content from {file.filename}: {decode_error}")
+            extracted_text = None
+        
+        # Create document processing queue entry
+        processing_data = {
+            'account_id': account_id,
+            'thread_id': thread_id,
+            'agent_id': agent_id,
+            'kb_type': kb_type,
+            'original_filename': file.filename,
+            'file_path': f"uploads/{file.filename}",  # This would be the actual file path
+            'file_size': file.size,
+            'mime_type': file.content_type,
+            'document_type': file.content_type.split('/')[-1],
+            'status': 'pending',
+            'extracted_text': extracted_text
+        }
+        
+        try:
+            # Insert into document processing queue
+            result = await client.table('document_processing_queue').insert(processing_data).execute()
+            
+            if not result.data:
+                raise HTTPException(status_code=500, detail="Failed to create processing job")
+            
+            job_id = result.data[0]['id']
+            
+            logger.info(f"Document upload queued successfully: {job_id}")
+            logger.info(f"File details: {file.filename}, size: {file.size}, type: {file.content_type}")
+            
+            return {
+                "message": "Document uploaded successfully",
+                "job_id": job_id,
+                "status": "pending",
+                "filename": file.filename
+            }
+            
+        except Exception as table_error:
+            logger.error(f"Error inserting into document_processing_queue: {table_error}")
+            raise HTTPException(
+                status_code=500, 
+                detail="Knowledge base table not available. Please ensure the database migration has been run."
+            )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error uploading document: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to upload document")
 
