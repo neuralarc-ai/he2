@@ -357,7 +357,7 @@ export const ChatInput = forwardRef<ChatInputHandles, ChatInputProps>(
             </button>
           )}
           <Card
-            className={`-mb-2 shadow-none w-full max-w-5xl mx-auto bg-transparent border-none overflow-visible ${enableAdvancedConfig && selectedAgentId ? '' : 'rounded-3xl'} relative z-10`}
+            className={`-mb-2 shadow-none w-full max-w-5xl mx-auto bg-transparent border-none overflow-visible rounded-3xl relative z-10`}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={(e) => {
@@ -379,7 +379,7 @@ export const ChatInput = forwardRef<ChatInputHandles, ChatInputProps>(
             }}
           >
             <div className="w-full text-sm flex flex-col justify-between items-start rounded-lg">
-              <CardContent className={`w-full p-2 pt-0 pb-3 bg-white dark:bg-sidebar-accent rounded-3xl relative overflow-hidden`}>
+              <CardContent className={`w-full p-2 pt-0 pb-2 bg-white dark:bg-sidebar-accent rounded-3xl relative overflow-hidden`}>
                 {/* Border Beam Effect */}
                 <div className="absolute inset-0 rounded-[inherit] overflow-hidden">
                   <BorderBeam 

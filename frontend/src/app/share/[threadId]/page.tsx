@@ -90,7 +90,7 @@ export default function ThreadPage({
     useState<StreamingToolCall | null>(null);
 
   const [externalNavIndex, setExternalNavIndex] = React.useState<number | undefined>(undefined);
-
+  const [leftSidebarState, setLeftSidebarState] = React.useState<'open' | 'closed'>('open');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const latestMessageRef = useRef<HTMLDivElement>(null);
@@ -728,6 +728,8 @@ export default function ThreadPage({
           currentToolCall={playbackState.currentToolCall}
           sandboxId={sandboxId || ''}
           project={project}
+          isSidePanelOpen={isSidePanelOpen}
+          leftSidebarState={leftSidebarState}
         />
         {renderWelcomeOverlay()}
         {renderFloatingControls()}
