@@ -9,7 +9,7 @@ MODELS = {
             "output_cost_per_million_tokens": 15.00
         },
         "context_window": 200_000,  # 200k tokens
-        "tier_availability": ["paid"]
+        "tier_availability": ["free", "paid"]
     },
     # "openrouter/deepseek/deepseek-chat": {
     #     "aliases": ["deepseek"],

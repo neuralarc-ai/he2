@@ -84,7 +84,7 @@ ANTHROPIC_API_KEY=your-anthropic-key
 OPENAI_API_KEY=your-openai-key
 OPENROUTER_API_KEY=your-openrouter-key
 GEMINI_API_KEY=your-gemini-api-key
-MODEL_TO_USE=openrouter/moonshotai/kimi-k2
+MODEL_TO_USE=anthropic/claude-sonnet-4-20250514
 
 # Search and Web Scraping
 TAVILY_API_KEY=your-tavily-key
