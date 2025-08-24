@@ -27,8 +27,18 @@ import { ConfigureProfileForAgentToolView } from '../configure-profile-for-agent
 import { GetCredentialProfilesToolView } from '../get-credential-profiles/get-credential-profiles';
 import { GetCurrentAgentConfigToolView } from '../get-current-agent-config/get-current-agent-config';
 import { TaskListToolView } from '../task-list/TaskListToolView';
+import { PresentationOutlineToolView } from '../presentation-tools/PresentationOutlineToolView';
+import { ListPresentationTemplatesToolView } from '../presentation-tools/ListPresentationTemplatesToolView';
+import { PresentationViewer } from '../presentation-tools/PresentationViewer';
+import { ListPresentationsToolView } from '../presentation-tools/ListPresentationsToolView';
+import { DeleteSlideToolView } from '../presentation-tools/DeleteSlideToolView';
+import { DeletePresentationToolView } from '../presentation-tools/DeletePresentationToolView';
+import { PresentationStylesToolView } from '../presentation-tools/PresentationStylesToolView';
 import { SheetsToolView } from '../sheets-tools/sheets-tool-view';
 import { GetProjectStructureView } from '../web-dev/GetProjectStructureView';
+import { ImageEditGenerateToolView } from '../image-edit-generate-tool/ImageEditGenerateToolView';
+import { UploadFileToolView } from '../UploadFileToolView';
+
 
 export type ToolViewComponent = React.ComponentType<ToolViewProps>;
 
@@ -78,12 +88,24 @@ const defaultRegistry: ToolViewRegistryType = {
   'expose-port': ExposePortToolView,
 
   'see-image': SeeImageToolView,
+  'image-edit-or-generate': ImageEditGenerateToolView,
 
   'ask': AskToolView,
   'complete': CompleteToolView,
 
   'deploy': DeployToolView,
 
+  'create-presentation-outline': PresentationOutlineToolView,
+  'list-presentation-templates': ListPresentationTemplatesToolView,
+  
+  // New per-slide presentation tools
+  'create-slide': PresentationViewer,
+  'list-slides': PresentationViewer,
+  'list-presentations': ListPresentationsToolView,
+  'delete-slide': DeleteSlideToolView,
+  'delete-presentation': DeletePresentationToolView,
+  'presentation-styles': PresentationStylesToolView,
+  
   'create-sheet': SheetsToolView,
   'update-sheet': SheetsToolView,
   'view-sheet': SheetsToolView,
@@ -93,6 +115,8 @@ const defaultRegistry: ToolViewRegistryType = {
 
   'get-project-structure': GetProjectStructureView,
   'list-web-projects': GenericToolView,
+
+  'upload-file': UploadFileToolView,
 
   'default': GenericToolView,
 };
