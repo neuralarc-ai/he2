@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   BadgeCheck,
   Bell,
@@ -20,7 +21,7 @@ import {
   Moon,
   KeyRound,
   Plug,
-  EllipsisIcon
+  EllipsisIcon,
 } from 'lucide-react';
 import { useAccounts } from '@/hooks/use-accounts';
 import NewTeamForm from '@/components/basejump/new-team-form';
@@ -69,7 +70,8 @@ export function NavUserWithTeams({
   const { data: accounts } = useAccounts();
   const [showNewTeamDialog, setShowNewTeamDialog] = React.useState(false);
   const { theme, setTheme } = useTheme();
-  const { enabled: customAgentsEnabled, loading: flagLoading } = useFeatureFlag("custom_agents");
+  const { enabled: customAgentsEnabled, loading: flagLoading } =
+    useFeatureFlag('custom_agents');
 
   // Prepare personal account and team accounts
   const personalAccount = React.useMemo(
@@ -182,9 +184,26 @@ export function NavUserWithTeams({
                   </AvatarFallback>
                 </Avatar> */}
                 <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:text-center group-data-[collapsible=icon]:ml-0 ml-2">
-                  <span className="truncate font-medium group-data-[collapsible=icon]:hidden">Settings</span>
+                  <span className="truncate font-medium group-data-[collapsible=icon]:hidden">
+                    Settings
+                  </span>
                 </div>
-                <EllipsisIcon className="ml-auto size-4 group-data-[collapsible=icon]:mr-2" />
+                <>
+                  <Image
+                    src="/icons/more-horizontal-light.svg"
+                    alt="menu"
+                    width={16}
+                    height={16}
+                    className="ml-auto size-4 group-data-[collapsible=icon]:mr-2 block dark:hidden"
+                  />
+                  <Image
+                    src="/icons/more-horizontal-dark.svg"
+                    alt="menu"
+                    width={16}
+                    height={16}
+                    className="ml-auto size-4 group-data-[collapsible=icon]:mr-2 hidden dark:block"
+                  />
+                </>
               </SidebarMenuButton>
             </DropdownMenuTrigger>
             <DropdownMenuContent
@@ -270,33 +289,34 @@ export function NavUserWithTeams({
 
               <DropdownMenuSeparator />
               <DialogTrigger asChild>
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   className="gap-2 p-2"
                   onClick={() => {
-                    setShowNewTeamDialog(true)
+                    setShowNewTeamDialog(true);
                   }}
                 >
                   <div className="bg-background flex size-6 items-center justify-center rounded-md border">
                     <Plus className="size-4" />
                   </div>
-                  <div className="text-muted-foreground font-medium">Add team</div>
+                  <div className="text-muted-foreground font-medium">
+                    Add team
+                  </div>
                 </DropdownMenuItem>
               </DialogTrigger>
               <DropdownMenuSeparator />
-              
 
               {/* User Settings Section */}
               <DropdownMenuGroup>
                 <DropdownMenuItem asChild>
                   <Link href="/settings/billing">
-                  <CreditCard className="h-4 w-4" />
+                    <CreditCard className="h-4 w-4" />
                     Billing
                   </Link>
                 </DropdownMenuItem>
                 {!flagLoading && customAgentsEnabled && (
                   <DropdownMenuItem asChild>
                     <Link href="/settings/credentials">
-                    <Plug className="h-4 w-4" />
+                      <Plug className="h-4 w-4" />
                       Integrations
                     </Link>
                   </DropdownMenuItem>
@@ -330,7 +350,10 @@ export function NavUserWithTeams({
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className='text-destructive focus:text-destructive focus:bg-destructive/10' onClick={handleLogout}>
+              <DropdownMenuItem
+                className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                onClick={handleLogout}
+              >
                 <LogOut className="h-4 w-4 text-destructive" />
                 Log out
               </DropdownMenuItem>
