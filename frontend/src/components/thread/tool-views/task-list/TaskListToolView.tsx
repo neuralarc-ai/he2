@@ -23,7 +23,7 @@ const TaskItem: React.FC<{ task: Task; index: number }> = ({ task, index }) => {
   const isPending = !isCompleted && !isCancelled;
 
   return (
-    <div className="flex items-center gap-3 py-2 hover:bg-zinc-50/50 dark:hover:bg-zinc-800/50 transition-colors mx-4 first:pt-1 last:pb-4">
+    <div className="flex items-center gap-3 py-2 transition-colors mx-4 first:pt-1 last:pb-4">
       {/* Status Icon */}
       <div className="flex-shrink-0">
         {isCompleted && (
@@ -61,7 +61,7 @@ const SectionHeader: React.FC<{ section: Section }> = ({ section }) => {
   ).length;
 
   return (
-    <div className="flex items-center justify-between py-3 mt-1 px-4 bg-zinc-50/80">
+    <div className="flex items-center justify-between py-3 mt-1 px-4 bg-zinc-50/80 dark:bg-zinc-900/50">
       <h3 className="text-base font-semibold text-zinc-800 dark:text-zinc-300">
         {section.title}
       </h3>

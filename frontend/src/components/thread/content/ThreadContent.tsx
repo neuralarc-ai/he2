@@ -656,9 +656,6 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
             <div className="h-5 w-5 flex items-center justify-center rounded text-xs">
               <HeliumLogo
                 size={16}
-                animated={
-                  agentStatus === 'running' || agentStatus === 'connecting'
-                }
               />
             </div>
           ) : (
@@ -673,7 +670,6 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
         <div className="h-5 w-5 flex items-center justify-center">
           <HeliumLogo
             size={20}
-            animated={agentStatus === 'running' || agentStatus === 'connecting'}
           />
         </div>
       );
@@ -687,7 +683,6 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
       avatar: (
         <HeliumLogo
           size={20}
-          animated={agentStatus === 'running' || agentStatus === 'connecting'}
         />
       ),
     };
