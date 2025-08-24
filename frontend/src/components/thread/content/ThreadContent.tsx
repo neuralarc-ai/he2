@@ -300,27 +300,21 @@ export function renderMarkdownContent(
           }
 
           contentParts.push(
-            <div key={`tool-${match.index}-${index}`} className="my-1">
+            <div
+              key={`tool-${match.index}-${index}`}
+              className="my-1"
+            >
               <button
                 onClick={() => handleToolClick(messageId, toolName)}
-                className="inline-flex items-center gap-1.5 py-1.5 px-2.5 text-xs text-muted-foreground bg-muted/50 hover:bg-muted/80 rounded-full transition-colors cursor-pointer border border-neutral-200"
+                className="inline-flex items-center gap-1.5 py-1 px-4  text-xs text-muted-foreground bg-muted hover:bg-muted/80 rounded-full transition-colors cursor-pointer border border-neutral-200 dark:border-neutral-700/50"
               >
-                <div className="border-[1.5px] bg-muted flex items-center justify-center p-0.5 rounded-sm">
-                  <IconComponent className="h-3 w-3 text-black/70 flex-shrink-0 stroke-[2.5px]" />
+                <div className='border-2 bg-gradient-to-br from-neutral-200 to-neutral-300 dark:from-neutral-700 dark:to-neutral-800 flex items-center justify-center p-0.5 rounded-sm border-neutral-400/20 dark:border-neutral-600'>
+                  <IconComponent className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
                 </div>
-                <span className="text-xs text-foreground/80">
-                  {getUserFriendlyToolName(toolName)}
-                </span>
-                {paramDisplay && (
-                  <span
-                    className="ml-1 font-mono text-muted-foreground truncate max-w-[200px]"
-                    title={paramDisplay}
-                  >
-                    {paramDisplay}
-                  </span>
-                )}
+                <span className="font-mono text-xs text-foreground">{getUserFriendlyToolName(toolName)}</span>
+                {paramDisplay && <span className="ml-1 text-muted-foreground truncate max-w-[200px]" title={paramDisplay}>{paramDisplay}</span>}
               </button>
-            </div>,
+            </div>
           );
         }
       });
@@ -475,27 +469,21 @@ export function renderMarkdownContent(
 
       // Render tool button as a clickable element
       contentParts.push(
-        <div key={toolCallKey} className="">
+        <div
+          key={toolCallKey}
+          className="my-1"
+        >
           <button
             onClick={() => handleToolClick(messageId, toolName)}
             className="inline-flex items-center gap-1.5 py-1 px-1 pr-1.5 text-xs text-muted-foreground bg-muted hover:bg-muted/80 rounded-lg transition-colors cursor-pointer border border-neutral-200 dark:border-neutral-700/50"
           >
-            <div className="border-2 bg-gradient-to-br from-neutral-200 to-neutral-300 dark:from-neutral-700 dark:to-neutral-800 flex items-center justify-center p-0.5 rounded-sm border-neutral-400/20 dark:border-neutral-600">
+            <div className='border-2 bg-gradient-to-br from-neutral-200 to-neutral-300 dark:from-neutral-700 dark:to-neutral-800 flex items-center justify-center p-0.5 rounded-sm border-neutral-400/20 dark:border-neutral-600'>
               <IconComponent className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
             </div>
-            <span className="font-mono text-xs text-foreground/80">
-              {getUserFriendlyToolName(toolName)}
-            </span>
-            {paramDisplay && (
-              <span
-                className="ml-1 text-muted-foreground truncate max-w-[200px]"
-                title={paramDisplay}
-              >
-                {paramDisplay}
-              </span>
-            )}
+            <span className="font-mono text-xs text-foreground">{getUserFriendlyToolName(toolName)}</span>
+            {paramDisplay && <span className="ml-1 text-muted-foreground truncate max-w-[200px]" title={paramDisplay}>{paramDisplay}</span>}
           </button>
-        </div>,
+        </div>
       );
     }
     lastIndex = xmlRegex.lastIndex;
@@ -550,6 +538,8 @@ export interface ThreadContentProps {
   ) => void; // Add onSubmit prop for retry functionality
   setInputValue?: (value: string) => void;
   isFloatingToolPreviewVisible?: boolean;
+  agentMetadata?: any; // Add agent metadata prop
+  agentData?: any; // Add full agent data prop
 }
 
 export const ThreadContent: React.FC<ThreadContentProps> = ({
@@ -656,9 +646,6 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
             <div className="h-5 w-5 flex items-center justify-center rounded text-xs">
               <HeliumLogo
                 size={16}
-                animated={
-                  agentStatus === 'running' || agentStatus === 'connecting'
-                }
               />
             </div>
           ) : (
@@ -673,7 +660,6 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
         <div className="h-5 w-5 flex items-center justify-center">
           <HeliumLogo
             size={20}
-            animated={agentStatus === 'running' || agentStatus === 'connecting'}
           />
         </div>
       );
@@ -687,7 +673,6 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
       avatar: (
         <HeliumLogo
           size={20}
-          animated={agentStatus === 'running' || agentStatus === 'connecting'}
         />
       ),
     };
@@ -733,8 +718,8 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
     const threshold = 150; // Allow some buffer
     return scrollHeight - scrollBottom <= threshold;
   }, []);
-  
-  
+
+
 
   // Auto-scroll to bottom when new messages arrive or agent status changes
   React.useEffect(() => {
@@ -850,12 +835,12 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
   React.useEffect(() => {
     // Scroll when agent status changes from 'running' to 'idle' (completed)
     // or when messages first load and user hasn't scrolled up
-    const shouldScroll = 
-      (agentStatus === 'idle' && messages.some(m => m.type === 'assistant')) || 
-      (messages.length > 0 && 
-       (!messagesContainerRef.current?.scrollTop || 
-        messagesContainerRef.current.scrollHeight - messagesContainerRef.current.clientHeight < 100));
-    
+    const shouldScroll =
+      (agentStatus === 'idle' && messages.some(m => m.type === 'assistant')) ||
+      (messages.length > 0 &&
+        (!messagesContainerRef.current?.scrollTop ||
+          messagesContainerRef.current.scrollHeight - messagesContainerRef.current.clientHeight < 100));
+
     if (shouldScroll) {
       scrollToBottom('smooth');
     }
@@ -906,11 +891,11 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
   return (
     <>
       {displayMessages.length === 0 &&
-      !streamingTextContent &&
-      !streamingToolCall &&
-      !streamingText &&
-      !currentToolCall &&
-      agentStatus === 'idle' ? (
+        !streamingTextContent &&
+        !streamingToolCall &&
+        !streamingText &&
+        !currentToolCall &&
+        agentStatus === 'idle' ? (
         // Render empty state outside scrollable container
         <div className="flex-1 min-h-[60vh] flex items-center justify-center">
           {emptyStateComponent || (
@@ -1135,13 +1120,13 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                     );
                     const attachments = attachmentsMatch
                       ? attachmentsMatch
-                          .map((match: string) => {
-                            const pathMatch = match.match(
-                              /\[Uploaded File: (.*?)\]/,
-                            );
-                            return pathMatch ? pathMatch[1] : null;
-                          })
-                          .filter(Boolean)
+                        .map((match: string) => {
+                          const pathMatch = match.match(
+                            /\[Uploaded File: (.*?)\]/,
+                          );
+                          return pathMatch ? pathMatch[1] : null;
+                        })
+                        .filter(Boolean)
                       : [];
 
                     // Remove attachment info from the message content
@@ -1158,11 +1143,7 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                         <div className="flex flex-col gap-1 items-end max-w-[85%]">
                           <div className={cn('flex w-fit')}>
                             <div
-                              style={{
-                                background: '#FFFFFF',
-                                color: 'black',
-                              }}
-                              className="break-words overflow-hidden border border-black/5 rounded-l-2xl rounded-tr-2xl rounded-br-sm px-4 py-2 w-full"
+                              className="break-words overflow-hidden border border-border bg-card text-foreground dark:text-foreground-inverted  rounded-l-2xl rounded-tr-2xl rounded-br-sm px-4 py-2 w-full"
                             >
                               <div className="space-y-4 min-w-0 flex-1">
                                 {cleanContent && (
@@ -1170,7 +1151,7 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                     className={cn(
                                       'message-content',
                                       editingMessageId === group.key &&
-                                        'outline-none ring-0 border-0 shadow-none',
+                                      'outline-none ring-0 border-0 shadow-none',
                                     )}
                                     contentEditable={
                                       editingMessageId === group.key
@@ -1181,24 +1162,24 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                     onInput={(e) => {
                                       setEditValue(
                                         (e.target as HTMLElement).textContent ||
-                                          '',
+                                        '',
                                       );
                                     }}
                                     style={
                                       editingMessageId === group.key &&
-                                      originalDimensions
+                                        originalDimensions
                                         ? {
-                                            minWidth: `${originalDimensions.width}px`,
-                                            minHeight: `${originalDimensions.height}px`,
-                                            maxHeight: '300px',
-                                            overflowY: 'auto',
-                                          }
+                                          minWidth: `${originalDimensions.width}px`,
+                                          minHeight: `${originalDimensions.height}px`,
+                                          maxHeight: '300px',
+                                          overflowY: 'auto',
+                                        }
                                         : undefined
                                     }
                                   >
                                     <ComposioUrlDetector
                                       content={cleanContent}
-                                      className="text-sm prose prose-sm chat-markdown max-w-none [&>:first-child]:mt-0 prose-headings:mt-3 break-words overflow-wrap-anywhere text-black xl:text-base"
+                                      className="text-sm prose prose-sm chat-markdown max-w-none [&>:first-child]:mt-0 prose-headings:mt-3 break-words overflow-wrap-anywhere xl:text-base"
                                     />
                                   </div>
                                 )}
@@ -1515,7 +1496,7 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                               {!readOnly &&
                                 !(
                                   groupIndex ===
-                                    finalGroupedMessages.length - 1 &&
+                                  finalGroupedMessages.length - 1 &&
                                   (streamHookStatus === 'streaming' ||
                                     streamHookStatus === 'connecting')
                                 ) &&
@@ -1543,7 +1524,7 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                             onClick={() => {
                                               const el =
                                                 groupContentRefs.current[
-                                                  groupIndex
+                                                groupIndex
                                                 ];
                                               if (el) {
                                                 const text =
@@ -1583,7 +1564,7 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                             className={cn(
                                               'h-8 w-8 p-0 cursor-pointer',
                                               feedback === 'down' &&
-                                                'opacity-50 pointer-events-none',
+                                              'opacity-50 pointer-events-none',
                                             )}
                                             onClick={() => {
                                               setFeedback(
@@ -1620,7 +1601,7 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                             className={cn(
                                               'h-8 w-8 p-0 cursor-pointer',
                                               feedback === 'up' &&
-                                                'opacity-50 pointer-events-none',
+                                              'opacity-50 pointer-events-none',
                                             )}
                                             onClick={() => {
                                               setFeedback(
@@ -1672,7 +1653,7 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                                 userGroup.messages[0];
                                               let prompt =
                                                 typeof userMessage.content ===
-                                                'string'
+                                                  'string'
                                                   ? userMessage.content
                                                   : '';
                                               try {
@@ -1681,11 +1662,11 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                                 if (
                                                   parsed &&
                                                   typeof parsed.content ===
-                                                    'string'
+                                                  'string'
                                                 ) {
                                                   prompt = parsed.content;
                                                 }
-                                              } catch (e) {}
+                                              } catch (e) { }
                                               // Remove attachment info from prompt
                                               prompt = prompt
                                                 .replace(
@@ -1792,17 +1773,17 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                         streamingTextContent || '';
                                       const textBeforeTag = detectedTag
                                         ? textToRender.substring(
-                                            0,
-                                            tagStartIndex,
-                                          )
+                                          0,
+                                          tagStartIndex,
+                                        )
                                         : textToRender;
 
                                       // If think tag is complete, show content after it
                                       const textAfterThink =
                                         hasThinkTag && thinkTagEndIndex > 0
                                           ? textToRender.substring(
-                                              thinkTagEndIndex,
-                                            )
+                                            thinkTagEndIndex,
+                                          )
                                           : '';
 
                                       const showCursor =
@@ -1822,12 +1803,12 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                           {showCursor && <ThinkingAnimation />}
 
                                           {detectedTag &&
-                                          detectedTag === 'think' ? (
+                                            detectedTag === 'think' ? (
                                             <ThinkingAccordion
                                               content=""
                                               isStreaming={
                                                 streamHookStatus ===
-                                                  'streaming' &&
+                                                'streaming' &&
                                                 !textToRender.includes(
                                                   '</think>',
                                                 )
@@ -1847,11 +1828,11 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                                 )}
                                                 messageId={
                                                   visibleMessages &&
-                                                  visibleMessages.length > 0
+                                                    visibleMessages.length > 0
                                                     ? visibleMessages[
-                                                        visibleMessages.length -
-                                                          1
-                                                      ].message_id
+                                                      visibleMessages.length -
+                                                      1
+                                                    ].message_id
                                                     : 'playback-streaming'
                                                 }
                                                 onToolClick={handleToolClick}
@@ -1877,7 +1858,7 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                               {/* For playback mode, show streaming text and tool calls */}
                               {readOnly &&
                                 groupIndex ===
-                                  finalGroupedMessages.length - 1 &&
+                                finalGroupedMessages.length - 1 &&
                                 isStreamingText && (
                                   <div className="mt-4">
                                     {(() => {
@@ -1933,17 +1914,17 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                       const textToRender = streamingText || '';
                                       const textBeforeTag = detectedTag
                                         ? textToRender.substring(
-                                            0,
-                                            tagStartIndex,
-                                          )
+                                          0,
+                                          tagStartIndex,
+                                        )
                                         : textToRender;
 
                                       // If think tag is complete, show content after it
                                       const textAfterThink =
                                         hasThinkTag && thinkTagEndIndex > 0
                                           ? textToRender.substring(
-                                              thinkTagEndIndex,
-                                            )
+                                            thinkTagEndIndex,
+                                          )
                                           : '';
 
                                       const showCursor =
@@ -1971,7 +1952,7 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                               )}
 
                                               {detectedTag &&
-                                              detectedTag === 'think' ? (
+                                                detectedTag === 'think' ? (
                                                 <ThinkingAccordion
                                                   content=""
                                                   isStreaming={
@@ -2050,6 +2031,17 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
               {readOnly && currentToolCall && (
                 <div ref={latestMessageRef}>
                   <div className="flex flex-col gap-2">
+                    {/* Logo positioned above the tool call */}
+                    <div className="flex justify-start">
+                      <div className="rounded-md flex items-center justify-center">
+                        {getAgentInfo().avatar}
+                      </div>
+                      <p className='ml-2 text-sm text-muted-foreground'>
+                        {getAgentInfo().name}
+                      </p>
+                    </div>
+
+                    {/* Tool call content */}
                     <div className="space-y-2">
                       <div className="animate-shimmer inline-flex items-center gap-1.5 py-1.5 px-3 text-xs font-medium text-primary bg-primary/10 rounded-md border border-primary/20">
                         <CircleDashed className="h-3.5 w-3.5 text-primary flex-shrink-0 animate-spin animation-duration-2000" />
@@ -2062,27 +2054,34 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                 </div>
               )}
 
-              {/* For playback mode - Show streaming indicator if no messages yet (without thinking animation) */}
-              {readOnly &&
-                visibleMessages &&
-                visibleMessages.length === 0 &&
-                isStreamingText && (
-                  <div ref={latestMessageRef}>
-                    <div className="flex flex-col gap-2">
-                      <div className="max-w-[90%] px-4 py-3 text-sm">
-                        <div className="flex items-center gap-1.5 py-1">
-                          <div className="h-1.5 w-1.5 rounded-full bg-primary/50 animate-pulse" />
-                          <div className="h-1.5 w-1.5 rounded-full bg-primary/50 animate-pulse delay-150" />
-                          <div className="h-1.5 w-3.5 rounded-full bg-primary/50 animate-pulse delay-300" />
+              {/* For playback mode - Show streaming indicator if no messages yet */}
+              {readOnly && visibleMessages && visibleMessages.length === 0 && isStreamingText && (
+                <div ref={latestMessageRef}>
+                  <div className="flex flex-col gap-2">
+                    {/* Logo positioned above the streaming indicator */}
+                    <div className="flex justify-start">
+                      <div className="rounded-md flex items-center justify-center">
+                        {getAgentInfo().avatar}
+                      </div>
+                      <p className='ml-2 text-sm text-muted-foreground'>
+                        {getAgentInfo().name}
+                      </p>
+                    </div>
 
-                        </div>
+                    {/* Streaming indicator content */}
+                    <div className="max-w-[90%] px-4 py-3 text-sm">
+                      <div className="flex items-center gap-1.5 py-1">
+                        <div className="h-1.5 w-1.5 rounded-full bg-primary/50 animate-pulse" />
+                        <div className="h-1.5 w-1.5 rounded-full bg-primary/50 animate-pulse delay-150" />
+                        <div className="h-1.5 w-1.5 rounded-full bg-primary/50 animate-pulse delay-300" />
                       </div>
                     </div>
                   </div>
-                )}
+                </div>
+              )}
+              {/* <div className="!h-6" /> */}
             </div>
           </div>
-          <div ref={messagesEndRef} className="h-1" />
         </div>
       )}
 

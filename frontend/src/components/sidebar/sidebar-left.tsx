@@ -156,6 +156,16 @@ export function SidebarLeft({
             )}
           </div>
         </div>
+        {state === 'collapsed' && (
+          <div className="mt-2 flex justify-center">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <SidebarTrigger className="h-8 w-8" />
+              </TooltipTrigger>
+              <TooltipContent>Toggle sidebar (CMD+B)</TooltipContent>
+            </Tooltip>
+          </div>
+        )}
       </SidebarHeader>
       <SidebarContent className="[&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
         <SidebarGroup>
@@ -202,16 +212,6 @@ export function SidebarLeft({
         </div>
       )}
       <SidebarFooter>
-        {state === 'collapsed' && (
-          <div className="mt-2 flex justify-center">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <SidebarTrigger className="h-8 w-8" />
-              </TooltipTrigger>
-              <TooltipContent>Expand sidebar (CMD+B)</TooltipContent>
-            </Tooltip>
-          </div>
-        )}
         <NavUserWithTeams user={user} />
       </SidebarFooter>
       <SidebarRail />

@@ -2,6 +2,13 @@ import { createClient } from '@/lib/supabase/client';
 import { handleApiError } from './error-handler';
 import posthog from 'posthog-js';
 
+// Extend Window interface to include custom properties
+declare global {
+  interface Window {
+    tolt_referral?: string;
+  }
+}
+
 // Get backend URL from environment variables
 const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || '';
 

@@ -150,10 +150,13 @@ export default function ThreadPage({
     ? 'active'
     : 'no_subscription';
 
-  // Memoize project for VNC preloader to prevent re-preloading on every render
-  const memoizedProject = useMemo(() => project, [project?.id, project?.sandbox?.vnc_preview, project?.sandbox?.pass]);
+  // Memoize VNC data for preloader to prevent re-preloading on every render
+  const memoizedVncData = useMemo(() => ({
+    vnc_preview: project?.sandbox?.vnc_preview,
+    pass: project?.sandbox?.pass
+  }), [project?.sandbox?.vnc_preview, project?.sandbox?.pass]);
 
-  useVncPreloader(memoizedProject);
+  useVncPreloader(memoizedVncData);
 
 
   const handleProjectRenamed = useCallback((newName: string) => {
