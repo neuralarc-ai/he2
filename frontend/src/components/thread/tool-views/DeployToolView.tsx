@@ -7,7 +7,7 @@ import {
   TerminalIcon,
 } from 'lucide-react';
 import { ToolViewProps } from './types';
-import { getToolTitle, normalizeContentToString } from './utils';
+import { formatTimestamp, getToolTitle, normalizeContentToString } from './utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -188,9 +188,7 @@ export function DeployToolView({
       <CardHeader className="h-9 bg-gradient-to-t from-zinc-50/80 to-zinc-200/70 dark:from-zinc-900/90 dark:to-zinc-800/90 text-center backdrop-blur-lg border-b p-2 px-4 space-y-2 rounded-t-lg">
         <div className="flex flex-row items-center justify-between">
           <div className="flex w-full justify-center items-center gap-1">
-            <div className="relative p-2 rounded-lg bg-gradient-to-br from-orange-500/20 to-orange-600/10 border border-orange-500/20">
-              <Rocket className="w-4 h-4 text-orange-500 dark:text-orange-400" />
-            </div>
+            <Rocket className="w-4 h-4 text-muted-foreground" />
             <div>
               <CardTitle className="text-sm font-semibold text-muted-foreground">
                 {toolTitle}
@@ -336,6 +334,24 @@ export function DeployToolView({
           </ScrollArea>
         )}
       </CardContent>
+
+      {/* Footer */}
+      <div className="px-4 py-2 h-fit bg-white dark:bg-zinc-900 backdrop-blur-sm border-t border-zinc-200 dark:border-zinc-800 flex justify-between items-center gap-4 rounded-b-lg">
+        <div className="h-full flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
+          <Badge className="h-6 py-0.5" variant="outline">
+            <Rocket className="h-3 w-3 mr-1" />
+            Deployment
+          </Badge>
+        </div>
+
+        <div className="text-xs text-zinc-500 dark:text-zinc-400">
+          {toolTimestamp
+            ? formatTimestamp(toolTimestamp)
+            : assistantTimestamp
+              ? formatTimestamp(assistantTimestamp)
+              : ''}
+        </div>
+      </div>
     </Card>
   );
 }

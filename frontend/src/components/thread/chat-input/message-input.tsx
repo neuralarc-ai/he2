@@ -1,7 +1,7 @@
 import React, { forwardRef, useEffect, useState } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Square, Loader2, ArrowUp } from 'lucide-react';
+import { Square, Loader2, ArrowUp, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from 'next-themes';
 import { UploadedFile } from './chat-input';
@@ -51,6 +51,12 @@ interface MessageInputProps {
   enableAdvancedConfig?: boolean;
   hideAgentSelection?: boolean;
   isSunaAgent?: boolean;
+  // New props for integrations
+  onOpenIntegrations?: () => void;
+  onOpenInstructions?: () => void;
+  onOpenKnowledge?: () => void;
+  onOpenTriggers?: () => void;
+  onOpenWorkflows?: () => void;
 }
 
 export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
@@ -90,6 +96,11 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
       enableAdvancedConfig = false,
       hideAgentSelection = false,
       isSunaAgent,
+      onOpenIntegrations,
+      onOpenInstructions,
+      onOpenKnowledge,
+      onOpenTriggers,
+      onOpenWorkflows,
     },
     ref,
   ) => {
@@ -221,6 +232,28 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
               />
             )}
 
+            {/* Integrations button - only show when advanced config is enabled and agent is selected */}
+            {selectedAgentId && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      onClick={onOpenIntegrations}
+                      className="w-8 h-8 flex-shrink-0 rounded-full hover:bg-muted/50"
+                      title="Integrations"
+                    >
+                      <Settings className="h-4 w-4 text-muted-foreground" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Integrations</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
           </div>
 
           {/* {subscriptionStatus === 'no_subscription' && !isLocalMode() &&
