@@ -20,7 +20,7 @@ export type FileType =
     | 'image' | 'code' | 'text' | 'pdf'
     | 'audio' | 'video' | 'spreadsheet'
     | 'archive' | 'database' | 'markdown'
-    | 'csv'
+    | 'csv' | 'document' | 'html'
     | 'other';
 
 // Simple extension-based file type detection
@@ -56,6 +56,8 @@ function getFileIcon(type: FileType): React.ElementType {
         csv: FileSpreadsheet,
         archive: Archive,
         database: Database,
+        document: FileText,
+        html: FileCode,
         other: File
     };
 
@@ -80,6 +82,8 @@ function getTypeLabel(type: FileType, extension?: string): string {
         csv: 'CSV',
         archive: 'Archive',
         database: 'Database',
+        document: 'Document',
+        html: 'HTML',
         other: 'File'
     };
 
@@ -104,6 +108,8 @@ function getFileSize(filepath: string, type: FileType): string {
         csv: 2.0,
         archive: 5.0,
         database: 4.0,
+        document: 2.0,
+        html: 0.5,
         other: 1.0
     };
 
@@ -629,7 +635,7 @@ export function FileAttachment({
                     alt={fileType} 
                     className={cn(
                         "h-9 w-9 object-contain",
-                        isDocumentType ? "opacity-90" : "opacity-70"
+                        (fileType === 'document' || fileType === 'pdf') ? "opacity-90" : "opacity-70"
                     )} 
                     onError={(e) => {
                         // Fallback to default icon if custom icon fails to load
