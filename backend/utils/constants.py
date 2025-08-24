@@ -54,6 +54,15 @@ MODELS = {
         "context_window": 200_000,  # 200k tokens
         "tier_availability": ["free", "paid"]
     },
+    "openrouter/anthropic/claude-sonnet-4": {
+        "aliases": ["openrouter/claude-sonnet-4"],
+        "pricing": {
+            "input_cost_per_million_tokens": 3.00,
+            "output_cost_per_million_tokens": 15.00
+        },
+        "context_window": 200_000,  # 200k tokens
+        "tier_availability": ["free", "paid"]
+    },
     "xai/grok-4": {
         "aliases": ["grok-4", "x-ai/grok-4"],
         "pricing": {
