@@ -53,6 +53,7 @@ function extractCheckCommandOutputData(
 
     // Try to extract from tool content first (most likely to have the result)
     const toolParsed = parseContent(toolContent);
+    console.log('[CHECK COMMAND OUTPUT TOOL VIEW] Tool parsed:', toolParsed);
 
     if (toolParsed && typeof toolParsed === 'object') {
         // Handle the case where content is a JSON string
@@ -194,6 +195,33 @@ function extractCheckCommandOutputData(
         }
     }
 
+    // Debug logging
+    console.log('CheckCommandOutputToolView: Final extracted data:', {
+        sessionName,
+        hasOutput: !!output,
+        outputLength: output?.length,
+        status,
+        success: actualIsSuccess,
+        toolContent: typeof toolContent,
+        assistantContent: typeof assistantContent
+    });
+
+    // Additional debug logging for troubleshooting
+    if (!sessionName || !output) {
+        console.log('CheckCommandOutputToolView: Debug - Raw toolContent:', toolContent);
+        console.log('CheckCommandOutputToolView: Debug - Raw assistantContent:', assistantContent);
+
+        if (toolContent && typeof toolContent === 'object') {
+            console.log('CheckCommandOutputToolView: Debug - toolContent keys:', Object.keys(toolContent));
+            if (toolContent.frontend_content) {
+                console.log('CheckCommandOutputToolView: Debug - frontend_content:', toolContent.frontend_content);
+            }
+            if (toolContent.content) {
+                console.log('CheckCommandOutputToolView: Debug - content:', toolContent.content);
+            }
+        }
+    }
+
     return {
         sessionName,
         output,
@@ -288,21 +316,19 @@ export function CheckCommandOutputToolView({
     const isSessionRunning = status?.includes('still running') || status?.includes('running');
 
     return (
-        <Card className="gap-0 flex border shadow-none border-t border-b-0 border-x-0 p-0 rounded-none flex-col h-full overflow-hidden bg-card">
-            <CardHeader className="h-14 bg-zinc-50/80 dark:bg-zinc-900/80 backdrop-blur-sm border-b p-2 px-4 space-y-2">
+        <Card className="gap-0 flex border shadow-none p-0 rounded-lg flex-col h-full overflow-hidden bg-card">
+            <CardHeader className="h-9 bg-gradient-to-t from-zinc-50/80 to-zinc-200/70 dark:from-zinc-900/90 dark:to-zinc-800/90 text-center backdrop-blur-lg border-b p-2 px-4 space-y-2 rounded-t-lg">
                 <div className="flex flex-row items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <div className="relative p-2 rounded-lg bg-gradient-to-br from-blue-500/20 to-blue-600/10 border border-blue-500/20">
-                            <Terminal className="w-5 h-5 text-blue-500 dark:text-blue-400" />
-                        </div>
+                    <div className="flex items-center w-full justify-center gap-2">
+                        <Terminal className="w-4 h-4 text-muted-foreground" />
                         <div>
-                            <CardTitle className="text-base font-medium text-zinc-900 dark:text-zinc-100">
+                            <CardTitle className="text-sm font-semibold text-muted-foreground">
                                 {toolTitle}
                             </CardTitle>
                         </div>
                     </div>
 
-                    {!isStreaming && (
+                    {/* {!isStreaming && (
                         <Badge
                             variant="secondary"
                             className={
@@ -318,7 +344,7 @@ export function CheckCommandOutputToolView({
                             )}
                             {actualIsSuccess ? 'Output retrieved successfully' : 'Failed to retrieve output'}
                         </Badge>
-                    )}
+                    )} */}
                 </div>
             </CardHeader>
 
@@ -335,34 +361,21 @@ export function CheckCommandOutputToolView({
                 ) : sessionName ? (
                     <ScrollArea className="h-full w-full">
                         <div className="p-4">
-                            <div className="mb-4">
-                                <div className="bg-zinc-100 dark:bg-neutral-900 rounded-lg overflow-hidden border border-zinc-200/20">
-                                    <div className="bg-zinc-300 dark:bg-neutral-800 flex items-center justify-between dark:border-zinc-700/50">
-                                        <div className="bg-zinc-200 w-full dark:bg-zinc-800 px-4 py-2 flex items-center gap-2">
-                                            <TerminalIcon className="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
-                                            <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Terminal Session</span>
-                                            <span className="text-xs text-zinc-500 dark:text-zinc-400">({sessionName})</span>
+                            <div className="max-h-96 overflow-auto scrollbar-hide">
+                                <pre className="text-xs text-zinc-600 dark:text-zinc-300 font-mono whitespace-pre-wrap break-all overflow-visible">
+                                    {linesToShow.map((line, index) => (
+                                        <div key={index} className="py-0.5 bg-transparent">
+                                            {line}
                                         </div>
+                                    ))}
 
-                                    </div>
-                                    <div className="p-4 max-h-96 overflow-auto scrollbar-hide">
-                                        <pre className="text-xs text-zinc-600 dark:text-zinc-300 font-mono whitespace-pre-wrap break-all overflow-visible">
-                                            {linesToShow.map((line, index) => (
-                                                <div key={index} className="py-0.5 bg-transparent">
-                                                    {line}
-                                                </div>
-                                            ))}
-
-                                            {!showFullOutput && hasMoreLines && (
-                                                <div className="text-zinc-500 mt-2 border-t border-zinc-700/30 pt-2">
-                                                    + {formattedOutput.length - 10} more lines
-                                                </div>
-                                            )}
-                                        </pre>
-                                    </div>
-                                </div>
+                                    {!showFullOutput && hasMoreLines && (
+                                        <div className="text-zinc-500 mt-2 border-t border-zinc-700/30 pt-2">
+                                            + {formattedOutput.length - 10} more lines
+                                        </div>
+                                    )}
+                                </pre>
                             </div>
-
 
 
                             {!output && !isStreaming && (
@@ -390,7 +403,7 @@ export function CheckCommandOutputToolView({
                 )}
             </CardContent>
 
-            <div className="px-4 py-2 h-10 bg-gradient-to-r from-zinc-50/90 to-zinc-100/90 dark:from-zinc-900/90 dark:to-zinc-800/90 backdrop-blur-sm border-t border-zinc-200 dark:border-zinc-800 flex justify-between items-center gap-4">
+            <div className="px-4 py-2 h-fit bg-white dark:bg-zinc-900 backdrop-blur-sm border-t border-zinc-200 dark:border-zinc-800 flex justify-between items-center gap-4 rounded-b-lg">
                 <div className="h-full flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
                     {!isStreaming && sessionName && (
                         <Badge variant="outline" className="h-6 py-0.5 bg-zinc-50 dark:bg-zinc-900">

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { forwardRef, useEffect } from 'react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Paperclip, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -260,7 +261,24 @@ export const FileUploadHandler = forwardRef<
                   {isUploading ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    <Paperclip className="h-4 w-4" />
+                    <>
+                     {/*  <Image src="/icons/paperclip-light.svg" alt="Paperclip" width={24} height={24} /> */}
+                    <Image
+                                                   src="/icons/paperclip-light.svg"
+                                                   alt="Paperclip Dark Logo"
+                                                   width={20}
+                                                   height={20}
+                                                   className="block dark:hidden mb-0"
+                                                 />
+                                                 {/* Dark logo */}
+                                                 <Image
+                                                 src="/icons/paperclip-dark.svg"
+                                                 alt="Paperclip Dark Logo"
+                                                 width={20}
+                                                 height={20}
+                                                  className="hidden dark:block mb-0"
+                                                 /></>
+                 
                   )}
                   <span className="text-sm">Attach</span>
                 </Button>
