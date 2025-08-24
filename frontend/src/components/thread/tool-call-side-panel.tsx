@@ -1076,9 +1076,9 @@ export function ToolCallSidePanel({
             }
           }}
           className={cn(
-            'fixed top-3 right-2 bottom-4 shadow-[0px_12px_32px_0px_rgba(0,0,0,0.02)] border border-black/10 rounded-[22px] flex flex-col z-30 transition-[width] duration-200 ease-in-out will-change-[width]',
+            'fixed top-3 right-2 bottom-4 shadow-[0px_12px_32px_0px_rgba(0,0,0,0.02)] border bg-gradient-to-bl from-green-500/10 to-blue-500/10 rounded-[22px] flex flex-col z-30 transition-[width] duration-200 ease-in-out will-change-[width]',
             widthClass,
-          )}
+          )}  
           style={{
             overflow: 'hidden',
           }}

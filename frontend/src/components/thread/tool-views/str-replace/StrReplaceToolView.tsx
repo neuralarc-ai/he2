@@ -219,14 +219,12 @@ export function StrReplaceToolView({
   const shouldShowError = !isStreaming && (!oldStr || !newStr) && (assistantContent || toolContent);
 
   return (
-    <Card className="gap-0 flex border shadow-none border-t border-b-0 border-x-0 p-0 rounded-none flex-col h-full overflow-hidden bg-card">
-      <CardHeader className="h-14 bg-zinc-50/80 dark:bg-zinc-900/80 backdrop-blur-sm border-b p-2 px-4 space-y-2">
-        <div className="flex flex-row items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="relative p-2 rounded-lg bg-gradient-to-br from-purple-500/20 to-purple-600/10 border border-purple-500/20">
-              <FileDiff className="w-5 h-5 text-purple-500 dark:text-purple-400" />
-            </div>
-            <CardTitle className="text-base font-medium text-zinc-900 dark:text-zinc-100">
+    <Card className="gap-0 flex border shadow-none p-0 rounded-lg flex-col h-full overflow-hidden bg-card">
+      <CardHeader className="h-9 bg-gradient-to-t from-zinc-50/80 to-zinc-200/70 dark:from-zinc-900/90 dark:to-zinc-800/90 text-center backdrop-blur-lg border-b p-2 px-4 space-y-2 rounded-t-lg">
+        <div className="flex flex-row items-center justify-center">
+          <div className="flex items-center w-full justify-center gap-1">
+            <FileDiff className="w-4 h-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-semibold text-muted-foreground">
               {toolTitle}
             </CardTitle>
           </div>
@@ -341,8 +339,8 @@ export function StrReplaceToolView({
         )}
       </CardContent>
 
-      <div className="px-4 py-2 h-10 bg-gradient-to-r from-zinc-50/90 to-zinc-100/90 dark:from-zinc-900/90 dark:to-zinc-800/90 backdrop-blur-sm border-t border-zinc-200 dark:border-zinc-800 flex justify-between items-center">
-        <div className="h-full flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+      <div className="px-4 py-2 h-fit bg-white dark:bg-zinc-800 backdrop-blur-sm border-t border-zinc-200 dark:border-zinc-800 flex justify-between items-center gap-4 rounded-b-lg">
+        <div className="h-full flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
           {!isStreaming && (
             <div className="flex items-center gap-1">
               {actualIsSuccess ? (
