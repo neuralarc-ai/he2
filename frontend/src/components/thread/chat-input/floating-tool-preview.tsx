@@ -114,9 +114,7 @@ export const FloatingToolPreview: React.FC<FloatingToolPreviewProps> = ({
         >
           <motion.div
             layoutId={CONTENT_LAYOUT_ID}
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.99 }}
-            className="bg-card border border-border rounded-3xl p-2 w-full cursor-pointer group"
+            className="bg-white dark:bg-sidebar-accent border border-gray-200 dark:border-ring/50 rounded-xl shadow-[0px_12px_32px_0px_rgba(0,0,0,0.05)] p-3 w-full cursor-pointer group transition-colors"
             onClick={handleClick}
             style={{ opacity: isExpanding ? 0 : 1 }}
           >

@@ -150,15 +150,15 @@ export function TerminateCommandToolView({
   const linesToShow = showFullOutput ? formattedOutput : previewLines;
 
   return (
-    <Card className="gap-0 flex border shadow-none border-t border-b-0 border-x-0 p-0 rounded-none flex-col h-full overflow-hidden bg-card">
-      <CardHeader className="h-14 bg-zinc-50/80 dark:bg-zinc-900/80 backdrop-blur-sm border-b p-2 px-4 space-y-2">
+    <Card className="gap-0 flex border shadow-none p-0 rounded-lg flex-col h-full overflow-hidden bg-card">
+      <CardHeader className="h-9 bg-gradient-to-t from-zinc-50/80 to-zinc-200/70 dark:from-zinc-900/90 dark:to-zinc-800/90 text-center backdrop-blur-lg border-b p-2 px-4 space-y-2 rounded-t-lg">
         <div className="flex flex-row items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center w-full justify-center gap-1">
             <div className="relative p-2 rounded-lg bg-gradient-to-br from-red-500/20 to-red-600/10 border border-red-500/20">
               <StopCircle className="w-5 h-5 text-red-500 dark:text-red-400" />
             </div>
             <div>
-              <CardTitle className="text-base font-medium text-zinc-900 dark:text-zinc-100">
+              <CardTitle className="text-sm font-semibold text-muted-foreground">
                 {toolTitle}
               </CardTitle>
             </div>
@@ -204,15 +204,9 @@ export function TerminateCommandToolView({
         ) : finalSessionName ? (
           <ScrollArea className="h-full w-full">
             <div className="p-4">
-              <div className="mb-4 bg-zinc-100 dark:bg-neutral-900 rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-800">
-                <div className="bg-zinc-200 dark:bg-zinc-800 px-4 py-2 flex items-center gap-2">
-                  <Power className="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
-                  <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Session</span>
-                </div>
-                <div className="p-4 font-mono text-sm text-zinc-700 dark:text-zinc-300 flex gap-2">
-                  <span className="text-red-500 dark:text-red-400 select-none">●</span>
-                  <code className="flex-1 break-all">{finalSessionName}</code>
-                </div>
+              <div className="mb-4 font-mono text-sm text-zinc-700 dark:text-zinc-300 flex gap-2">
+                <span className="text-red-500 dark:text-red-400 select-none">●</span>
+                <code className="flex-1 break-all">{finalSessionName}</code>
               </div>
 
               {output && (
@@ -234,36 +228,22 @@ export function TerminateCommandToolView({
                     </Badge>
                   </div>
 
-                  <div className="bg-zinc-100 dark:bg-neutral-900 rounded-lg overflow-hidden border border-zinc-200/20">
-                    <div className="bg-zinc-300 dark:bg-neutral-800 flex items-center justify-between dark:border-zinc-700/50">
-                      <div className="bg-zinc-200 w-full dark:bg-zinc-800 px-4 py-2 flex items-center gap-2">
-                        <TerminalIcon className="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
-                        <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Termination output</span>
-                      </div>
-                      {!terminationSuccess && (
-                        <Badge variant="outline" className="text-xs h-5 border-red-700/30 text-red-400">
-                          <AlertTriangle className="h-3 w-3 mr-1" />
-                          Error
-                        </Badge>
+                  <div className="max-h-96 overflow-auto scrollbar-hide">
+                    <pre className="text-xs text-zinc-600 dark:text-zinc-300 font-mono whitespace-pre-wrap break-all overflow-visible">
+                      {linesToShow.map((line, index) => (
+                        <div
+                          key={index}
+                          className="py-0.5 bg-transparent"
+                        >
+                          {line || ' '}
+                        </div>
+                      ))}
+                      {!showFullOutput && hasMoreLines && (
+                        <div className="text-zinc-500 mt-2 border-t border-zinc-700/30 pt-2">
+                          + {formattedOutput.length - 10} more lines
+                        </div>
                       )}
-                    </div>
-                    <div className="p-4 max-h-96 overflow-auto scrollbar-hide">
-                      <pre className="text-xs text-zinc-600 dark:text-zinc-300 font-mono whitespace-pre-wrap break-all overflow-visible">
-                        {linesToShow.map((line, index) => (
-                          <div
-                            key={index}
-                            className="py-0.5 bg-transparent"
-                          >
-                            {line || ' '}
-                          </div>
-                        ))}
-                        {!showFullOutput && hasMoreLines && (
-                          <div className="text-zinc-500 mt-2 border-t border-zinc-700/30 pt-2">
-                            + {formattedOutput.length - 10} more lines
-                          </div>
-                        )}
-                      </pre>
-                    </div>
+                    </pre>
                   </div>
                 </div>
               )}
@@ -293,7 +273,7 @@ export function TerminateCommandToolView({
         )}
       </CardContent>
 
-      <div className="px-4 py-2 h-10 bg-gradient-to-r from-zinc-50/90 to-zinc-100/90 dark:from-zinc-900/90 dark:to-zinc-800/90 backdrop-blur-sm border-t border-zinc-200 dark:border-zinc-800 flex justify-between items-center gap-4">
+      <div className="px-4 py-2 h-fit bg-white dark:bg-zinc-900 backdrop-blur-sm border-t border-zinc-200 dark:border-zinc-800 flex justify-between items-center gap-4 rounded-b-lg">
         <div className="h-full flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
           {!isStreaming && finalSessionName && (
             <Badge variant="outline" className="h-6 py-0.5 bg-zinc-50 dark:bg-zinc-900">
