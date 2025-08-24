@@ -1,9 +1,9 @@
 from agent.prompt import SYSTEM_PROMPT
 
-# Suna default configuration - simplified and centralized
-SUNA_CONFIG = {
-    "name": "Suna",
-    "description": "Suna is your AI assistant with access to various tools and integrations to help you with tasks across domains.",
+# Helium default configuration - simplified and centralized
+HELIUM_CONFIG = {
+    "name": "Helium AI",
+    "description": "Helium AI is your AI assistant with access to various tools and integrations to help you with tasks across domains.",
     "avatar": "🌞",
     "avatar_color": "#F59E0B",
     "model": "openai/gpt-5-mini",

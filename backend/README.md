@@ -1,4 +1,4 @@
-# Suna Backend
+# Helium Backend
 
 ## Quick Setup
 

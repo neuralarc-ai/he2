@@ -2,11 +2,11 @@
 alwaysApply: true
 ---
 
-# Suna AI Worker Project - Cursor Rules
+# Helium AI Worker Project - Cursor Rules
 
 ## Project Overview
 
-Suna is an open-source generalist AI Worker with a full-stack architecture:
+Helio o1 is an open-source generalist AI Worker with a full-stack architecture:
 
 - **Frontend**: Next.js 15+ with TypeScript, Tailwind CSS, Radix UI, React Query
 - **Backend**: Python 3.11+ with FastAPI, Supabase, Redis, LiteLLM, Dramatiq

@@ -14,7 +14,7 @@ async def admin_install_suna_for_user(
     replace_existing: bool = False,
     _: bool = Depends(verify_admin_api_key)
 ):
-    logger.debug(f"Admin installing Suna agent for user: {account_id}")
+    logger.debug(f"Admin installing Helio o1 agent for user: {account_id}")
     
     service = SunaDefaultAgentService()
     agent_id = await service.install_suna_agent_for_user(account_id, replace_existing)
@@ -22,13 +22,13 @@ async def admin_install_suna_for_user(
     if agent_id:
         return {
             "success": True,
-            "message": f"Successfully installed Suna agent for user {account_id}",
+            "message": f"Successfully installed Helio o1 agent for user {account_id}",
             "agent_id": agent_id
         }
     else:
         raise HTTPException(
             status_code=500, 
-            detail=f"Failed to install Suna agent for user {account_id}"
+            detail=f"Failed to install Helio o1 agent for user {account_id}"
         )
 
 @router.get("/env-vars")

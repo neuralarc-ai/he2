@@ -3,7 +3,7 @@ from utils.logger import logger
 
 
 def extract_agent_config(agent_data: Dict[str, Any], version_data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-    """Extract agent configuration with simplified logic for Suna vs custom agents."""
+    """Extract agent configuration with simplified logic for Helio o1 vs custom agents."""    
     agent_id = agent_data.get('agent_id', 'Unknown')
     metadata = agent_data.get('metadata', {})
     is_suna_default = metadata.get('is_suna_default', False)
@@ -17,11 +17,11 @@ def extract_agent_config(agent_data: Dict[str, Any], version_data: Optional[Dict
 
 
 def _extract_suna_agent_config(agent_data: Dict[str, Any], version_data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-    """Extract config for Suna agents - always use central config with user customizations."""
-    from agent.suna_config import SUNA_CONFIG
+    """Extract config for Helium agents - always use central config with user customizations."""
+    from agent.suna_config import HELIUM_CONFIG
     
     agent_id = agent_data.get('agent_id', 'Unknown')
-    logger.debug(f"Using Suna central config for agent {agent_id}")
+    logger.debug(f"Using Helium central config for agent {agent_id}")
     
     # Start with central Suna config
     config = {

@@ -1,14 +1,14 @@
 <div align="center">
 
-# Helium AI - The God Mode Agent for Enterprises
+# Helio o1 - The God Mode Agent for Enterprises
 
 (that acts on your behalf)
 
 ![Helium AI Screenshot](frontend/public/banner.png)
 
-Helium AI is an God Mode Agent that helps you accomplish real-world tasks with ease. Through natural conversation, Helium becomes your digital companion for research, data analysis, and everyday challenges—combining powerful capabilities with an intuitive interface that understands what you need and delivers results.
+Helio o1 is a God Mode Agent that helps you accomplish real-world tasks with ease. Through natural conversation, Helio becomes your digital companion for research, data analysis, and everyday challenges—combining powerful capabilities with an intuitive interface that understands what you need and delivers results.
 
-Helium's powerful toolkit includes seamless browser automation to navigate the web and extract data, file management for document creation and editing, web crawling and extended search capabilities, command-line execution for system tasks, website deployment, and integration with various APIs and services. These capabilities work together harmoniously, allowing Helium to solve your complex problems and automate workflows through simple conversations!
+Helio's powerful toolkit includes seamless browser automation to navigate the web and extract data, file management for document creation and editing, web crawling and extended search capabilities, command-line execution for system tasks, website deployment, and integration with various APIs and services. These capabilities work together harmoniously, allowing Helium AI to solve your complex problems and automate workflows through simple conversations!
 
 
 </div>

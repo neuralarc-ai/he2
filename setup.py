@@ -30,16 +30,16 @@ class Colors:
 
 # --- UI Helpers ---
 def print_banner():
-    """Prints the Suna setup banner."""
+    """Prints the Helio o1 setup banner."""
     print(
         f"""
 {Colors.BLUE}{Colors.BOLD}
-   ███████╗██╗   ██╗███╗   ██╗ █████╗ 
-   ██╔════╝██║   ██║████╗  ██║██╔══██╗
-   ███████╗██║   ██║██╔██╗ ██║███████║
-   ╚════██║██║   ██║██║╚██╗██║██╔══██║
-   ███████║╚██████╔╝██║ ╚████║██║  ██║
-   ╚══════╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═╝
+   ██╗  ██╗███████╗██╗     ██╗  ██████╗ 
+   ██║  ██║██╔════╝██║     ██║ ██╔═══██╗
+   ███████║█████╗  ██║     ██║ ██║   ██║
+   ██╔══██║██╔══╝  ██║     ██║ ██║   ██║
+   ██║  ██║███████╗███████╗██║  ██████╔╝
+   ╚═╝  ╚═╝╚══════╝╚══════╝╚═╝ ╚═════╝ 
                                       
    Installation Wizard
 {Colors.ENDC}
@@ -388,7 +388,7 @@ class SetupWizard:
         """Runs the setup wizard."""
         print_banner()
         print(
-            "This wizard will guide you through setting up Suna, an open-source generalist AI Worker.\n"
+            "This wizard will guide you through setting up Helio o1, an open-source generalist AI Worker.\n"
         )
 
         # Show current configuration status
@@ -446,9 +446,9 @@ class SetupWizard:
             return
 
         print_info(
-            "You can start Suna using either Docker Compose or by manually starting the services."
+            "You can start Helio o1 using either Docker Compose or by manually starting the services."
         )
-        print(f"\n{Colors.CYAN}How would you like to set up Suna?{Colors.ENDC}")
+        print(f"\n{Colors.CYAN}How would you like to set up Helio o1?{Colors.ENDC}")
         print(
             f"{Colors.CYAN}[1] {Colors.GREEN}Docker Compose{Colors.ENDC} {Colors.CYAN}(recommended, starts all services automatically){Colors.ENDC}"
         )
@@ -547,18 +547,18 @@ class SetupWizard:
         for directory in required_dirs:
             if not os.path.isdir(directory):
                 print_error(
-                    f"'{directory}' directory not found. Make sure you're in the Suna repository root."
+                    f"'{directory}' directory not found. Make sure you're in the Helio o1 repository root."
                 )
                 sys.exit(1)
 
         for file in required_files:
             if not os.path.isfile(file):
                 print_error(
-                    f"'{file}' not found. Make sure you're in the Suna repository root."
+                    f"'{file}' not found. Make sure you're in the Helio o1 repository root."
                 )
                 sys.exit(1)
 
-        print_success("Suna repository detected.")
+        print_success("Helio o1 repository detected.")
         return True
 
     def _get_input(
@@ -640,7 +640,7 @@ class SetupWizard:
             )
         else:
             print_info(
-                "Suna uses Daytona for sandboxing. Visit https://app.daytona.io/ to create an account."
+                "Helio o1 uses Daytona for sandboxing. Visit https://app.daytona.io/ to create an account."
             )
             print_info("Then, generate an API key from the 'Keys' menu.")
             input("Press Enter to continue once you have your API key...")
@@ -663,7 +663,7 @@ class SetupWizard:
         print_success("Daytona information saved.")
 
         print_warning(
-            "IMPORTANT: You must create a Suna snapshot in Daytona for it to work properly."
+            "IMPORTANT: You must create a Helio o1 snapshot in Daytona for it to work properly."
         )
         print_info(
             f"Visit {Colors.GREEN}https://app.daytona.io/dashboard/snapshots{Colors.ENDC}{Colors.CYAN} to create a snapshot."
@@ -696,7 +696,7 @@ class SetupWizard:
             )
         else:
             print_info(
-                "Suna requires at least one LLM provider. Supported: OpenAI, Anthropic, Google Gemini, OpenRouter."
+                "Helio o1 requires at least one LLM provider. Supported: OpenAI, Anthropic, Google Gemini, OpenRouter."
             )
 
         # Don't clear existing keys if we're updating
@@ -766,7 +766,7 @@ class SetupWizard:
             print_info("AI-powered code editing is enabled using Morph.")
             return
 
-        print_info("Suna uses Morph for fast, intelligent code editing.")
+        print_info("Helio o1 uses Morph for fast, intelligent code editing.")
         print_info("This is optional but highly recommended for the best experience.")
 
         if openrouter_key:
@@ -814,7 +814,7 @@ class SetupWizard:
                 "Found existing search API keys. Press Enter to keep current values or type new ones."
             )
         else:
-            print_info("Suna uses Tavily for search and Firecrawl for web scraping.")
+            print_info("Helio o1 uses Tavily for search and Firecrawl for web scraping.")
             print_info(
                 "Get a Tavily key at https://tavily.com and a Firecrawl key at https://firecrawl.dev"
             )
@@ -1060,7 +1060,7 @@ class SetupWizard:
             print_info("Press Enter to keep current value or type a new one.")
         else:
             print_info("Webhook base URL is required for workflows to receive callbacks.")
-            print_info("This must be a publicly accessible URL where Suna API can receive webhooks from Supabase Cron.")
+            print_info("This must be a publicly accessible URL where Helio o1 API can receive webhooks from Supabase Cron.")
             print_info("For local development, you can use services like ngrok or localtunnel to expose http://localhost:8000 to the internet.")
 
         self.env_vars["webhook"]["WEBHOOK_BASE_URL"] = self._get_input(
@@ -1106,7 +1106,7 @@ class SetupWizard:
             "NEXT_PUBLIC_URL": "http://localhost:3000",
         }
 
-        backend_env_content = f"# Generated by Suna install script for '{self.env_vars['setup_method']}' setup\n\n"
+        backend_env_content = f"# Generated by Helio o1 install script for '{self.env_vars['setup_method']}' setup\n\n"
         for key, value in backend_env.items():
             backend_env_content += f"{key}={value or ''}\n"
 
@@ -1126,7 +1126,7 @@ class SetupWizard:
             "KORTIX_ADMIN_API_KEY": self.env_vars["kortix"]["KORTIX_ADMIN_API_KEY"],
         }
 
-        frontend_env_content = "# Generated by Suna install script\n\n"
+        frontend_env_content = "# Generated by Helio o1 install script\n\n"
         for key, value in frontend_env.items():
             frontend_env_content += f"{key}={value or ''}\n"
 
@@ -1269,10 +1269,10 @@ class SetupWizard:
             sys.exit(1)
 
     def start_suna(self):
-        """Starts Suna using Docker Compose or shows instructions for manual startup."""
-        print_step(17, self.total_steps, "Starting Suna")
+        """Starts Helio o1 using Docker Compose or shows instructions for manual startup."""
+        print_step(17, self.total_steps, "Starting Helio o1")
         if self.env_vars["setup_method"] == "docker":
-            print_info("Starting Suna with Docker Compose...")
+            print_info("Starting Helio o1 with Docker Compose...")
             try:
                 subprocess.run(
                     ["docker", "compose", "up", "-d", "--build"],
@@ -1289,13 +1289,13 @@ class SetupWizard:
                     shell=IS_WINDOWS,
                 )
                 if "backend" in result.stdout and "frontend" in result.stdout:
-                    print_success("Suna services are starting up!")
+                    print_success("Helio o1 services are starting up!")
                 else:
                     print_warning(
                         "Some services might not be running. Check 'docker compose ps' for details."
                     )
             except subprocess.SubprocessError as e:
-                print_error(f"Failed to start Suna with Docker Compose: {e}")
+                print_error(f"Failed to start Helio o1 with Docker Compose: {e}")
                 print_info(
                     "Try running 'docker compose up --build' manually to diagnose the issue."
                 )
@@ -1305,17 +1305,17 @@ class SetupWizard:
 
     def final_instructions(self):
         """Shows final instructions to the user."""
-        print(f"\n{Colors.GREEN}{Colors.BOLD}✨ Suna Setup Complete! ✨{Colors.ENDC}\n")
+        print(f"\n{Colors.GREEN}{Colors.BOLD}✨ Helio o1 Setup Complete! ✨{Colors.ENDC}\n")
 
         print_info(
-            f"Suna is configured with your LLM API keys and ready to use."
+            f"Helio o1 is configured with your LLM API keys and ready to use."
         )
         print_info(
             f"Delete the {Colors.RED}.setup_progress{Colors.ENDC} file to reset the setup."
         )
 
         if self.env_vars["setup_method"] == "docker":
-            print_info("Your Suna instance is ready to use!")
+            print_info("Your Helio o1 instance is ready to use!")
             print("\nUseful Docker commands:")
             print(
                 f"  {Colors.CYAN}docker compose ps{Colors.ENDC}         - Check service status"
@@ -1324,14 +1324,14 @@ class SetupWizard:
                 f"  {Colors.CYAN}docker compose logs -f{Colors.ENDC}    - Follow logs"
             )
             print(
-                f"  {Colors.CYAN}docker compose down{Colors.ENDC}       - Stop Suna services"
+                f"  {Colors.CYAN}docker compose down{Colors.ENDC}       - Stop Helio o1 services"
             )
             print(
-                f"  {Colors.CYAN}python start.py{Colors.ENDC}           - To start or stop Suna services"
+                f"  {Colors.CYAN}python start.py{Colors.ENDC}           - To start or stop Helio o1 services"
             )
         else:
             print_info(
-                "To start Suna, you need to run these commands in separate terminals:"
+                "To start Helio o1, you need to run these commands in separate terminals:"
             )
             print(
                 f"\n{Colors.BOLD}1. Start Infrastructure (in project root):{Colors.ENDC}"
@@ -1351,7 +1351,7 @@ class SetupWizard:
                 f"{Colors.CYAN}   cd backend && uv run dramatiq run_agent_background{Colors.ENDC}"
             )
 
-        print("\nOnce all services are running, access Suna at: http://localhost:3000")
+        print("\nOnce all services are running, access Helio o1 at: http://localhost:3000")
 
 
 if __name__ == "__main__":
