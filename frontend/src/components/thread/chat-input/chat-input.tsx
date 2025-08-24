@@ -381,7 +381,7 @@ export const ChatInput = forwardRef<ChatInputHandles, ChatInputProps>(
             <div className="w-full text-sm flex flex-col justify-between items-start rounded-lg">
               <CardContent className={`w-full p-2 pt-0 pb-3 bg-white dark:bg-sidebar-accent rounded-3xl relative overflow-hidden`}>
                 {/* Border Beam Effect */}
-                <div className="absolute inset-0 rounded-[inherit] overflow-hidden">
+                {/* <div className="absolute inset-0 rounded-[inherit] overflow-hidden">
                   <BorderBeam 
                     duration={4}
                     borderWidth={1}
@@ -395,7 +395,7 @@ export const ChatInput = forwardRef<ChatInputHandles, ChatInputProps>(
                     size={240}
                     className="from-transparent via-helium-green to-transparent"
                   />
-                </div>
+                </div> */}
                 <AttachmentGroup
                   files={uploadedFiles || []}
                   sandboxId={sandboxId}

@@ -581,6 +581,30 @@ export function FileAttachment({
     const safeStyle = { ...customStyle };
     delete safeStyle.height;
     delete (safeStyle as any)['--attachment-height'];
+    
+    // Get the appropriate icon path based on file type
+    const getIconPath = () => {
+        switch (fileType) {
+            case 'pdf':
+                return '/icons/pdf.svg';
+            case 'markdown':
+                return '/icons/html.svg';
+            case 'csv':
+                return '/icons/csv.svg';
+            case 'document':
+                return '/icons/doc.svg';
+            case 'html':
+                return '/icons/html.svg';
+            case 'spreadsheet':
+                return '/icons/csv.svg';
+            case 'image':
+                return '/icons/image-icon.svg';
+            case 'code':
+                return '/icons/code-icon.svg';
+            default:
+                return '/icons/file-icon.svg';
+        }
+    };
 
     const fileButton = (
         <button
@@ -599,10 +623,20 @@ export function FileAttachment({
             style={safeStyle}
             title={filename}
         >
-            <div className="relative min-w-[54px] w-[54px] h-full aspect-square flex-shrink-0 bg-black/5 dark:bg-white/5">
-                <div className="flex items-center justify-center h-full w-full">
-                    <IconComponent className="h-5 w-5 text-black/60 dark:text-white/60" />
-                </div>
+            <div className="relative min-w-[47px] h-[54px] flex-shrink-0 flex items-center justify-center">
+                <img 
+                    src={getIconPath()} 
+                    alt={fileType} 
+                    className={cn(
+                        "h-9 w-9 object-contain",
+                        isDocumentType ? "opacity-90" : "opacity-70"
+                    )} 
+                    onError={(e) => {
+                        // Fallback to default icon if custom icon fails to load
+                        const target = e.target as HTMLImageElement;
+                        target.src = '/icons/html.svg';
+                    }}
+                />
             </div>
 
             <div className="flex-1 min-w-0 flex flex-col justify-center p-2 pl-3 overflow-hidden">
