@@ -157,19 +157,21 @@ export function CompleteToolView({
   };
 
   return (
-    <Card className="gap-0 flex border shadow-none p-0 rounded-lg flex-col h-full overflow-hidden bg-card">
-      <CardHeader className="h-9 bg-gradient-to-t from-zinc-50/80 to-zinc-200/70 dark:from-zinc-900/90 dark:to-zinc-800/90 text-center backdrop-blur-lg border-b p-2 px-4 space-y-2 rounded-t-lg">
+    <Card className="gap-0 flex border shadow-none border-t border-b-0 border-x-0 p-0 rounded-none flex-col h-full overflow-hidden bg-card">
+      <CardHeader className="h-14 bg-zinc-50/80 dark:bg-zinc-900/80 backdrop-blur-sm border-b p-2 px-4 space-y-2">
         <div className="flex flex-row items-center justify-between">
-          <div className="flex w-full justify-center items-center gap-1">
-            <CheckCircle2 className="w-4 h-4 text-muted-foreground" />
+          <div className="flex items-center gap-2">
+            <div className="relative p-2 rounded-lg bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 border border-emerald-500/20">
+              <CheckCircle2 className="w-5 h-5 text-emerald-500 dark:text-emerald-400" />
+            </div>
             <div>
-              <CardTitle className="text-sm font-semibold text-muted-foreground">
+              <CardTitle className="text-base font-medium text-zinc-900 dark:text-zinc-100">
                 {toolTitle}
               </CardTitle>
             </div>
           </div>
 
-          {/* {!isStreaming && (
+          {!isStreaming && (
             <Badge
               variant="secondary"
               className={
@@ -185,7 +187,7 @@ export function CompleteToolView({
               )}
               {actualIsSuccess ? 'Completed' : 'Failed'}
             </Badge>
-          )} */}
+          )}
 
           {isStreaming && (
             <Badge className="bg-gradient-to-b from-blue-200 to-blue-100 text-blue-700 dark:from-blue-800/50 dark:to-blue-900/60 dark:text-blue-300">
@@ -215,9 +217,9 @@ export function CompleteToolView({
 
             {/* Text/Summary Section */}
             {(text || completeData.summary || completeData.result) && (
-              <div className="space-y-1">
-                <div>
-                  <Markdown className="text-sm leading-none prose prose-sm dark:prose-invert chat-markdown max-w-none [&>:first-child]:mt-0 [&>:last-child]:mb-0">
+              <div className="space-y-2">
+                <div className="bg-muted/50 rounded-2xl p-4 border border-border">
+                  <Markdown className="text-sm prose prose-sm dark:prose-invert chat-markdown max-w-none [&>:first-child]:mt-0 prose-headings:mt-3">
                     {text || completeData.summary || completeData.result}
                   </Markdown>
                 </div>
@@ -348,7 +350,7 @@ export function CompleteToolView({
             ) : null}
 
             {/* Tasks Completed Section */}
-            {/* {completeData.tasksCompleted && completeData.tasksCompleted.length > 0 && (
+            {completeData.tasksCompleted && completeData.tasksCompleted.length > 0 && (
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                   <ListChecks className="h-4 w-4" />
@@ -364,7 +366,7 @@ export function CompleteToolView({
                         <CheckCircle className="h-4 w-4 text-emerald-500" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <Markdown className="text-sm leading-none prose prose-sm dark:prose-invert chat-markdown max-w-none [&>:first-child]:mt-0 [&>:last-child]:mb-0">
+                        <Markdown className="text-sm prose prose-sm dark:prose-invert chat-markdown max-w-none [&>:first-child]:mt-0 [&>:last-child]:mb-0">
                           {task}
                         </Markdown>
                       </div>
@@ -372,7 +374,7 @@ export function CompleteToolView({
                   ))}
                 </div>
               </div>
-            )} */}
+            )}
 
             {/* Progress Section for Streaming */}
             {isStreaming && (
@@ -408,7 +410,7 @@ export function CompleteToolView({
       </CardContent>
 
       {/* Footer */}
-      <div className="px-4 py-2 h-fit bg-white backdrop-blur-sm border-t border-zinc-200 dark:border-zinc-800 flex justify-between items-center gap-4 rounded-b-lg">
+      <div className="px-4 py-2 h-10 bg-gradient-to-r from-zinc-50/90 to-zinc-100/90 dark:from-zinc-900/90 dark:to-zinc-800/90 backdrop-blur-sm border-t border-zinc-200 dark:border-zinc-800 flex justify-between items-center gap-4">
         <div className="h-full flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
           <Badge className="h-6 py-0.5" variant="outline">
             <CheckCircle2 className="h-3 w-3 mr-1" />

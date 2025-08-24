@@ -5,9 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { UsagePreview } from './usage-preview';
-import { FloatingToolPreview, ToolCallInput,type AgentStatus } from './floating-tool-preview';
+import { FloatingToolPreview, ToolCallInput } from './floating-tool-preview';
 import { isLocalMode } from '@/lib/config';
-export type { AgentStatus };
+
 export interface ChatSnackProps {
     // Tool preview props
     toolCalls?: ToolCallInput[];
@@ -15,12 +15,13 @@ export interface ChatSnackProps {
     onExpandToolPreview?: () => void;
     agentName?: string;
     showToolPreview?: boolean;
-    agentStatus: AgentStatus;
+
     // Usage preview props
     showUsagePreview?: 'tokens' | 'upgrade' | false;
     subscriptionData?: any;
     onCloseUsage?: () => void;
     onOpenUpgrade?: () => void;
+
     // General props
     isVisible?: boolean;
 }
@@ -36,7 +37,6 @@ export const ChatSnack: React.FC<ChatSnackProps> = ({
     showToolPreview = false,
     showUsagePreview = false,
     subscriptionData,
-    agentStatus,
     onCloseUsage,
     onOpenUpgrade,
     isVisible = false,
@@ -91,7 +91,6 @@ export const ChatSnack: React.FC<ChatSnackProps> = ({
                     currentIndex={toolCallIndex}
                     onExpand={onExpandToolPreview || (() => { })}
                     agentName={agentName}
-                    agentStatus={agentStatus}
                     isVisible={true}
                     showIndicators={hasMultiple}
                     indicatorIndex={currentView}
