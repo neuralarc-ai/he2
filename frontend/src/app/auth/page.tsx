@@ -316,10 +316,10 @@ function LoginContent() {
 
         {/* Right Section Container */}
         <div
-          className={`flex flex-col items-center w-full max-w-[500px] ${isSignUp ? 'mb-[2rem]' : 'mb-0'}`}
+          className={`flex flex-col items-center w-full max-w-[500px] ${isSignUp ? 'mb-0' : 'mb-0'}`}
         >
           {/* Back to home button - Above the card */}
-          <div className="hidden lg:flex w-full justify-center mb-4">
+          {/* <div className="hidden lg:flex w-full justify-center mb-4">
             <Link
               href="/"
               className="inline-flex items-center gap-2 text-sm text-muted-foreground  dark:text-white transition-colors"
@@ -327,7 +327,7 @@ function LoginContent() {
               <ArrowLeft className="h-4 w-4" />
               Back to home
             </Link>
-          </div>
+          </div> */}
           {/* Mobile Header - Only shows below 1024px */}
           <Link href="/">
             <div className="lg:hidden w-full mb-4 flex justify-center cursor-pointer">
@@ -360,15 +360,17 @@ function LoginContent() {
               ease: [0.4, 0, 0.2, 1],
               delay: 0.4,
             }}
-            className={`bg-white rounded-[24px] shadow-lg flex flex-col justify-center w-full lg:w-[500px] ${isSignUp ? 'min-h-[550px] lg:h-[550px]' : 'min-h-[540px] lg:h-[540px]'}`}
+            className={`bg-white rounded-[24px] shadow-lg flex flex-col justify-center w-full lg:w-[500px] ${isSignUp ? 'min-h-[654px] lg:h-[550px]' : 'min-h-[644px] lg:h-[540px]'}`}
             style={{
               paddingLeft: '16px',
               paddingRight: '16px',
             }}
           >
             <div className="w-full px-2 sm:px-4 lg:px-0">
-              <form className={`mb-3 ${isSignUp ? 'space-y-1.5' : 'space-y-2'}`}>
-                <div className="space-y-1.5">
+            <form
+  className={`${isSignUp ? 'space-y-3' : 'mb-[3rem] space-y-5'}`}
+>
+                <div className="space-y-3">
                   <label
                     htmlFor="email"
                     className="text-sm font-normal text-black mb-1.5 block"
@@ -380,7 +382,7 @@ function LoginContent() {
                     name="email"
                     type="email"
                     placeholder="Email address"
-                    className="h-12 xs:h-14 py-3 rounded-[50px] text-black placeholder:text-black/70 text-sm xs:text-base !bg-white dark:!bg-white !border-gray-200 dark:!border-gray-200 focus:!bg-white focus:!text-black autofill:!bg-white autofill:!text-black"
+                    className="h-13 xs:h-14 py-3 rounded-[50px] text-black placeholder:text-black/70 text-sm xs:text-base !bg-white dark:!bg-white !border-gray-200 dark:!border-gray-200 focus:!bg-white focus:!text-black autofill:!bg-white autofill:!text-black"
                     style={{
                       backgroundColor: 'white !important',
                       color: 'black !important',
@@ -388,7 +390,7 @@ function LoginContent() {
                     required
                   />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-3">
                   <div className="flex justify-between items-center">
                                         <label
                       htmlFor="password"
@@ -411,7 +413,7 @@ function LoginContent() {
                     name="password"
                     type="password"
                     placeholder="Password"
-                    className="h-12 xs:h-14 py-3 rounded-[50px] text-black placeholder:text-black/70 text-sm xs:text-base !bg-white dark:!bg-white !border-gray-200 dark:!border-gray-200 focus:!bg-white focus:!text-black autofill:!bg-white autofill:!text-black"
+                    className="h-13 xs:h-14 py-3 rounded-[50px] text-black placeholder:text-black/70 text-sm xs:text-base !bg-white dark:!bg-white !border-gray-200 dark:!border-gray-200 focus:!bg-white focus:!text-black autofill:!bg-white autofill:!text-black"
                     style={{
                       backgroundColor: 'white !important',
                       color: 'black !important',
@@ -420,7 +422,7 @@ function LoginContent() {
                   />
                 </div>
                 {isSignUp && (
-                  <div className="space-y-1.5">
+                  <div className="space-y-3">
                     <label
                       htmlFor="confirmPassword"
                       className="text-sm font-medium text-black mb-1.5 block"
@@ -432,7 +434,7 @@ function LoginContent() {
                       name="confirmPassword"
                       type="password"
                       placeholder="Confirm password"
-                      className="h-12 xs:h-14 py-3 rounded-[50px] text-black placeholder:text-black/70 text-sm xs:text-base !bg-white dark:!bg-white !border-gray-200 dark:!border-gray-200 focus:!bg-white focus:!text-black autofill:!bg-white autofill:!text-black"
+                      className="h-13 xs:h-14 py-3 rounded-[50px] text-black placeholder:text-black/70 text-sm xs:text-base !bg-white dark:!bg-white !border-gray-200 dark:!border-gray-200 focus:!bg-white focus:!text-black autofill:!bg-white autofill:!text-black"
                       style={{
                         backgroundColor: 'white !important',
                         color: 'black !important',
@@ -445,7 +447,7 @@ function LoginContent() {
                   <div className="relative">
                     <SubmitButton
                       formAction={isSignUp ? handleSignUp : handleSignIn}
-                      className="w-full h-11 xs:h-12 sm:h-14 text-white rounded-[50px] text-sm xs:text-base auth-button py-3"
+                      className="w-full h-12 xs:h-12 sm:h-14 text-white rounded-[50px] text-sm xs:text-base auth-button py-3"
                       pendingText={
                         isSignUp ? 'Creating account...' : 'Initiating...'
                       }

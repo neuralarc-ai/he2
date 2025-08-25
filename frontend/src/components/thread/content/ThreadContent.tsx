@@ -1143,7 +1143,7 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                         <div className="flex flex-col gap-1 items-end max-w-[85%]">
                           <div className={cn('flex w-fit')}>
                             <div
-                              className="break-words overflow-hidden border border-border bg-card text-foreground dark:text-foreground-inverted  rounded-l-2xl rounded-tr-2xl rounded-br-sm px-4 py-2 w-full"
+                              className="break-words overflow-hidden border dark:bg-[#2C2C2C] border-border bg-card text-foreground dark:text-foreground-inverted  rounded-l-2xl rounded-tr-2xl rounded-br-sm px-4 py-2 w-full"
                             >
                               <div className="space-y-4 min-w-0 flex-1">
                                 {cleanContent && (
