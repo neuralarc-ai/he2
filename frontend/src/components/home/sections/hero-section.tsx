@@ -158,7 +158,11 @@ export function HeroSection() {
   // Handle ChatInput submission
   const handleChatInputSubmit = async (
     message: string,
-    options?: { model_name?: string; enable_thinking?: boolean }
+    options?: { 
+      model_name?: string; 
+      enable_thinking?: boolean;
+      mode?: 'normal' | 'agent' | 'sandbox';
+    }
   ) => {
     if ((!message.trim() && !chatInputRef.current?.getPendingFiles().length) || isSubmitting) return;
 
@@ -189,11 +193,20 @@ export function HeroSection() {
         formData.append('files', file, normalizedName);
       });
 
-      if (options?.model_name) formData.append('model_name', options.model_name);
-      formData.append('enable_thinking', String(options?.enable_thinking ?? false));
-      formData.append('reasoning_effort', 'low');
-      formData.append('stream', 'true');
-      formData.append('enable_context_manager', 'false');
+      // Handle mode-based configuration
+      if (options?.mode) {
+        const modeConfig = getModeConfiguration(options.mode, options.enable_thinking);
+        formData.append('enable_thinking', String(options.enable_thinking ?? false));
+        formData.append('reasoning_effort', modeConfig.reasoning_effort);
+        formData.append('enable_context_manager', String(modeConfig.enable_context_manager));
+      } else {
+        // Fallback to default configuration
+        if (options?.model_name) formData.append('model_name', options.model_name);
+        formData.append('enable_thinking', String(options?.enable_thinking ?? false));
+        formData.append('reasoning_effort', 'low');
+        formData.append('stream', 'true');
+        formData.append('enable_context_manager', 'false');
+      }
 
       const result = await initiateAgentMutation.mutateAsync(formData);
 
@@ -228,6 +241,32 @@ export function HeroSection() {
       }
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  // Helper function to get mode-based configuration
+  const getModeConfiguration = (mode: string, thinkingEnabled: boolean) => {
+    switch(mode) {
+      case 'normal':
+        return {
+          enable_context_manager: false,
+          reasoning_effort: 'low'
+        };
+      case 'agent':
+        return {
+          enable_context_manager: true,
+          reasoning_effort: thinkingEnabled ? 'medium' : 'low'
+        };
+      case 'sandbox':
+        return {
+          enable_context_manager: true,
+          reasoning_effort: thinkingEnabled ? 'high' : 'medium'
+        };
+      default:
+        return {
+          enable_context_manager: false,
+          reasoning_effort: 'low'
+        };
     }
   };
 

@@ -44,6 +44,9 @@ export interface ChatInputProps {
       model_name?: string;
       enable_thinking?: boolean;
       agent_id?: string;
+      mode?: 'normal' | 'agent' | 'sandbox';
+      enable_context_manager?: boolean;
+      reasoning_effort?: string;
     },
   ) => void;
   placeholder?: string;
@@ -138,6 +141,7 @@ export const ChatInput = forwardRef<ChatInputHandles, ChatInputProps>(
     const [pendingFiles, setPendingFiles] = useState<File[]>([]);
     const [isUploading, setIsUploading] = useState(false);
     const [isDraggingOver, setIsDraggingOver] = useState(false);
+    const [selectedMode, setSelectedMode] = useState<'normal' | 'agent' | 'sandbox'>('normal');
 
     const [registryDialogOpen, setRegistryDialogOpen] = useState(false);
     const [showSnackbar, setShowSnackbar] = useState(defaultShowSnackbar);
@@ -247,12 +251,16 @@ export const ChatInput = forwardRef<ChatInputHandles, ChatInputProps>(
         thinkingEnabled = true;
       }
 
+      // Determine mode-based configuration
+      const modeConfig = getModeConfiguration(selectedMode, thinkingEnabled);
+
       posthog.capture("task_prompt_submitted", { message });
 
       onSubmit(message, {
         agent_id: selectedAgentId,
         model_name: baseModelName,
         enable_thinking: thinkingEnabled,
+        ...modeConfig,
       });
 
       if (!isControlled) {
@@ -260,6 +268,32 @@ export const ChatInput = forwardRef<ChatInputHandles, ChatInputProps>(
       }
 
       setUploadedFiles([]);
+    };
+
+    // Helper function to get mode-based configuration
+    const getModeConfiguration = (mode: string, thinkingEnabled: boolean) => {
+      switch(mode) {
+        case 'normal':
+          return {
+            enable_context_manager: false,
+            reasoning_effort: 'low'
+          };
+        case 'agent':
+          return {
+            enable_context_manager: true,
+            reasoning_effort: thinkingEnabled ? 'medium' : 'low'
+          };
+        case 'sandbox':
+          return {
+            enable_context_manager: true,
+            reasoning_effort: thinkingEnabled ? 'high' : 'medium'
+          };
+        default:
+          return {
+            enable_context_manager: false,
+            reasoning_effort: 'low'
+          };
+      }
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -270,6 +304,13 @@ export const ChatInput = forwardRef<ChatInputHandles, ChatInputProps>(
         setUncontrolledValue(newValue);
       }
     };
+
+    // Auto-switch to sandbox mode when files are uploaded
+    useEffect(() => {
+      if (uploadedFiles.length > 0 && selectedMode !== 'sandbox') {
+        setSelectedMode('sandbox');
+      }
+    }, [uploadedFiles.length, selectedMode]);
 
     const handleTranscription = (transcribedText: string) => {
       const currentValue = isControlled ? controlledValue : uncontrolledValue;
@@ -446,6 +487,8 @@ export const ChatInput = forwardRef<ChatInputHandles, ChatInputProps>(
                   selectedAgentId={selectedAgentId}
                   onAgentSelect={onAgentSelect}
                   hideAgentSelection={hideAgentSelection}
+                  selectedMode={selectedMode}
+                  onModeChange={setSelectedMode}
                 />
               </CardContent>
             </div>

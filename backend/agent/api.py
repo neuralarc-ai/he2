@@ -1390,16 +1390,16 @@ async def get_agents(
 
                 for row in (versions_result.data or []):
                     config = row.get('config') or {}
-                    tools = config.get('tools') or {}
+                    agent_tools_config = config.get('tools') or {}
                     version_dict = {
                         'version_id': row['version_id'],
                         'agent_id': row['agent_id'],
                         'version_number': row['version_number'],
                         'version_name': row['version_name'],
                         'system_prompt': config.get('system_prompt', ''),
-                        'configured_mcps': tools.get('mcp', []),
-                        'custom_mcps': tools.get('custom_mcp', []),
-                        'agentpress_tools': tools.get('agentpress', {}),
+                        'configured_mcps': agent_tools_config.get('mcp', []),
+                        'custom_mcps': agent_tools_config.get('custom_mcp', []),
+                        'agentpress_tools': agent_tools_config.get('agentpress', {}),
                         'is_active': row.get('is_active', False),
                         'created_at': row.get('created_at'),
                         'updated_at': row.get('updated_at') or row.get('created_at'),
