@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   BadgeCheck,
   Bell,
@@ -11,7 +12,6 @@ import {
   Command,
   CreditCard,
   Key,
-  LogOut,
   Plus,
   Settings,
   User,
@@ -19,7 +19,6 @@ import {
   Sun,
   Moon,
   KeyRound,
-  Plug,
   EllipsisIcon
 } from 'lucide-react';
 import { useAccounts } from '@/hooks/use-accounts';
@@ -54,6 +53,29 @@ import { createClient } from '@/lib/supabase/client';
 import { useTheme } from 'next-themes';
 import { isLocalMode } from '@/lib/config';
 import { useFeatureFlag } from '@/lib/feature-flags';
+
+// Custom Logout Icon component using the logout.svg
+const LogoutIcon = ({ className }: { className?: string }) => (
+  <svg 
+    width="16" 
+    height="16" 
+    viewBox="0 0 43 42" 
+    fill="none" 
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
+    <path 
+      d="M2 21L1.21913 20.3753L0.719375 21L1.21913 21.6247L2 21ZM20 22C20.5523 22 21 21.5523 21 21C21 20.4477 20.5523 20 20 20V21V22ZM10 11L9.21913 10.3753L1.21913 20.3753L2 21L2.78087 21.6247L10.7809 11.6247L10 11ZM2 21L1.21913 21.6247L9.21913 31.6247L10 31L10.7809 30.3753L2.78087 20.3753L2 21ZM2 21V22H20V21V20H2V21Z" 
+      fill="currentColor"
+    />
+    <path 
+      d="M18 13.2639V8.38851C18 6.77017 18 5.961 18.474 5.4015C18.9479 4.84201 19.7461 4.70899 21.3424 4.44293L35.0136 2.1644C38.2567 1.62388 39.8782 1.35363 40.9391 2.25232C42 3.15102 42 4.79493 42 8.08276V33.9172C42 37.2051 42 38.849 40.9391 39.7477C39.8782 40.6464 38.2567 40.3761 35.0136 39.8356L21.3424 37.5571C19.7461 37.291 18.9479 37.158 18.474 36.5985C18 36.039 18 35.2298 18 33.6115V29.1319" 
+      stroke="currentColor" 
+      strokeLinecap="round" 
+      strokeLinejoin="round"
+    />
+  </svg>
+);
 
 export function NavUserWithTeams({
   user,
@@ -229,8 +251,14 @@ export function NavUserWithTeams({
                     }
                     className="gap-1 px-2"
                   >
-                    <div className="flex size-4 items-center justify-center">
-                      <Command className="size-3 shrink-0" />
+                    <div className="flex size-8 items-center justify-center">
+                      <Image 
+                        src="/icons/user.svg" 
+                        alt="User" 
+                        width={28} 
+                        height={28}
+                        className="text-foreground"
+                      />
                     </div>
                     {personalAccount.name}
                     <DropdownMenuShortcut>⌘1</DropdownMenuShortcut>
@@ -276,8 +304,14 @@ export function NavUserWithTeams({
                     setShowNewTeamDialog(true)
                   }}
                 >
-                  <div className="bg-background flex size-6 items-center justify-center rounded-md border">
-                    <Plus className="size-4" />
+                  <div className="flex size-8 items-center justify-center">
+                    <Image 
+                      src="/icons/team.svg" 
+                      alt="Team" 
+                      width={32} 
+                      height={32}
+                      className="text-foreground"
+                    />
                   </div>
                   <div className="text-muted-foreground font-medium">Add team</div>
                 </DropdownMenuItem>
@@ -287,16 +321,22 @@ export function NavUserWithTeams({
 
               {/* User Settings Section */}
               <DropdownMenuGroup>
-                <DropdownMenuItem asChild>
+                {/* <DropdownMenuItem asChild>
                   <Link href="/settings/billing">
                   <CreditCard className="h-4 w-4" />
                     Billing
                   </Link>
-                </DropdownMenuItem>
+                </DropdownMenuItem> */}
                 {!flagLoading && customAgentsEnabled && (
                   <DropdownMenuItem asChild>
                     <Link href="/settings/credentials">
-                    <Plug className="h-4 w-4" />
+                      <Image 
+                        src="/icons/integrations.svg" 
+                        alt="Integrations" 
+                        width={20} 
+                        height={20}
+                        className="h-5 w-5 text-black dark:text-white"
+                      />
                       Integrations
                     </Link>
                   </DropdownMenuItem>
@@ -331,7 +371,7 @@ export function NavUserWithTeams({
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuItem className='text-destructive focus:text-destructive focus:bg-destructive/10' onClick={handleLogout}>
-                <LogOut className="h-4 w-4 text-destructive" />
+                <LogoutIcon className="h-4 w-4 text-destructive" />
                 Log out
               </DropdownMenuItem>
             </DropdownMenuContent>
