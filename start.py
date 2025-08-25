@@ -64,7 +64,7 @@ def print_manual_instructions():
     """Prints instructions for manually starting Suna services."""
     print(f"\n{Colors.BLUE}{Colors.BOLD}🚀 Manual Startup Instructions{Colors.ENDC}\n")
 
-    print("To start Suna, you need to run these commands in separate terminals:\n")
+    print("To start Helio o1, you need to run these commands in separate terminals:\n")
 
     print(f"{Colors.BOLD}1. Start Infrastructure (in project root):{Colors.ENDC}")
     print(f"{Colors.CYAN}   docker compose up redis -d{Colors.ENDC}\n")
