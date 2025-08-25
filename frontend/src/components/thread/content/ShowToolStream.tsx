@@ -9,6 +9,7 @@ import {
 } from '@/components/thread/utils';
 import { CodeBlockCode } from '@/components/ui/code-block';
 import { getLanguageFromFileName } from '../tool-views/file-operation/_utils';
+import { useTheme } from 'next-themes';
 
 // Only show streaming for file operation tools
 const FILE_OPERATION_TOOLS = new Set([
@@ -41,7 +42,7 @@ export const ShowToolStream: React.FC<ShowToolStreamProps> = ({
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
   // Use ref to store stable start time - only set once!
   const stableStartTimeRef = useRef<number | null>(null);
-
+  const { theme } = useTheme();
   useEffect(() => {
     const initHighlighter = async () => {
       const shikiHighlighter = await createHighlighter({
@@ -155,50 +156,88 @@ export const ShowToolStream: React.FC<ShowToolStreamProps> = ({
         }
 
         // Detect language from filename parameter
-        const paramDisplayForLang = extractPrimaryParam(rawToolName || '', content);
-        let language = getLanguageFromFileName(paramDisplayForLang || '') || 'plaintext';
-        
+        const paramDisplayForLang = extractPrimaryParam(
+          rawToolName || '',
+          content,
+        );
+        let language =
+          getLanguageFromFileName(paramDisplayForLang || '') || 'plaintext';
+
         // Force CSS language for testing if content looks like CSS
-        if (contentToHighlight.includes('background-color') || contentToHighlight.includes('font-family')) {
+        if (
+          contentToHighlight.includes('background-color') ||
+          contentToHighlight.includes('font-family')
+        ) {
           language = 'css';
         }
         // Force JavaScript if content has JS patterns
-        else if (contentToHighlight.includes('function') || contentToHighlight.includes('const ') || contentToHighlight.includes('let ')) {
+        else if (
+          contentToHighlight.includes('function') ||
+          contentToHighlight.includes('const ') ||
+          contentToHighlight.includes('let ')
+        ) {
           language = 'javascript';
         }
         // Force HTML if content has HTML tags
-        else if (contentToHighlight.includes('<div') || contentToHighlight.includes('<html')) {
+        else if (
+          contentToHighlight.includes('<div') ||
+          contentToHighlight.includes('<html')
+        ) {
           language = 'html';
         }
         // Force TypeScript if content has TS patterns
-        else if (contentToHighlight.includes(': string') || contentToHighlight.includes(': number') || contentToHighlight.includes('interface ') || contentToHighlight.includes('type ')) {
-            language = 'typescript';
+        else if (
+          contentToHighlight.includes(': string') ||
+          contentToHighlight.includes(': number') ||
+          contentToHighlight.includes('interface ') ||
+          contentToHighlight.includes('type ')
+        ) {
+          language = 'typescript';
         }
         // Force React (TSX) if content has React patterns
-        else if (contentToHighlight.includes('React.FC') || contentToHighlight.includes('useState') || /<[A-Z]/.test(contentToHighlight)) {
-            language = 'tsx';
+        else if (
+          contentToHighlight.includes('React.FC') ||
+          contentToHighlight.includes('useState') ||
+          /<[A-Z]/.test(contentToHighlight)
+        ) {
+          language = 'tsx';
         }
         // Force Python if content has Python patterns
-        else if (contentToHighlight.includes('def ') || (contentToHighlight.includes('import ') && !contentToHighlight.includes('import {'))) {
-            language = 'python';
+        else if (
+          contentToHighlight.includes('def ') ||
+          (contentToHighlight.includes('import ') &&
+            !contentToHighlight.includes('import {'))
+        ) {
+          language = 'python';
         }
         // Force Java if content has Java patterns
-        else if (contentToHighlight.includes('public class') || contentToHighlight.includes('System.out.println')) {
-            language = 'java';
+        else if (
+          contentToHighlight.includes('public class') ||
+          contentToHighlight.includes('System.out.println')
+        ) {
+          language = 'java';
         }
         // Force C if content has C patterns
-        else if (contentToHighlight.includes('#include') || contentToHighlight.includes('printf(')) {
-            language = 'c';
+        else if (
+          contentToHighlight.includes('#include') ||
+          contentToHighlight.includes('printf(')
+        ) {
+          language = 'c';
         }
 
         // Ensure language is loaded
         if (!highlighter.getLoadedLanguages().includes(language)) {
-          await highlighter.loadLanguage(language as any).catch((e: any) => console.error(`Failed to load language ${language}`, e));
+          await highlighter
+            .loadLanguage(language as any)
+            .catch((e: any) =>
+              console.error(`Failed to load language ${language}`, e),
+            );
         }
 
         const html = highlighter.codeToHtml(contentToHighlight, {
           lang: language,
-          theme: 'light-plus', // force light theme
+          theme: theme === 'dark' ? 'dark-plus' : 'light-plus',
+          defaultColor: false, // ⬅ prevents hardcoded background
         });
 
         setHighlightedContent(html);
@@ -269,9 +308,9 @@ export const ShowToolStream: React.FC<ShowToolStreamProps> = ({
                     'linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%)',
                 }}
               >
-                <div className="rounded-lg overflow-x-auto bg-[#ffffff]">
+                <div className="rounded-lg overflow-x-auto bg-white dark:bg-neutral-900">
                   <div
-                    className="bg-[#ffffff] p-4 rounded-lg"
+                    className="p-4 rounded-lg"
                     dangerouslySetInnerHTML={{
                       __html:
                         highlightedContent ||

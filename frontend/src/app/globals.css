@@ -771,3 +771,10 @@
     }
   }
   }
+
+  pre.shiki {
+    background-color: #fff;
+  }
+  pre.shiki {
+    background: transparent !important;
+  }
