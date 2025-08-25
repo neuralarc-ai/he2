@@ -462,8 +462,8 @@ export function renderMarkdownContent(
 
 export interface ThreadContentProps {
   messages: UnifiedMessage[];
-  isSidePanelOpen;
-  leftSidebarState;
+  isSidePanelOpen?;
+  leftSidebarState?;
   streamingTextContent?: string;
   streamingToolCall?: any;
   agentStatus: 'idle' | 'running' | 'connecting' | 'error';
@@ -1482,7 +1482,7 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                     <div className="flex items-center gap-1.5"></div>
 
                                     {/* Right side - Action buttons */}
-                                    <div className="flex items-center gap-1">
+                                    <div className="flex items-center gap-1 pb-4">
                                       {/* Copy Button */}
                                       <Tooltip>
                                         <TooltipTrigger asChild>

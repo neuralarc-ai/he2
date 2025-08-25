@@ -190,16 +190,16 @@ export function SidebarLeft({
                <Image
                                 src="/icons/plus-light.svg"
                                 alt="plus Light Logo"
-                                width={20}
-                                height={20}
+                                width={22}
+                                height={22}
                                 className="block dark:hidden mb-0"
                               />
                               {/* Dark logo */}
                               <Image
                                 src="/icons/plus-dark.svg"
                                 alt="plus Dark Logo"
-                                width={20}
-                                height={20}
+                                width={22}
+                                height={22}
                                 className="hidden dark:block mb-0"
                               />
               <span className="flex items-center justify-between w-full">
@@ -217,8 +217,23 @@ export function SidebarLeft({
                   if (isMobile) setOpenMobile(false);
                 }}
               >
-                <Bot className="h-4 w-4 mr-1" />
-                <span className="flex items-center justify-between w-full">
+             <Image
+                                src="/icons/bot-light.svg"
+                                alt="bot Light Logo"
+                                width={20}
+                                height={20}
+                                className="block dark:hidden mb-0"
+                              />
+                              {/* Dark logo */}
+                              <Image
+                                src="/icons/bot-dark.svg"
+                                alt="bot Dark Logo"
+                                width={20}
+                                height={20}
+                                className="hidden dark:block mb-0"
+                              />
+              
+              <span className="flex items-center justify-between w-full mt-1">
                   My Agents
                 </span>
               </SidebarMenuButton>
