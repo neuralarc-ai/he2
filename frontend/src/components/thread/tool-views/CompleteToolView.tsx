@@ -408,15 +408,15 @@ export function CompleteToolView({
       </CardContent>
 
       {/* Footer */}
-      <div className="px-4 py-2 h-fit bg-white backdrop-blur-sm border-t border-zinc-200 dark:border-zinc-800 flex justify-between items-center gap-4 rounded-b-lg">
-        <div className="h-full flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
+      <div className="px-4 py-2 h-fit bg-card backdrop-blur-sm border-t border-border flex justify-between items-center gap-4 rounded-b-lg">
+        <div className="h-full flex items-center gap-2 text-sm text-muted-foreground">
           <Badge className="h-6 py-0.5" variant="outline">
             <CheckCircle2 className="h-3 w-3 mr-1" />
             Task Completion
           </Badge>
         </div>
 
-        <div className="text-xs text-zinc-500 dark:text-zinc-400">
+        <div className="text-xs text-muted-foreground">
           {toolTimestamp && !isStreaming
             ? formatTimestamp(toolTimestamp)
             : assistantTimestamp

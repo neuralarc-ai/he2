@@ -201,14 +201,14 @@ export function GenericToolView({
 
     return (
       <div className="space-y-4">
-        <div className="flex items-center gap-2 text-sm font-semibold text-black dark:text-white">
+        <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
           <Settings className="h-4 w-4 text-purple-500 dark:text-purple-400" />
           Parameters
         </div>
         <div className="bg-accent rounded-xl border p-4 space-y-3">
           {Object.entries(args).map(([key, value]) => (
             <div key={key} className="space-y-2">
-              <div className="text-xs font-semibold text-black dark:text-white uppercase tracking-wide">
+              <div className="text-xs font-semibold text-foreground uppercase tracking-wide">
                 {key.replace(/_/g, ' ')}
               </div>
               <div className="bg-background rounded-lg border p-3">
@@ -239,7 +239,7 @@ export function GenericToolView({
           <div className="bg-accent rounded-xl border p-4 space-y-4">
             {Object.entries(parsedOutput).map(([key, value]) => (
               <div key={key} className="space-y-2">
-                <div className="text-xs font-semibold text-black dark:text-white uppercase tracking-wide">
+                <div className="text-xs font-semibold text-foreground uppercase tracking-wide">
                   {key.replace(/_/g, ' ')}
                 </div>
                 <div className="bg-background rounded-lg border p-3">
@@ -251,7 +251,7 @@ export function GenericToolView({
           </div>
         ) : (
           <div className="bg-muted/50 rounded-xl border p-4">
-              <div className="text-base text-black dark:text-white whitespace-pre-wrap break-words">
+              <div className="text-base text-foreground whitespace-pre-wrap break-words">
                 {/* Ensure we never try to render objects directly */}
                 {renderValue(parsedOutput)}
               </div>
@@ -264,7 +264,7 @@ export function GenericToolView({
   const renderValue = (value: any): React.ReactNode => {
     // Ensure we never try to render objects directly
     if (value === null || value === undefined) {
-      return <span className="text-zinc-400 dark:text-zinc-500 italic">null</span>;
+      return <span className="text-muted-foreground italic">null</span>;
     }
     
     if (typeof value === 'boolean') {
@@ -280,7 +280,7 @@ export function GenericToolView({
     }
     
     if (typeof value === 'number') {
-      return <span className="font-mono text-black dark:text-white">{value}</span>;
+      return <span className="font-mono text-foreground">{value}</span>;
     }
     
     if (typeof value === 'string') {
@@ -291,7 +291,7 @@ export function GenericToolView({
             href={value} 
             target="_blank" 
             rel="noopener noreferrer"
-            className="text-black dark:text-white hover:text-gray-700 dark:hover:text-gray-300 underline break-all"
+            className="text-foreground hover:text-muted-foreground underline break-all"
           >
             {value}
           </a>
@@ -302,8 +302,8 @@ export function GenericToolView({
         const parsed = JSON.parse(value);
         if (typeof parsed === 'object') {
           return (
-            <div className="bg-zinc-50 dark:bg-zinc-900/50 rounded p-2">
-              <pre className="text-xs text-zinc-700 dark:text-zinc-300 overflow-x-auto">
+            <div className="bg-muted/50 rounded p-2">
+              <pre className="text-xs text-foreground overflow-x-auto">
                 {JSON.stringify(parsed, null, 2)}
               </pre>
             </div>
@@ -312,7 +312,7 @@ export function GenericToolView({
       } catch {
         // Not JSON, treat as regular string
       }
-      return <span className="text-zinc-700 dark:text-zinc-300">{value}</span>;
+      return <span className="text-foreground">{value}</span>;
     }
     
     if (Array.isArray(value)) {
@@ -320,7 +320,7 @@ export function GenericToolView({
         <div className="space-y-1">
           {value.map((item, index) => (
             <div key={index} className="flex items-center gap-2">
-              <span className="text-xs text-black dark:text-white font-mono">[{index}]</span>
+              <span className="text-xs text-foreground font-mono">[{index}]</span>
               <div className="flex-1">{renderValue(item)}</div>
             </div>
           ))}
@@ -333,8 +333,8 @@ export function GenericToolView({
       // This prevents React from trying to render objects directly
       const jsonString = JSON.stringify(value, null, 2);
       return (
-        <div className="bg-zinc-50 dark:bg-zinc-900/50 rounded p-2">
-          <pre className="text-xs text-black dark:text-white overflow-x-auto">
+        <div className="bg-muted/50 rounded p-2">
+          <pre className="text-xs text-foreground overflow-x-auto">
             {jsonString}
           </pre>
         </div>
@@ -344,7 +344,7 @@ export function GenericToolView({
     // For any other type, convert to string safely
     // This is the final fallback to prevent any rendering issues
     const safeString = String(value);
-    return <span className="text-black dark:text-white">{safeString}</span>;
+    return <span className="text-foreground">{safeString}</span>;
   };
 
   const renderSummary = (summary: string) => {
@@ -355,13 +355,14 @@ export function GenericToolView({
 
     return (
       <div className="space-y-4">
-        <div className="flex items-center gap-2 text-sm font-semibold text-black dark:text-white">
+        <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
           <CheckCircle2 className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
           Summary
         </div>
         <div className="bg-muted/50 rounded-xl border p-4">
-            <div className="text-base text-black dark:text-white">
-              {safeSummary}
+            <div className="text-base text-foreground whitespace-pre-wrap break-words">
+              {/* Ensure we never try to render objects directly */}
+              {renderValue(safeSummary)}
             </div>
         </div>
       </div>
@@ -432,17 +433,17 @@ export function GenericToolView({
             
             <div className="flex-1 space-y-3">
               <div className="space-y-2">
-                <h4 className="text-sm font-medium text-black dark:text-white">
+                <h4 className="text-sm font-medium text-foreground">
                   {errorInfo.type === 'execution' ? 'Parameter Validation' : 'Processing Notice'}
                 </h4>
-                <div className="text-sm text-black dark:text-white leading-relaxed">
+                <div className="text-sm text-foreground leading-relaxed">
                   {errorInfo.message}
                 </div>
               </div>
 
               {errorInfo.details && (
                 <div className="space-y-2">
-                  <div className="text-xs font-medium text-black dark:text-white uppercase tracking-wide">
+                  <div className="text-xs font-medium text-foreground uppercase tracking-wide">
                     Field Issues
                   </div>
                   <div className="bg-background rounded-lg border p-2 space-y-1">
@@ -450,16 +451,16 @@ export function GenericToolView({
                       <div key={index} className="flex items-start gap-2 text-xs">
                         <span className="text-amber-500 dark:text-amber-400">•</span>
                         <div className="flex-1">
-                          <span className="font-medium text-black dark:text-white">
+                          <span className="font-medium text-foreground">
                             {detail.path?.join('.') || 'Field'}: 
                           </span>
-                          <span className="text-black dark:text-white ml-1">
+                          <span className="text-foreground ml-1">
                             {detail.message || 'Invalid value'}
                           </span>
                         </div>
                       </div>
                     )) : (
-                      <div className="text-xs text-black dark:text-white">
+                      <div className="text-xs text-foreground">
                         {JSON.stringify(errorInfo.details, null, 2)}
                       </div>
                     )}
@@ -469,7 +470,7 @@ export function GenericToolView({
 
               {errorInfo.suggestions.length > 0 && (
                 <div className="space-y-2">
-                  <div className="text-xs font-medium text-black dark:text-white uppercase tracking-wide">
+                  <div className="text-xs font-medium text-foreground uppercase tracking-wide">
                     Next Steps
                   </div>
                   <div className="bg-background rounded-lg border p-2">
@@ -477,7 +478,7 @@ export function GenericToolView({
                       {errorInfo.suggestions.map((suggestion, index) => (
                         <li key={index} className="flex items-start gap-2 text-xs">
                           <span className="text-amber-500 dark:text-amber-400">•</span>
-                          <span className="text-black dark:text-white">{suggestion}</span>
+                          <span className="text-foreground">{suggestion}</span>
                         </li>
                       ))}
                     </ul>
@@ -493,7 +494,7 @@ export function GenericToolView({
 
   return (
     <Card className="gap-0 flex border shadow-none p-0 rounded-lg flex-col h-full overflow-hidden bg-card">
-      <CardHeader className="h-9 bg-gradient-to-t from-zinc-50/80 to-zinc-200/70 dark:from-zinc-900/90 dark:to-zinc-800/90 text-center backdrop-blur-lg border-b p-2 px-4 space-y-2 rounded-t-lg">
+      <CardHeader className="h-9 bg-gradient-to-t from-muted/80 to-muted/70 text-center backdrop-blur-lg border-b p-2 px-4 space-y-2 rounded-t-lg">
         <div className="flex flex-row items-center justify-between">
           <div className="flex w-full justify-center items-center gap-1">
             <Wrench className="w-4 h-4 text-muted-foreground" />
@@ -545,12 +546,12 @@ export function GenericToolView({
               {/* Fallback for legacy content */}
               {!formattedToolContent?.output && !formattedToolContent?.summary && formattedToolContent && (
                 <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                    <FileText className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+                  <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                    <FileText className="h-4 w-4 text-muted-foreground" />
                     Content
                   </div>
-                  <div className="p-3 bg-zinc-50 dark:bg-zinc-900/50 rounded-lg border border-zinc-200 dark:border-zinc-800">
-                    <div className="text-sm text-zinc-600 dark:text-zinc-400 whitespace-pre-wrap break-words">
+                  <div className="p-3 bg-muted/50 rounded-lg border border-border">
+                    <div className="text-sm text-muted-foreground whitespace-pre-wrap break-words">
                       {/* Ensure we never try to render objects directly */}
                       {typeof formattedToolContent === 'string' 
                         ? formattedToolContent 
@@ -565,31 +566,31 @@ export function GenericToolView({
             </div>
           </ScrollArea>
         ) : (
-          <div className="flex flex-col items-center justify-center h-full py-12 px-6 bg-gradient-to-b from-white to-zinc-50 dark:from-zinc-950 dark:to-zinc-900">
-            <div className="w-20 h-20 rounded-full flex items-center justify-center mb-6 bg-gradient-to-b from-zinc-100 to-zinc-50 shadow-inner dark:from-zinc-800/40 dark:to-zinc-900/60">
-              <Wrench className="h-10 w-10 text-zinc-400 dark:text-zinc-600" />
+          <div className="flex flex-col items-center justify-center h-full py-12 px-6 bg-gradient-to-b from-background to-muted/50">
+            <div className="w-20 h-20 rounded-full flex items-center justify-center mb-6 bg-gradient-to-b from-muted to-muted/50 shadow-inner">
+              <Wrench className="h-10 w-10 text-muted-foreground" />
             </div>
-            <h3 className="text-xl font-semibold mb-2 text-zinc-900 dark:text-zinc-100">
+            <h3 className="text-xl font-semibold mb-2 text-foreground">
               No Content Available
             </h3>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 text-center max-w-md">
+            <p className="text-sm text-muted-foreground text-center max-w-md">
               This tool execution did not produce any input or output content to display.
             </p>
           </div>
         )}
       </CardContent>
 
-      <div className="px-4 py-2 h-fit bg-white backdrop-blur-sm border-t border-zinc-200 dark:border-zinc-800 flex justify-between items-center gap-4 rounded-b-lg">
-        <div className="h-full flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
+      <div className="px-4 py-2 h-fit bg-card backdrop-blur-sm border-t border-border flex justify-between items-center gap-4 rounded-b-lg">
+        <div className="h-full flex items-center gap-2 text-sm text-muted-foreground">
           {!isStreaming && (formattedAssistantContent || formattedToolContent) && (
-            <Badge variant="outline" className="h-6 py-0.5 bg-zinc-50 dark:bg-zinc-900">
+            <Badge variant="outline" className="h-6 py-0.5 bg-muted">
               <Wrench className="h-3 w-3" />
               Tool
             </Badge>
           )}
         </div>
 
-        <div className="text-xs text-zinc-500 dark:text-zinc-400 flex items-center gap-2">
+        <div className="text-xs text-muted-foreground flex items-center gap-2">
           <Clock className="h-3.5 w-3.5" />
           {toolTimestamp && !isStreaming
             ? formatTimestamp(toolTimestamp)

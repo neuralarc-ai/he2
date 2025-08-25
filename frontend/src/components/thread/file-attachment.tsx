@@ -275,7 +275,7 @@ export function FileAttachment({
                     onClick={handleClick}
                     className={cn(
                         "group relative h-[54px] min-w-fit rounded-xl cursor-pointer",
-                        "bg-white border border-black/5",
+                        "bg-card border border-border",
                         "px-3 py-2 overflow-hidden",
                         "flex items-center gap-3",
                         isGridLayout ? "w-full" : "min-w-[54px]",
@@ -291,13 +291,13 @@ export function FileAttachment({
                         <FileImage className="h-6 w-6 text-gray-500" />
                     </div>
                     <div className="flex-1 min-w-0 flex flex-col justify-center overflow-hidden">
-                        <div className="text-sm font-medium text-gray-700 truncate max-w-full" title={filename}>
+                        <div className="text-sm font-medium text-foreground truncate max-w-full" title={filename}>
                             {filename}
                         </div>
-                        <div className="text-xs text-gray-500 flex items-center gap-1 truncate">
-                            <span className="text-black/60 dark:text-white/60 truncate">{typeLabel}</span>
-                            <span className="text-black/40 dark:text-white/40 flex-shrink-0">·</span>
-                            <span className="text-black/60 dark:text-white/60 flex-shrink-0">{fileSize}</span>
+                        <div className="text-xs text-muted-foreground flex items-center gap-1 truncate">
+                            <span className="text-foreground/60 truncate">{typeLabel}</span>
+                            <span className="text-foreground/40 flex-shrink-0">·</span>
+                            <span className="text-foreground/60 flex-shrink-0">{fileSize}</span>
                         </div>
                     </div>
                     <div className="flex-shrink-0">
@@ -314,7 +314,7 @@ export function FileAttachment({
                     onClick={handleClick}
                     className={cn(
                         "group relative h-[54px] min-w-fit rounded-xl cursor-pointer",
-                        "bg-white border border-red-200",
+                        "bg-card border border-red-200 dark:border-red-800",
                         "px-3 py-2 overflow-hidden",
                         "flex items-center gap-3",
                         isGridLayout ? "w-full" : "inline-block",
@@ -330,7 +330,7 @@ export function FileAttachment({
                         <FileImage className="h-6 w-6 text-gray-500" />
                     </div>
                     <div className="flex-1 min-w-0 w-fit flex flex-col justify-start overflow-hidden">
-                        <div className="text-sm font-medium text-gray-700 truncate max-w-full" title={filename}>
+                        <div className="text-sm font-medium text-foreground truncate max-w-full" title={filename}>
                             {filename}
                         </div>
                         <div className="text-xs text-red-500">Failed to load image</div>
@@ -344,7 +344,7 @@ export function FileAttachment({
                 onClick={handleClick}
                 className={cn(
                     "group relative h-[54px] rounded-xl cursor-pointer",
-                    "bg-white border border-black/5 hover:border-black/10 transition-colors",
+                    "bg-card border border-border hover:border-border/50 transition-colors",
                     "px-3 py-2 overflow-hidden", // Standard padding like other file types
                     "flex items-center gap-3", // Horizontal layout like other file types
                     isGridLayout ? "w-full" : "inline-block", // Full width in grid
@@ -363,13 +363,13 @@ export function FileAttachment({
                 
                 {/* File Info - Same layout as other file types */}
                 <div className="flex-1 min-w-0 flex flex-col justify-center overflow-hidden">
-                    <div className="text-sm font-medium text-gray-700 truncate max-w-full" title={filename}>
+                    <div className="text-sm font-medium text-foreground truncate max-w-full" title={filename}>
                         {filename}
                     </div>
-                    <div className="text-xs text-gray-500 flex items-center gap-1 truncate">
-                        <span className="text-black/60 dark:text-white/60 truncate">{typeLabel}</span>
-                        <span className="text-black/40 dark:text-white/40 flex-shrink-0">·</span>
-                        <span className="text-black/60 dark:text-white/60 flex-shrink-0">{fileSize}</span>
+                    <div className="text-xs text-muted-foreground flex items-center gap-1 truncate">
+                        <span className="text-foreground/60 truncate">{typeLabel}</span>
+                        <span className="text-foreground/40 flex-shrink-0">·</span>
+                        <span className="text-foreground/60 flex-shrink-0">{fileSize}</span>
                     </div>
                 </div>
             </button>
@@ -492,7 +492,7 @@ export function FileAttachment({
                     {onClick && (
                         <button
                             onClick={handleClick}
-                            className="cursor-pointer p-1 rounded-full hover:bg-black/10 dark:hover:bg-white/10"
+                            className="cursor-pointer p-1 rounded-full hover:bg-accent/50"
                         >
                             <ExternalLink size={14} />
                         </button>
@@ -511,17 +511,17 @@ export function FileAttachment({
     const getIconPath = () => {
         switch (fileType) {
             case 'pdf':
-                return '/icnos/pdf.svg';
+                return '/icons/pdf.svg';
             case 'markdown':
                 return '/icons/md.svg';
             case 'csv':
-                return '/icnos/csv.png';
+                return '/icons/csv.svg';
             case 'document':
-                return '/icons/doc.png';
+                return '/icons/doc.svg';
             case 'html':
-                return '/icons/html.png';
+                return '/icons/html.svg';
             case 'spreadsheet':
-                return '/icons/csv.png';
+                return '/icons/csv.svg';
             case 'image':
                 return '/icons/image-icon.svg';
             case 'code':
@@ -536,7 +536,7 @@ export function FileAttachment({
             onClick={handleClick}
             className={cn(
                 "group flex rounded-lg transition-all duration-200 h-[54px] overflow-hidden cursor-pointer ",
-                "bg-black/5",
+                "bg-muted/50",
                 "text-left",
                 isInlineMode 
                     ? "w-full sm:w-[calc(50%-0.5rem)] h-[54px] min-h-[54px]" // Two items per row with gap, fixed height
@@ -569,9 +569,9 @@ export function FileAttachment({
                     {filename}
                 </div>
                 <div className="text-xs text-muted-foreground flex items-center gap-1 truncate">
-                    <span className="text-black/60 dark:text-white/60 truncate">{typeLabel}</span>
-                    <span className="text-black/40 dark:text-white/40 flex-shrink-0">·</span>
-                    <span className="text-black/60 dark:text-white/60 flex-shrink-0">{fileSize}</span>
+                    <span className="text-foreground/60 truncate">{typeLabel}</span>
+                    <span className="text-foreground/40 flex-shrink-0">·</span>
+                    <span className="text-foreground/60 flex-shrink-0">{fileSize}</span>
                 </div>
             </div>
         </button>
@@ -839,7 +839,7 @@ export function ThreadFilesDisplay({
                                 showPreview={showPreviews}
                                 project={project}
                                 displayMode="grid"
-                                className="w-full h-fit bg-white border border-black/5 rounded-lg"
+                                className="w-full h-fit bg-card border border-border rounded-lg"
                                 customStyle={{ '--attachment-height': '120px' } as React.CSSProperties}
                             />
                         </div>
