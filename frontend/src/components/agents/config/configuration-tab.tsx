@@ -9,6 +9,7 @@ import { AgentTriggersConfiguration } from '../triggers/agent-triggers-configura
 import { AgentModelSelector } from './model-selector';
 import { toast } from 'sonner';
 import { HeliumLogo } from '../../sidebar/helium-logo';
+import { isProductionMode } from '@/lib/config';
 
 interface ConfigurationTabProps {
   agentId: string;
@@ -180,7 +181,7 @@ export function ConfigurationTab({
               </div>
             )}
             
-            {!isSunaAgent && (
+            {!isSunaAgent && !isProductionMode() && (
               <div className="group overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:border-primary/10">
                 <button
                   className="w-full p-4 text-left group-hover:bg-muted/30 transition-all duration-300"
