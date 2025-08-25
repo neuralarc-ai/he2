@@ -53,7 +53,7 @@ export function GenericToolView({
       const result = {
         tool: toolResult.xmlTagName || toolResult.functionName,
         arguments: toolResult.arguments || {},
-        output: toolResult.toolOutput || '',
+        output: typeof toolResult.toolOutput === 'string' ? toolResult.toolOutput : String(toolResult.toolOutput || ''),
         success: toolResult.isSuccess,
         summary: toolResult.summary || '',
         timestamp: toolResult.timestamp,
@@ -175,12 +175,24 @@ export function GenericToolView({
     return result;
   };
 
+  // Ensure the formatted content always has the expected structure
+  const ensureFormattedContent = (formatted: any) => {
+    if (!formatted) return null;
+    
+    // Ensure output is always a string
+    if (formatted.output && typeof formatted.output !== 'string') {
+      formatted.output = String(formatted.output);
+    }
+    
+    return formatted;
+  };
+
   const formattedAssistantContent = React.useMemo(
-    () => formatContent(assistantContent),
+    () => ensureFormattedContent(formatContent(assistantContent)),
     [assistantContent],
   );
   const formattedToolContent = React.useMemo(
-    () => formatContent(toolContent),
+    () => ensureFormattedContent(formatContent(toolContent)),
     [toolContent],
   );
 
@@ -517,7 +529,7 @@ export function GenericToolView({
 
               {/* Tool Output */}
               {formattedToolContent?.output && (
-                (isSuccess && !formattedToolContent.output.includes('Error')) 
+                (isSuccess && !(typeof formattedToolContent.output === 'string' && formattedToolContent.output.includes('Error'))) 
                   ? renderOutput(formattedToolContent.output, 'Result')
                   : renderErrorOutput(formattedToolContent.output)
               )}

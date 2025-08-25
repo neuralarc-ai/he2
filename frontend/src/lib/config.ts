@@ -235,6 +235,10 @@ export const isStagingMode = (): boolean => {
   return config.IS_STAGING;
 };
 
+export const isProductionMode = (): boolean => {
+  return config.ENV_MODE === EnvMode.PRODUCTION;
+};
+
 
 const PROD_YEARLY_COMMITMENT_PLANS = {
   [PROD_TIERS.TIER_2_17_YEARLY_COMMITMENT.priceId]: { tier: 1, name: '2h/$17/month (yearly)' },
