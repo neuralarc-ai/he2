@@ -40,6 +40,17 @@ class FeatureFlagManager:
     async def is_enabled(self, key: str) -> bool:
         """Check if a feature flag is enabled"""
         try:
+            # First check environment variable
+            env_key = f"ENABLE_{key.upper()}"
+            env_value = os.getenv(env_key)
+            
+            if env_value is not None:
+                # Environment variable takes precedence
+                enabled = env_value.lower() in ('true', '1', 'yes', 'on')
+                logger.debug(f"Feature flag {key} set via environment variable {env_key}={env_value} -> {enabled}")
+                return enabled
+            
+            # Fall back to Redis if no environment variable
             flag_key = f"{self.flag_prefix}{key}"
             redis_client = await redis.get_client()
             enabled = await redis_client.hget(flag_key, 'enabled')
@@ -52,9 +63,25 @@ class FeatureFlagManager:
     async def get_flag(self, key: str) -> Optional[Dict[str, str]]:
         """Get feature flag details"""
         try:
+            # Check if environment variable is set
+            env_key = f"ENABLE_{key.upper()}"
+            env_value = os.getenv(env_key)
+            
+            if env_value is not None:
+                # Return environment-based flag info
+                return {
+                    'enabled': str(env_value.lower() in ('true', '1', 'yes', 'on')).lower(),
+                    'description': f'Set via environment variable {env_key}',
+                    'updated_at': datetime.utcnow().isoformat(),
+                    'source': 'environment'
+                }
+            
+            # Fall back to Redis
             flag_key = f"{self.flag_prefix}{key}"
             redis_client = await redis.get_client()
             flag_data = await redis_client.hgetall(flag_key)
+            if flag_data:
+                flag_data['source'] = 'redis'
             return flag_data if flag_data else None
         except Exception as e:
             logger.error(f"Failed to get feature flag {key}: {e}")
@@ -63,6 +90,13 @@ class FeatureFlagManager:
     async def delete_flag(self, key: str) -> bool:
         """Delete a feature flag"""
         try:
+            # Check if environment variable is set
+            env_key = f"ENABLE_{key.upper()}"
+            if os.getenv(env_key) is not None:
+                logger.warning(f"Cannot delete flag {key} - it's controlled by environment variable {env_key}")
+                return False
+            
+            # Only delete from Redis if not environment-controlled
             flag_key = f"{self.flag_prefix}{key}"
             redis_client = await redis.get_client()
             deleted = await redis_client.delete(flag_key)
@@ -78,34 +112,78 @@ class FeatureFlagManager:
     async def list_flags(self) -> Dict[str, bool]:
         """List all feature flags with their status"""
         try:
+            # Get environment-based flags
+            env_flags = {}
+            for key in self._get_environment_flag_keys():
+                flag_name = key.replace('ENABLE_', '').lower()
+                env_flags[flag_name] = self._is_env_flag_enabled(key)
+            
+            # Get Redis-based flags
             redis_client = await redis.get_client()
             flag_keys = await redis_client.smembers(self.flag_list_key)
-            flags = {}
+            redis_flags = {}
             
             for key in flag_keys:
-                flags[key] = await self.is_enabled(key)
+                # Only include Redis flags that don't have environment variables
+                env_key = f"ENABLE_{key.upper()}"
+                if os.getenv(env_key) is None:
+                    redis_flags[key] = await self.is_enabled(key)
             
-            return flags
+            # Merge flags (environment takes precedence)
+            all_flags = {**redis_flags, **env_flags}
+            return all_flags
         except Exception as e:
             logger.error(f"Failed to list feature flags: {e}")
-            return {}
+            # Return environment flags even if Redis fails
+            return {key.replace('ENABLE_', '').lower(): self._is_env_flag_enabled(key) 
+                   for key in self._get_environment_flag_keys()}
     
     async def get_all_flags_details(self) -> Dict[str, Dict[str, str]]:
         """Get all feature flags with detailed information"""
         try:
+            all_flags = {}
+            
+            # Get environment-based flags
+            for key in self._get_environment_flag_keys():
+                flag_name = key.replace('ENABLE_', '').lower()
+                all_flags[flag_name] = {
+                    'enabled': str(self._is_env_flag_enabled(key)).lower(),
+                    'description': f'Set via environment variable {key}',
+                    'updated_at': datetime.utcnow().isoformat(),
+                    'source': 'environment'
+                }
+            
+            # Get Redis-based flags
             redis_client = await redis.get_client()
             flag_keys = await redis_client.smembers(self.flag_list_key)
-            flags = {}
             
             for key in flag_keys:
-                flag_data = await self.get_flag(key)
-                if flag_data:
-                    flags[key] = flag_data
+                # Only include Redis flags that don't have environment variables
+                env_key = f"ENABLE_{key.upper()}"
+                if os.getenv(env_key) is None:
+                    flag_data = await self.get_flag(key)
+                    if flag_data:
+                        all_flags[key] = flag_data
             
-            return flags
+            return all_flags
         except Exception as e:
             logger.error(f"Failed to get all flags details: {e}")
-            return {}
+            # Return environment flags even if Redis fails
+            return {key.replace('ENABLE_', '').lower(): {
+                'enabled': str(self._is_env_flag_enabled(key)).lower(),
+                'description': f'Set via environment variable {key}',
+                'updated_at': datetime.utcnow().isoformat(),
+                'source': 'environment'
+            } for key in self._get_environment_flag_keys()}
+    
+    def _get_environment_flag_keys(self) -> List[str]:
+        """Get all environment variable keys that control feature flags"""
+        return [key for key in os.environ.keys() if key.startswith('ENABLE_')]
+    
+    def _is_env_flag_enabled(self, env_key: str) -> bool:
+        """Check if an environment variable flag is enabled"""
+        value = os.getenv(env_key, 'false')
+        return value.lower() in ('true', '1', 'yes', 'on')
 
 
 _flag_manager: Optional[FeatureFlagManager] = None
@@ -148,34 +226,16 @@ async def get_flag_details(key: str) -> Optional[Dict[str, str]]:
     return await get_flag_manager().get_flag(key)
 
 
-# Feature Flags
-
-# Custom agents feature flag
-custom_agents = True
-
-# MCP module feature flag  
-mcp_module = True
-
-# Templates API feature flag
-templates_api = True
-
-# Triggers API feature flag
-triggers_api = True
-
-# Workflows API feature flag
-workflows_api = True
-
-# Knowledge base feature flag
-knowledge_base = True
-
-# Pipedream integration feature flag
-pipedream = True
-
-# Credentials API feature flag
-credentials_api = True
-
-# Suna default agent feature flag
-suna_default_agent = True
+# Feature Flags - These are now controlled by environment variables
+# Set ENABLE_CUSTOM_AGENTS=true to enable custom agents
+# Set ENABLE_MCP_MODULE=true to enable MCP module
+# Set ENABLE_TEMPLATES_API=true to enable templates API
+# Set ENABLE_TRIGGERS_API=true to enable triggers API
+# Set ENABLE_WORKFLOWS_API=true to enable workflows API
+# Set ENABLE_KNOWLEDGE_BASE=true to enable knowledge base
+# Set ENABLE_PIPEDREAM=true to enable Pipedream integration
+# Set ENABLE_CREDENTIALS_API=true to enable credentials API
+# Set ENABLE_SUNA_DEFAULT_AGENT=true to enable Suna default agent
 
 
 

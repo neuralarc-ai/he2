@@ -2,9 +2,22 @@
 import sys
 import argparse
 import asyncio
+import os
 from flags import enable_flag, disable_flag, is_enabled, list_flags, delete_flag, get_flag_details
 
+def is_env_controlled(flag_name: str) -> bool:
+    """Check if a flag is controlled by environment variable"""
+    env_key = f"ENABLE_{flag_name.upper()}"
+    return os.getenv(env_key) is not None
+
 async def enable_command(flag_name: str, description: str = ""):
+    if is_env_controlled(flag_name):
+        env_key = f"ENABLE_{flag_name.upper()}"
+        print(f"⚠️  Flag '{flag_name}' is controlled by environment variable '{env_key}'")
+        print(f"   To enable this flag, set {env_key}=true in your environment")
+        print(f"   Script-based management is disabled for environment-controlled flags")
+        return
+    
     if await enable_flag(flag_name, description):
         print(f"✓ Enabled flag: {flag_name}")
         if description:
@@ -14,6 +27,13 @@ async def enable_command(flag_name: str, description: str = ""):
 
 
 async def disable_command(flag_name: str, description: str = ""):
+    if is_env_controlled(flag_name):
+        env_key = f"ENABLE_{flag_name.upper()}"
+        print(f"⚠️  Flag '{flag_name}' is controlled by environment variable '{env_key}'")
+        print(f"   To disable this flag, set {env_key}=false in your environment")
+        print(f"   Script-based management is disabled for environment-controlled flags")
+        return
+    
     if await disable_flag(flag_name, description):
         print(f"✓ Disabled flag: {flag_name}")
         if description:
@@ -36,6 +56,7 @@ async def list_command():
         details = await get_flag_details(flag_name)
         description = details.get('description', 'No description') if details else 'No description'
         updated_at = details.get('updated_at', 'Unknown') if details else 'Unknown'
+        source = details.get('source', 'Unknown') if details else 'Unknown'
         
         status_icon = "✓" if enabled else "✗"
         status_text = "ENABLED" if enabled else "DISABLED"
@@ -43,6 +64,12 @@ async def list_command():
         print(f"{status_icon} {flag_name}: {status_text}")
         print(f"  Description: {description}")
         print(f"  Updated: {updated_at}")
+        print(f"  Source: {source}")
+        
+        if is_env_controlled(flag_name):
+            env_key = f"ENABLE_{flag_name.upper()}"
+            env_value = os.getenv(env_key)
+            print(f"  Environment: {env_key}={env_value}")
         print()
 
 
@@ -56,14 +83,28 @@ async def status_command(flag_name: str):
     enabled = await is_enabled(flag_name)
     status_icon = "✓" if enabled else "✗"
     status_text = "ENABLED" if enabled else "DISABLED"
+    source = details.get('source', 'Unknown')
     
     print(f"Flag: {flag_name}")
     print(f"Status: {status_icon} {status_text}")
     print(f"Description: {details.get('description', 'No description')}")
     print(f"Updated: {details.get('updated_at', 'Unknown')}")
+    print(f"Source: {source}")
+    
+    if is_env_controlled(flag_name):
+        env_key = f"ENABLE_{flag_name.upper()}"
+        env_value = os.getenv(env_key)
+        print(f"Environment Variable: {env_key}={env_value}")
+        print(f"Note: This flag is controlled by environment variable")
 
 
 async def delete_command(flag_name: str):
+    if is_env_controlled(flag_name):
+        env_key = f"ENABLE_{flag_name.upper()}"
+        print(f"⚠️  Cannot delete flag '{flag_name}' - it's controlled by environment variable '{env_key}'")
+        print(f"   To disable this flag, set {env_key}=false in your environment")
+        return
+    
     if not await get_flag_details(flag_name):
         print(f"✗ Flag '{flag_name}' not found.")
         return
@@ -79,6 +120,13 @@ async def delete_command(flag_name: str):
 
 
 async def toggle_command(flag_name: str, description: str = ""):
+    if is_env_controlled(flag_name):
+        env_key = f"ENABLE_{flag_name.upper()}"
+        print(f"⚠️  Flag '{flag_name}' is controlled by environment variable '{env_key}'")
+        print(f"   To toggle this flag, change the value of {env_key} in your environment")
+        print(f"   Script-based management is disabled for environment-controlled flags")
+        return
+    
     current_status = await is_enabled(flag_name)
     
     if current_status:
@@ -99,6 +147,9 @@ Examples:
   python setup.py status new_ui
   python setup.py toggle maintenance_mode "Toggle maintenance mode"
   python setup.py delete old_feature
+
+Note: Flags controlled by environment variables (ENABLE_*) cannot be managed via this script.
+Set the environment variable to true/false instead.
         """
     )
     

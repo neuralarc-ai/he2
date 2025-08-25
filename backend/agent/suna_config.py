@@ -2,9 +2,9 @@ from agent.prompt import SYSTEM_PROMPT
 
 # Suna default configuration - simplified and centralized
 SUNA_CONFIG = {
-    "name": "Suna",
-    "description": "Suna is your AI assistant with access to various tools and integrations to help you with tasks across domains.",
-    "avatar": "🌞",
+    "name": "o1",
+    "description": "o1 is your AI assistant with access to various tools and integrations to help you with tasks across domains.",
+    "avatar": "🤖",
     "avatar_color": "#F59E0B",
     "model": "openai/gpt-5-mini",
     "system_prompt": SYSTEM_PROMPT,
