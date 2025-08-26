@@ -7,6 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import {
   File,
@@ -25,14 +26,8 @@ import {
   Check,
 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import {
-  FileRenderer,
-} from '@/components/file-renderers';
-import {
-  listSandboxFiles,
-  type FileInfo,
-  Project,
-} from '@/lib/api';
+import { FileRenderer } from '@/components/file-renderers';
+import { listSandboxFiles, type FileInfo, Project } from '@/lib/api';
 import { toast } from 'sonner';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
@@ -45,7 +40,7 @@ import {
 import {
   useDirectoryQuery,
   useFileContentQuery,
-  FileCache
+  FileCache,
 } from '@/hooks/react-query/files';
 import JSZip from 'jszip';
 import { normalizeFilenameToNFC } from '@/lib/utils/unicode';
@@ -71,7 +66,8 @@ export function FileViewerModal({
   filePathList,
 }: FileViewerModalProps) {
   // Safely handle initialFilePath to ensure it's a string or null
-  const safeInitialFilePath = typeof initialFilePath === 'string' ? initialFilePath : null;
+  const safeInitialFilePath =
+    typeof initialFilePath === 'string' ? initialFilePath : null;
 
   // Auth for session token
   const { session } = useAuth();
@@ -83,14 +79,35 @@ export function FileViewerModal({
   // Add navigation state for file list mode
   const [currentFileIndex, setCurrentFileIndex] = useState<number>(-1);
   const isFileListMode = Boolean(filePathList && filePathList.length > 0);
-
-
+  function getFileIcon(fileName: string) {
+    const extension = fileName.toLowerCase().split('.').pop();
+    
+    switch (extension) {
+      case 'html':
+      case 'htm':
+        return '/icons/html.svg';
+        case 'markdown':
+          case 'md':
+            return '/icons/md.svg';
+      case 'docx':
+      case 'doc':
+        return '/icons/doc.svg';
+      case 'csv':
+        case 'xls':
+        case 'xlsx':
+        return '/icons/csv.svg';
+      case 'pdf':
+        return '/icons/pdf.svg';
+      default:
+        return null; // Will use default File icon
+    }
+  }
   // Use React Query for directory listing
   const {
     data: files = [],
     isLoading: isLoadingFiles,
     error: filesError,
-    refetch: refetchFiles
+    refetch: refetchFiles,
   } = useDirectoryQuery(sandboxId, currentPath, {
     enabled: open && !!sandboxId,
     staleTime: 30 * 1000, // 30 seconds
@@ -115,15 +132,11 @@ export function FileViewerModal({
     data: cachedFileContent,
     isLoading: isCachedFileLoading,
     error: cachedFileError,
-  } = useFileContentQuery(
-    sandboxId,
-    selectedFilePath || undefined,
-    {
-      // Auto-detect content type consistently with other components
-      enabled: !!selectedFilePath,
-      staleTime: 5 * 60 * 1000, // 5 minutes
-    }
-  );
+  } = useFileContentQuery(sandboxId, selectedFilePath || undefined, {
+    // Auto-detect content type consistently with other components
+    enabled: !!selectedFilePath,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 
   // Utility state
   const [isUploading, setIsUploading] = useState(false);
@@ -177,39 +190,42 @@ export function FileViewerModal({
   }, []);
 
   // Recursive function to discover all files in the workspace
-  const discoverAllFiles = useCallback(async (
-    startPath: string = '/workspace'
-  ): Promise<{ files: FileInfo[], totalSize: number }> => {
-    const allFiles: FileInfo[] = [];
-    let totalSize = 0;
-    const visited = new Set<string>();
+  const discoverAllFiles = useCallback(
+    async (
+      startPath: string = '/workspace',
+    ): Promise<{ files: FileInfo[]; totalSize: number }> => {
+      const allFiles: FileInfo[] = [];
+      let totalSize = 0;
+      const visited = new Set<string>();
 
-    const exploreDirectory = async (dirPath: string) => {
-      if (visited.has(dirPath)) return;
-      visited.add(dirPath);
+      const exploreDirectory = async (dirPath: string) => {
+        if (visited.has(dirPath)) return;
+        visited.add(dirPath);
 
-      try {
-        const files = await listSandboxFiles(sandboxId, dirPath);
+        try {
+          const files = await listSandboxFiles(sandboxId, dirPath);
 
-        for (const file of files) {
-          if (file.is_dir) {
-            // Recursively explore subdirectories
-            await exploreDirectory(file.path);
-          } else {
-            // Add file to collection
-            allFiles.push(file);
-            totalSize += file.size || 0;
+          for (const file of files) {
+            if (file.is_dir) {
+              // Recursively explore subdirectories
+              await exploreDirectory(file.path);
+            } else {
+              // Add file to collection
+              allFiles.push(file);
+              totalSize += file.size || 0;
+            }
           }
+        } catch (error) {
+          toast.error(`Failed to read directory: ${dirPath}`);
         }
-      } catch (error) {
-        toast.error(`Failed to read directory: ${dirPath}`);
-      }
-    };
+      };
 
-    await exploreDirectory(startPath);
+      await exploreDirectory(startPath);
 
-    return { files: allFiles, totalSize };
-  }, [sandboxId]);
+      return { files: allFiles, totalSize };
+    },
+    [sandboxId],
+  );
 
   // Function to download all files as a zip
   const handleDownloadAll = useCallback(async () => {
@@ -217,7 +233,11 @@ export function FileViewerModal({
 
     try {
       setIsDownloadingAll(true);
-      setDownloadProgress({ current: 0, total: 0, currentFile: 'Discovering files...' });
+      setDownloadProgress({
+        current: 0,
+        total: 0,
+        currentFile: 'Discovering files...',
+      });
 
       // Step 1: Discover all files
       const { files } = await discoverAllFiles();
@@ -229,7 +249,11 @@ export function FileViewerModal({
 
       // Step 2: Create zip and load files
       const zip = new JSZip();
-      setDownloadProgress({ current: 0, total: files.length, currentFile: 'Creating archive...' });
+      setDownloadProgress({
+        current: 0,
+        total: files.length,
+        currentFile: 'Creating archive...',
+      });
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
@@ -238,7 +262,7 @@ export function FileViewerModal({
         setDownloadProgress({
           current: i + 1,
           total: files.length,
-          currentFile: relativePath
+          currentFile: relativePath,
         });
 
         try {
@@ -254,8 +278,8 @@ export function FileViewerModal({
             const response = await fetch(
               `${process.env.NEXT_PUBLIC_BACKEND_URL}/sandboxes/${sandboxId}/files/content?path=${encodeURIComponent(file.path)}`,
               {
-                headers: { 'Authorization': `Bearer ${session.access_token}` }
-              }
+                headers: { Authorization: `Bearer ${session.access_token}` },
+              },
             );
 
             if (!response.ok) {
@@ -288,7 +312,11 @@ export function FileViewerModal({
                 // Fallback: try to fetch from server directly
                 const fallbackResponse = await fetch(
                   `${process.env.NEXT_PUBLIC_BACKEND_URL}/sandboxes/${sandboxId}/files/content?path=${encodeURIComponent(file.path)}`,
-                  { headers: { 'Authorization': `Bearer ${session.access_token}` } }
+                  {
+                    headers: {
+                      Authorization: `Bearer ${session.access_token}`,
+                    },
+                  },
                 );
                 if (fallbackResponse.ok) {
                   const fallbackBlob = await fallbackResponse.blob();
@@ -303,7 +331,6 @@ export function FileViewerModal({
             // Handle other content types (convert to JSON string)
             zip.file(relativePath, JSON.stringify(content, null, 2));
           }
-
         } catch (fileError) {
           // Continue with other files
         }
@@ -313,13 +340,13 @@ export function FileViewerModal({
       setDownloadProgress({
         current: files.length,
         total: files.length,
-        currentFile: 'Generating zip file...'
+        currentFile: 'Generating zip file...',
       });
 
       const zipBlob = await zip.generateAsync({
         type: 'blob',
         compression: 'DEFLATE',
-        compressionOptions: { level: 6 }
+        compressionOptions: { level: 6 },
       });
 
       // Download the zip file
@@ -335,9 +362,10 @@ export function FileViewerModal({
       setTimeout(() => URL.revokeObjectURL(url), 10000);
 
       toast.success(`Downloaded ${files.length} files as zip archive`);
-
     } catch (error) {
-      toast.error(`Failed to create zip archive: ${error instanceof Error ? error.message : String(error)}`);
+      toast.error(
+        `Failed to create zip archive: ${error instanceof Error ? error.message : String(error)}`,
+      );
     } finally {
       setIsDownloadingAll(false);
       setDownloadProgress(null);
@@ -492,7 +520,9 @@ export function FileViewerModal({
 
   // Add a helper to directly interact with the raw cache
   const _directlyAccessCache = useCallback(
-    (filePath: string): {
+    (
+      filePath: string,
+    ): {
       found: boolean;
       content: any;
       contentType: string;
@@ -511,7 +541,11 @@ export function FileViewerModal({
 
       if (FileCache.has(cacheKey)) {
         const cachedContent = FileCache.get(cacheKey);
-        return { found: true, content: cachedContent, contentType: detectedContentType };
+        return {
+          found: true,
+          content: cachedContent,
+          contentType: detectedContentType,
+        };
       }
 
       return { found: false, content: null, contentType: detectedContentType };
@@ -520,28 +554,36 @@ export function FileViewerModal({
   );
 
   // Navigation functions for file list mode
-  const navigateToFileByIndex = useCallback((index: number) => {
-    if (!isFileListMode || !filePathList || index < 0 || index >= filePathList.length) {
-      return;
-    }
+  const navigateToFileByIndex = useCallback(
+    (index: number) => {
+      if (
+        !isFileListMode ||
+        !filePathList ||
+        index < 0 ||
+        index >= filePathList.length
+      ) {
+        return;
+      }
 
-    const filePath = filePathList[index];
-    setCurrentFileIndex(index);
+      const filePath = filePathList[index];
+      setCurrentFileIndex(index);
 
-    // Create a temporary FileInfo object for the file
-    const fileName = filePath.split('/').pop() || '';
-    const normalizedPath = normalizePath(filePath);
+      // Create a temporary FileInfo object for the file
+      const fileName = filePath.split('/').pop() || '';
+      const normalizedPath = normalizePath(filePath);
 
-    const fileInfo: FileInfo = {
-      name: fileName,
-      path: normalizedPath,
-      is_dir: false,
-      size: 0,
-      mod_time: new Date().toISOString(),
-    };
+      const fileInfo: FileInfo = {
+        name: fileName,
+        path: normalizedPath,
+        is_dir: false,
+        size: 0,
+        mod_time: new Date().toISOString(),
+      };
 
-    openFile(fileInfo);
-  }, [isFileListMode, filePathList, normalizePath, openFile]);
+      openFile(fileInfo);
+    },
+    [isFileListMode, filePathList, normalizePath, openFile],
+  );
 
   const navigatePrevious = useCallback(() => {
     if (currentFileIndex > 0) {
@@ -550,7 +592,11 @@ export function FileViewerModal({
   }, [currentFileIndex, navigateToFileByIndex]);
 
   const navigateNext = useCallback(() => {
-    if (isFileListMode && filePathList && currentFileIndex < filePathList.length - 1) {
+    if (
+      isFileListMode &&
+      filePathList &&
+      currentFileIndex < filePathList.length - 1
+    ) {
       navigateToFileByIndex(currentFileIndex + 1);
     }
   }, [currentFileIndex, isFileListMode, filePathList, navigateToFileByIndex]);
@@ -562,7 +608,9 @@ export function FileViewerModal({
       // If we're in file list mode, find the index and navigate to it
       if (isFileListMode && filePathList) {
         const normalizedInitialPath = normalizePath(safeInitialFilePath);
-        const index = filePathList.findIndex(path => normalizePath(path) === normalizedInitialPath);
+        const index = filePathList.findIndex(
+          (path) => normalizePath(path) === normalizedInitialPath,
+        );
         if (index !== -1) {
           navigateToFileByIndex(index);
           setInitialPathProcessed(true);
@@ -607,7 +655,17 @@ export function FileViewerModal({
       // Reset the processed flag when the modal closes
       setInitialPathProcessed(false);
     }
-  }, [open, safeInitialFilePath, initialPathProcessed, normalizePath, currentPath, openFile, isFileListMode, filePathList, navigateToFileByIndex]);
+  }, [
+    open,
+    safeInitialFilePath,
+    initialPathProcessed,
+    normalizePath,
+    currentPath,
+    openFile,
+    isFileListMode,
+    filePathList,
+    navigateToFileByIndex,
+  ]);
 
   // Effect to handle cached file content updates
   useEffect(() => {
@@ -625,7 +683,14 @@ export function FileViewerModal({
       const isImageFile = FileCache.isImageFile(selectedFilePath);
       const isPdfFile = FileCache.isPdfFile(selectedFilePath);
       const extension = selectedFilePath.split('.').pop()?.toLowerCase();
-      const isOfficeFile = ['xlsx', 'xls', 'docx', 'doc', 'pptx', 'ppt'].includes(extension || '');
+      const isOfficeFile = [
+        'xlsx',
+        'xls',
+        'docx',
+        'doc',
+        'pptx',
+        'ppt',
+      ].includes(extension || '');
       const isBinaryFile = isImageFile || isPdfFile || isOfficeFile;
 
       // Store raw content
@@ -641,7 +706,9 @@ export function FileViewerModal({
           // Binary files should not be displayed as text, even if they come as strings
           setTextContentForRenderer(null);
           setBlobUrlForRenderer(null);
-          setContentError('Binary file received in incorrect format. Please try refreshing.');
+          setContentError(
+            'Binary file received in incorrect format. Please try refreshing.',
+          );
         } else {
           // Actual text content for text files
           setTextContentForRenderer(cachedFileContent);
@@ -657,20 +724,28 @@ export function FileViewerModal({
         const jsonString = JSON.stringify(cachedFileContent, null, 2);
         setTextContentForRenderer(jsonString);
         setBlobUrlForRenderer(null);
-      }
-      else {
+      } else {
         // Unknown content type
         setTextContentForRenderer(null);
         setBlobUrlForRenderer(null);
         setContentError('Unknown content type received.');
       }
     }
-  }, [selectedFilePath, cachedFileContent, isCachedFileLoading, cachedFileError]);
+  }, [
+    selectedFilePath,
+    cachedFileContent,
+    isCachedFileLoading,
+    cachedFileError,
+  ]);
 
   // Modify the cleanup effect to respect active downloads
   useEffect(() => {
     return () => {
-      if (blobUrlForRenderer && !isDownloading && !activeDownloadUrls.current.has(blobUrlForRenderer)) {
+      if (
+        blobUrlForRenderer &&
+        !isDownloading &&
+        !activeDownloadUrls.current.has(blobUrlForRenderer)
+      ) {
         URL.revokeObjectURL(blobUrlForRenderer);
       }
     };
@@ -699,7 +774,11 @@ export function FileViewerModal({
     (open: boolean) => {
       if (!open) {
         // Only revoke if not downloading and not an active download URL
-        if (blobUrlForRenderer && !isDownloading && !activeDownloadUrls.current.has(blobUrlForRenderer)) {
+        if (
+          blobUrlForRenderer &&
+          !isDownloading &&
+          !activeDownloadUrls.current.has(blobUrlForRenderer)
+        ) {
           URL.revokeObjectURL(blobUrlForRenderer);
         }
 
@@ -716,7 +795,13 @@ export function FileViewerModal({
       }
       onOpenChange(open);
     },
-    [onOpenChange, clearSelectedFile, setIsInitialLoad, blobUrlForRenderer, isDownloading],
+    [
+      onOpenChange,
+      clearSelectedFile,
+      setIsInitialLoad,
+      blobUrlForRenderer,
+      isDownloading,
+    ],
   );
 
   // Helper to check if file is markdown
@@ -736,7 +821,7 @@ export function FileViewerModal({
 
   const handleCopyPath = useCallback(async () => {
     if (!textContentForRenderer) return;
-    
+
     setIsCopyingPath(true);
     const success = await copyToClipboard(textContentForRenderer);
     if (success) {
@@ -749,7 +834,7 @@ export function FileViewerModal({
 
   const handleCopyContent = useCallback(async () => {
     if (!textContentForRenderer) return;
-    
+
     setIsCopyingContent(true);
     const success = await copyToClipboard(textContentForRenderer);
     if (success) {
@@ -943,7 +1028,9 @@ export function FileViewerModal({
 
       // Get file metadata
       const fileName = selectedFilePath.split('/').pop() || 'file';
-      const mimeType = FileCache.getMimeTypeFromPath?.(selectedFilePath) || 'application/octet-stream';
+      const mimeType =
+        FileCache.getMimeTypeFromPath?.(selectedFilePath) ||
+        'application/octet-stream';
 
       // Use rawContent if available
       if (rawContent) {
@@ -954,10 +1041,11 @@ export function FileViewerModal({
             // If it's a blob URL, get directly from server to avoid CORS issues
             const response = await fetch(
               `${process.env.NEXT_PUBLIC_BACKEND_URL}/sandboxes/${sandboxId}/files/content?path=${encodeURIComponent(selectedFilePath)}`,
-              { headers: { 'Authorization': `Bearer ${session?.access_token}` } }
+              { headers: { Authorization: `Bearer ${session?.access_token}` } },
             );
 
-            if (!response.ok) throw new Error(`Server error: ${response.status}`);
+            if (!response.ok)
+              throw new Error(`Server error: ${response.status}`);
             blob = await response.blob();
           } else {
             // Text content
@@ -968,7 +1056,9 @@ export function FileViewerModal({
           blob = rawContent;
         } else {
           // Unknown format, stringify
-          blob = new Blob([JSON.stringify(rawContent)], { type: 'application/json' });
+          blob = new Blob([JSON.stringify(rawContent)], {
+            type: 'application/json',
+          });
         }
 
         // Ensure correct MIME type
@@ -983,7 +1073,7 @@ export function FileViewerModal({
       // Get from server if no raw content
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/sandboxes/${sandboxId}/files/content?path=${encodeURIComponent(selectedFilePath)}`,
-        { headers: { 'Authorization': `Bearer ${session?.access_token}` } }
+        { headers: { Authorization: `Bearer ${session?.access_token}` } },
       );
 
       if (!response.ok) throw new Error(`Server error: ${response.status}`);
@@ -991,9 +1081,10 @@ export function FileViewerModal({
       const blob = await response.blob();
       const finalBlob = new Blob([blob], { type: mimeType });
       downloadBlob(finalBlob, fileName);
-
     } catch (error) {
-      toast.error(`Failed to download file: ${error instanceof Error ? error.message : String(error)}`);
+      toast.error(
+        `Failed to download file: ${error instanceof Error ? error.message : String(error)}`,
+      );
     } finally {
       setIsDownloading(false);
     }
@@ -1025,8 +1116,6 @@ export function FileViewerModal({
       fileInputRef.current.click();
     }
   }, []);
-
-
 
   // Process uploaded file - Define after helpers
   const processUpload = useCallback(
@@ -1112,8 +1201,7 @@ export function FileViewerModal({
                 <span>
                   {downloadProgress.total > 0
                     ? `${downloadProgress.current}/${downloadProgress.total}`
-                    : 'Preparing...'
-                  }
+                    : 'Preparing...'}
                 </span>
               </div>
               <span className="max-w-[200px] truncate">
@@ -1125,39 +1213,45 @@ export function FileViewerModal({
           <div className="flex items-center gap-2">
             {/* Navigation arrows for file list mode */}
             {(() => {
-              return isFileListMode && selectedFilePath && filePathList && filePathList.length > 1 && currentFileIndex >= 0;
+              return (
+                isFileListMode &&
+                selectedFilePath &&
+                filePathList &&
+                filePathList.length > 1 &&
+                currentFileIndex >= 0
+              );
             })() && (
-                <>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={navigatePrevious}
-                    disabled={currentFileIndex <= 0}
-                    className="h-8 w-8 p-0"
-                    title="Previous file (←)"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  <div className="text-xs text-muted-foreground px-1">
-                    {currentFileIndex + 1} / {(filePathList?.length || 0)}
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={navigateNext}
-                    disabled={currentFileIndex >= (filePathList?.length || 0) - 1}
-                    className="h-8 w-8 p-0"
-                    title="Next file (→)"
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </>
-              )}
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={navigatePrevious}
+                  disabled={currentFileIndex <= 0}
+                  className="h-8 w-8 p-0"
+                  title="Previous file (←)"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <div className="text-xs text-muted-foreground px-1">
+                  {currentFileIndex + 1} / {filePathList?.length || 0}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={navigateNext}
+                  disabled={currentFileIndex >= (filePathList?.length || 0) - 1}
+                  className="h-8 w-8 p-0"
+                  title="Next file (→)"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </>
+            )}
           </div>
         </DialogHeader>
 
         {/* Navigation Bar */}
-        <div className="px-4 py-2 border-b flex items-center gap-2">
+        <div className="px-4 py-2 border-b flex items-center">
           <Button
             variant="ghost"
             size="icon"
@@ -1165,14 +1259,27 @@ export function FileViewerModal({
             className="h-8 w-8"
             title="Go to home directory"
           >
-            <Home className="h-4 w-4" />
+            <Image
+              src="/icons/home.svg"
+              alt="home Light Logo"
+              width={20}
+              height={20}
+              className="block dark:hidden mb-0"
+            />
+            <Image
+              src="/icons/home-dark.svg"
+              alt="home Dark Logo"
+              width={20}
+              height={20}
+              className="hidden dark:block mb-0"
+            />
           </Button>
 
           <div className="flex items-center overflow-x-auto flex-1 min-w-0 scrollbar-hide whitespace-nowrap">
             <Button
               variant="ghost"
               size="sm"
-              className="h-7 px-2 text-sm font-medium min-w-fit flex-shrink-0"
+              className="h-7 px-1 py-[2px] text-sm font-medium min-w-fit flex-shrink-0"
               onClick={navigateHome}
             >
               home
@@ -1239,7 +1346,22 @@ export function FileViewerModal({
                   {isDownloading ? (
                     <Loader className="h-4 w-4 animate-spin" />
                   ) : (
-                    <Download className="h-4 w-4" />
+                   <>
+                   <Image
+                   src="/icons/download.svg"
+                   alt="download Light Logo"
+                   width={20}
+                   height={20}
+                   className="block dark:hidden mb-0"
+                 />
+                 <Image
+                   src="/icons/download-dark.svg"
+                   alt="download Dark Logo"
+                   width={20}
+                   height={20}
+                   className="hidden dark:block mb-0"
+                 />
+                   </>
                   )}
                   <span className="hidden sm:inline">Download</span>
                 </Button>
@@ -1342,12 +1464,15 @@ export function FileViewerModal({
                 <div className="h-full w-full flex flex-col items-center justify-center">
                   <Loader className="h-8 w-8 animate-spin text-primary mb-3" />
                   <p className="text-sm text-muted-foreground">
-                    Loading file{selectedFilePath ? `: ${selectedFilePath.split('/').pop()}` : '...'}
+                    Loading file
+                    {selectedFilePath
+                      ? `: ${selectedFilePath.split('/').pop()}`
+                      : '...'}
                   </p>
                   <p className="text-xs text-muted-foreground/70 mt-1">
                     {(() => {
                       // Normalize the path for consistent cache checks
-                      if (!selectedFilePath) return "Preparing...";
+                      if (!selectedFilePath) return 'Preparing...';
 
                       let normalizedPath = selectedFilePath;
                       if (!normalizedPath.startsWith('/workspace')) {
@@ -1355,14 +1480,17 @@ export function FileViewerModal({
                       }
 
                       // Detect the appropriate content type based on file extension
-                      const detectedContentType = FileCache.getContentTypeFromPath(normalizedPath);
+                      const detectedContentType =
+                        FileCache.getContentTypeFromPath(normalizedPath);
 
                       // Check for cache with the correct content type
-                      const isCached = FileCache.has(`${sandboxId}:${normalizedPath}:${detectedContentType}`);
+                      const isCached = FileCache.has(
+                        `${sandboxId}:${normalizedPath}:${detectedContentType}`,
+                      );
 
                       return isCached
-                        ? "Using cached version"
-                        : "Fetching from server";
+                        ? 'Using cached version'
+                        : 'Fetching from server';
                     })()}
                   </p>
                 </div>
@@ -1408,16 +1536,29 @@ export function FileViewerModal({
                     // Safety check: don't render text content for binary files
                     const isImageFile = FileCache.isImageFile(selectedFilePath);
                     const isPdfFile = FileCache.isPdfFile(selectedFilePath);
-                    const extension = selectedFilePath?.split('.').pop()?.toLowerCase();
-                    const isOfficeFile = ['xlsx', 'xls', 'docx', 'doc', 'pptx', 'ppt'].includes(extension || '');
-                    const isBinaryFile = isImageFile || isPdfFile || isOfficeFile;
+                    const extension = selectedFilePath
+                      ?.split('.')
+                      .pop()
+                      ?.toLowerCase();
+                    const isOfficeFile = [
+                      'xlsx',
+                      'xls',
+                      'docx',
+                      'doc',
+                      'pptx',
+                      'ppt',
+                    ].includes(extension || '');
+                    const isBinaryFile =
+                      isImageFile || isPdfFile || isOfficeFile;
 
                     // For binary files, only render if we have a blob URL
                     if (isBinaryFile && !blobUrlForRenderer) {
                       return (
                         <div className="h-full w-full flex items-center justify-center">
                           <div className="text-sm text-muted-foreground">
-                            Loading {isPdfFile ? 'PDF' : isImageFile ? 'image' : 'file'}...
+                            Loading{' '}
+                            {isPdfFile ? 'PDF' : isImageFile ? 'image' : 'file'}
+                            ...
                           </div>
                         </div>
                       );
@@ -1428,12 +1569,16 @@ export function FileViewerModal({
                         key={selectedFilePath}
                         content={isBinaryFile ? null : textContentForRenderer}
                         binaryUrl={blobUrlForRenderer}
-                        fileName={selectedFilePath?.split('/').pop() || selectedFilePath}
+                        fileName={
+                          selectedFilePath?.split('/').pop() || selectedFilePath
+                        }
                         filePath={selectedFilePath}
                         className="h-full w-full"
                         project={projectWithSandbox}
                         markdownRef={
-                          isMarkdownFile(selectedFilePath) ? markdownRef : undefined
+                          isMarkdownFile(selectedFilePath)
+                            ? markdownRef
+                            : undefined
                         }
                         onDownload={handleDownload}
                         isDownloading={isDownloading}
@@ -1463,10 +1608,11 @@ export function FileViewerModal({
                     {files.map((file) => (
                       <button
                         key={file.path}
-                        className={`flex flex-col items-center p-3 rounded-2xl border hover:bg-muted/50 transition-colors ${selectedFilePath === file.path
-                          ? 'bg-muted border-primary/20'
-                          : ''
-                          }`}
+                        className={`flex flex-col items-center p-3 rounded-2xl border hover:bg-muted/50 transition-colors ${
+                          selectedFilePath === file.path
+                            ? 'bg-muted border-primary/20'
+                            : ''
+                        }`}
                         onClick={() => {
                           if (file.is_dir) {
                             navigateToFolder(file);
@@ -1479,7 +1625,19 @@ export function FileViewerModal({
                           {file.is_dir ? (
                             <Folder className="h-9 w-9 text-blue-500" />
                           ) : (
-                            <File className="h-8 w-8 text-muted-foreground" />
+                           
+                            (() => {
+                              const iconPath = getFileIcon(file.name);
+                              return iconPath ? (
+                                <img 
+                                  src={iconPath} 
+                                  alt={`${file.name} icon`}
+                                  className="h-10 w-10 object-contain"
+                                />
+                              ) : (
+                                <File className="h-8 w-8 text-muted-foreground" />
+                              );
+                            })()
                           )}
                         </div>
                         <span className="text-xs text-center font-medium truncate max-w-full">

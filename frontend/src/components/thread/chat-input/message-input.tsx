@@ -246,13 +246,20 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
                       className="w-8 h-8 flex-shrink-0 rounded-full hover:bg-muted/50"
                       title="Integrations"
                     >
-                      <Image 
-                        src="/icons/integrations.svg" 
-                        alt="Integrations" 
-                        width={24} 
-                        height={24}
-                        className="h-5 w-5 text-black dark:text-white"
-                      />
+                       <Image
+                                                           src="/icons/integrations.svg" 
+                                                             alt="integration Light Logo"
+                                                             width={19}
+                                                             height={19}
+                                                             className="block dark:hidden mb-0"
+                                                           />
+                                                           <Image
+                                                             src="/icons/integration-dark.svg"
+                                                             alt="integration Dark Logo"
+                                                             width={19}
+                                                             height={19}
+                                                             className="hidden dark:block mb-0"
+                                                           />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>

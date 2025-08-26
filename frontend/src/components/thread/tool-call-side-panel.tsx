@@ -934,7 +934,8 @@ export function ToolCallSidePanel({
                   className="h-8 w-8 ml-1"
                   title="Minimize to floating preview"
                 >
-                  <Minimize2 className="h-4 w-4" />
+                  <Image src="/icons/minimize2-light.svg" alt="expand" width={18} height={18} className="block dark:hidden mb-0" />  
+                  <Image src="/icons/minimize2-dark.svg" alt="expand" width={18} height={18} className="hidden dark:block mb-0" />
                 </Button>
               </div>
             )}
@@ -1054,7 +1055,8 @@ export function ToolCallSidePanel({
                       disabled={displayIndex <= 0}
                       className="h-7 w-7 text-zinc-500 cursor-pointer hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
                     >
-                      <SkipBack className="h-4 w-4" />
+                     <Image src="/icons/skip-back.svg" alt="expand" width={18} height={18} className="block dark:hidden mb-0" />
+                     <Image src="/icons/skip-back-dark.svg" alt="expand" width={18} height={18} className="hidden dark:block mb-0" />
                     </Button>
                     <span className="text-xs text-zinc-600 dark:text-zinc-400 font-medium tabular-nums px-1 min-w-[44px] text-center">
                       {displayIndex + 1}/{displayTotalCalls}
@@ -1066,7 +1068,8 @@ export function ToolCallSidePanel({
                       disabled={displayIndex >= displayTotalCalls - 1}
                       className="h-7 w-7 text-zinc-500 cursor-pointer hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
                     >
-                      <SkipForward className="h-4 w-4" />
+                     <Image src="/icons/skip-forward.svg" alt="expand" width={18} height={18} className="block dark:hidden mb-0" />
+                     <Image src="/icons/skip-forward-dark.svg" alt="expand" width={18} height={18} className="hidden dark:block mb-0" />
                     </Button>
                   </div>
 
