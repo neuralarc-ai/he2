@@ -56,10 +56,9 @@ MODELS = {
         "context_window": 1_000_000,  # 1M tokens
         "tier_availability": ["free", "paid"]
     },
-    
-    # Vertex AI models
-    "vertexai/gemini-2.5-pro": {
-        "aliases": ["vertexai/gemini-2.5-pro"],
+    # Vertex AI routes for Gemini (same pricing/tier)
+    "vertex_ai/gemini-2.5-pro": {
+        "aliases": ["vertex/gemini-2.5-pro", "gemini-2.5-pro-vertex"],
         "pricing": {
             "input_cost_per_million_tokens": 1.25,
             "output_cost_per_million_tokens": 10.00
@@ -67,8 +66,8 @@ MODELS = {
         "context_window": 2_000_000,  # 2M tokens
         "tier_availability": ["free", "paid"]
     },
-    "vertexai/gemini-2.5-flash": {
-        "aliases": ["vertexai/gemini-2.5-flash"],
+    "vertex_ai/gemini-2.5-flash": {
+        "aliases": ["vertex/gemini-2.5-flash", "gemini-2.5-flash-vertex"],
         "pricing": {
             "input_cost_per_million_tokens": 0.15,
             "output_cost_per_million_tokens": 0.60
@@ -76,8 +75,8 @@ MODELS = {
         "context_window": 2_000_000,  # 2M tokens
         "tier_availability": ["free", "paid"]
     },
-    "vertexai/gemini-2.0-flash": {
-        "aliases": ["vertexai/gemini-2.0-flash"],
+    "vertex_ai/gemini-2.0-flash": {
+        "aliases": ["vertex/gemini-2.0-flash", "gemini-2.0-flash-vertex"],
         "pricing": {
             "input_cost_per_million_tokens": 0.15,
             "output_cost_per_million_tokens": 0.60
@@ -138,12 +137,7 @@ def _generate_model_structures():
             pricing[legacy_name] = config["pricing"]
             if "context_window" in config:
                 context_windows[legacy_name] = config["context_window"]
-        elif model_name.startswith("vertexai/"):
-            # Add pricing for Vertex AI models
-            legacy_name = model_name.replace("vertexai/", "")
-            pricing[legacy_name] = config["pricing"]
-            if "context_window" in config:
-                context_windows[legacy_name] = config["context_window"]
+        # Vertex AI legacy pricing removed
         elif model_name.startswith("anthropic/"):
             # Add anthropic/claude-sonnet-4 alias for claude-sonnet-4-20250514
             if "claude-sonnet-4-20250514" in model_name:
