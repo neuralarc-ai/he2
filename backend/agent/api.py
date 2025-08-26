@@ -971,7 +971,7 @@ async def initiate_agent_with_files(
     logger.debug(f"Original model_name from request: {model_name}")
 
     if model_name is None:
-        model_name = "openai/gpt-5-mini"
+        model_name = "vertex_ai/gemini-2.5-flash"
         logger.debug(f"Using default model: {model_name}")
 
     # Log the model name after alias resolution
