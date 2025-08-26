@@ -769,8 +769,8 @@ export default function ThreadPage({
 
         <ThreadContent
           messages={messages}
-          isSidePanelOpen={isSidePanelOpen}
-          leftSidebarState={leftSidebarState}
+          // isSidePanelOpen={isSidePanelOpen}
+          //leftSidebarState={leftSidebarState}
           streamingTextContent={streamingTextContent}
           streamingToolCall={streamingToolCall}
           agentStatus={agentStatus}
@@ -785,12 +785,12 @@ export default function ThreadPage({
           agentAvatar={undefined}
           agentMetadata={agent?.metadata}
           agentData={agent}
-          onSubmit={handleSubmitMessage}
+          //onSubmit={handleSubmitMessage}
         />
 
         <div
           className={cn(
-            'fixed bottom-0 z-20 bg-gradient-to-t from-background via-background/90 to-transparent pt-16 pb-6',
+            'fixed bottom-0 z-20 bg-gradient-to-t from-background via-background/90 to-transparent pt-16',
             'transition-[left,right] duration-200 ease-in-out will-change-[left,right]',
             leftSidebarState === 'expanded'
               ? 'left-[72px] md:left-[256px]'
@@ -799,7 +799,7 @@ export default function ThreadPage({
                 : 'left-[50px]',
             isSidePanelOpen
               ? leftSidebarState === 'expanded'
-                ? 'right-[45.5vw] 2xl:right-[45.5vw] xl:right-[45.4vw] lg:right-[45.5vw]'
+                ? 'right-[45vw] 2xl:right-[45vw] xl:right-[44vw] lg:right-[43vw]'
                 : 'right-[51vw]'
               : 'right-0',
             isMobile ? 'left-0 right-0 pb-6' : '',
@@ -814,7 +814,7 @@ export default function ThreadPage({
             <div
               className={cn(
                 'w-full',
-                isSidePanelOpen ? 'max-w-3xl' : 'max-w-3xl',
+                isSidePanelOpen ? 'max-w-3xl' : 'max-w-4xl',
               )}
             >
               <ChatInput
