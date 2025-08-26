@@ -663,20 +663,13 @@ async def get_allowed_models_for_user(client, user_id: str):
 
 
 async def can_use_model(client, user_id: str, model_name: str):
-    if config.ENV_MODE == EnvMode.LOCAL:
-        logger.debug("Running in local development mode - billing checks are disabled")
-        return True, "Local development mode - billing disabled", {
-            "price_id": "local_dev",
-            "plan_name": "Local Development",
-            "minutes_limit": "no limit"
-        }
-
-    allowed_models = await get_allowed_models_for_user(client, user_id)
-    resolved_model = MODEL_NAME_ALIASES.get(model_name, model_name)
-    if resolved_model in allowed_models:
-        return True, "Model access allowed", allowed_models
-    
-    return False, f"Your current subscription plan does not include access to {model_name}. Please upgrade your subscription or choose from your available models: {', '.join(allowed_models)}", allowed_models
+    # Bypass all model access restrictions - allow all models for all users
+    logger.debug(f"Model access check bypassed for user {user_id} and model {model_name}")
+    return True, "Model access allowed - no restrictions", {
+        "price_id": "unrestricted",
+        "plan_name": "Unrestricted Access",
+        "minutes_limit": "no limit"
+    }
 
 async def get_subscription_tier(client, user_id: str) -> str:
     try:
@@ -1817,11 +1810,7 @@ async def get_available_models(
         # Create model info with display names for ALL models
         model_info = []
         for model in all_models:
-            # For Vertex AI models, preserve the full model ID as display name
-            if model.startswith('vertexai/'):
-                display_name = model
-            else:
-                display_name = model_aliases.get(model, model.split('/')[-1] if '/' in model else model)
+            display_name = model_aliases.get(model, model.split('/')[-1] if '/' in model else model)
             
             # Check if model requires subscription (not in free tier)
             requires_sub = model not in free_tier_models
@@ -1872,10 +1861,7 @@ async def get_available_models(
                         google_model_name = model.replace('gemini/', '')
                         models_to_try.append(google_model_name)
                     
-                    # Special handling for Vertex AI models
-                    if model.startswith('vertexai/'):
-                        vertex_model_name = model.replace('vertexai/', '')
-                        models_to_try.append(vertex_model_name)
+                    # Vertex AI handling removed
                     
                     # Try each model name variation until we find one that works
                     input_cost_per_token = None

@@ -521,12 +521,7 @@ class AgentRunner:
             return 4096
         elif "gemini-2.5-pro" in self.config.model_name.lower():
             return 64000
-        elif "vertexai/gemini-2.5-pro" in self.config.model_name.lower():
-            return 64000
-        elif "vertexai/gemini-2.5-flash" in self.config.model_name.lower():
-            return 64000
-        elif "vertexai/gemini-2.0-flash" in self.config.model_name.lower():
-            return 64000
+        # Vertex AI models removed
         elif "kimi-k2" in self.config.model_name.lower():
             return 8192
         return None

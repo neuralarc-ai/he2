@@ -251,9 +251,9 @@ export const FileUploadHandler = forwardRef<
                 <Button
                   type="button"
                   onClick={handleFileUpload}
-                  variant="outline"
-                  size="sm"
-                  className="h-8 px-3 py-2 bg-transparent border border-border rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/50 flex items-center gap-2"
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 rounded-full"
                   disabled={
                     !isLoggedIn || loading || (disabled && !isAgentRunning) || isUploading
                   }
@@ -261,13 +261,24 @@ export const FileUploadHandler = forwardRef<
                   {isUploading ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    <Image 
-                      src="/icons/paperclip.svg" 
-                      alt="Attach files" 
-                      width={16} 
-                      height={16}
-                      className="h-4 w-4 text-black dark:text-white"
-                    />
+                    <>
+                    {/*  <Image src="/icons/paperclip-light.svg" alt="Paperclip" width={24} height={24} /> */}
+                   <Image
+                                                  src="/icons/Vector-light.svg"
+                                                  alt="Paperclip Dark Logo"
+                                                  width={16}
+                                                  height={16}
+                                                  className="block dark:hidden mb-0"
+                                                />
+                                                {/* Dark logo */}
+                                                <Image
+                                                src="/icons/paperclip-dark.svg"
+                                                alt="Paperclip Dark Logo"
+                                                width={20}
+                                                height={20}
+                                                 className="hidden dark:block mb-0"
+                                                /></>
+                
                   )}
                 </Button>
               </span>

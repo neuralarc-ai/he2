@@ -72,6 +72,9 @@ dependencies = [
   "daytona>=0.21.6",
   "google-cloud-aiplatform>=1.45.0",
   "vertexai>=1.45.0",
+  "google-auth>=2.40.3",
+  "google-auth-oauthlib>=1.2.2",
+  "google-auth-httplib2>=0.2.0",
 ]
 
 [project.urls]

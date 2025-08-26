@@ -17,18 +17,6 @@ from litellm.files.main import ModelResponse
 from utils.logger import logger
 from utils.config import config
 
-# Vertex AI imports
-try:
-    import vertexai
-    from vertexai.generative_models import GenerativeModel, Part, Content
-    from vertexai.preview.generative_models import Tool as VertexTool, FunctionDeclaration
-    from google.cloud import aiplatform
-    from google.oauth2 import service_account
-    VERTEX_AI_AVAILABLE = True
-except ImportError:
-    VERTEX_AI_AVAILABLE = False
-    logger.warning("Vertex AI dependencies not installed. Install with: pip install google-cloud-aiplatform vertexai")
-
 # litellm.set_verbose=True
 # Let LiteLLM auto-adjust params and drop unsupported ones (e.g., GPT-5 temperature!=1)
 litellm.modify_params = True
@@ -68,36 +56,19 @@ def setup_api_keys() -> None:
         os.environ['AWS_REGION_NAME'] = aws_region
     else:
         logger.warning(f"Missing AWS credentials for Bedrock integration - access_key: {bool(aws_access_key)}, secret_key: {bool(aws_secret_key)}, region: {aws_region}")
-    
-    # Set up Vertex AI credentials
-    if VERTEX_AI_AVAILABLE and config.VERTEX_AI_ENABLED:
-        try:
-            # Set environment variables for Vertex AI
-            service_account_path = os.path.join(os.path.dirname(__file__), '..', 'helium-0086-f896f70d1ec1.json')
-            if os.path.exists(service_account_path):
-                os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = service_account_path
-                os.environ["GOOGLE_CLOUD_PROJECT"] = config.GOOGLE_CLOUD_PROJECT_ID
-                os.environ["GOOGLE_CLOUD_LOCATION"] = config.GOOGLE_CLOUD_LOCATION
-                
-                # Initialize Vertex AI
-                vertexai.init(
-                    project=config.GOOGLE_CLOUD_PROJECT_ID,
-                    location=config.GOOGLE_CLOUD_LOCATION,
-                    credentials=service_account.Credentials.from_service_account_file(service_account_path)
-                )
-                
-                # Initialize AI Platform
-                aiplatform.init(
-                    project=config.GOOGLE_CLOUD_PROJECT_ID,
-                    location=config.GOOGLE_CLOUD_LOCATION,
-                    credentials=service_account.Credentials.from_service_account_file(service_account_path)
-                )
-                
-                logger.info("Vertex AI initialized successfully")
-            else:
-                logger.warning(f"Vertex AI service account file not found at: {service_account_path}")
-        except Exception as e:
-            logger.error(f"Failed to initialize Vertex AI: {e}", exc_info=True)
+
+    # Vertex AI / Gemini via LiteLLM
+    # Prefer explicit VERTEXAI_*; fall back to GOOGLE_CLOUD_* if present
+    effective_vertex_project = config.VERTEXAI_PROJECT or config.GOOGLE_CLOUD_PROJECT_ID
+    effective_vertex_location = config.VERTEXAI_LOCATION or config.GOOGLE_CLOUD_LOCATION
+
+    if effective_vertex_project:
+        os.environ['VERTEXAI_PROJECT'] = effective_vertex_project
+    if effective_vertex_location:
+        os.environ['VERTEXAI_LOCATION'] = effective_vertex_location
+    if config.GOOGLE_APPLICATION_CREDENTIALS:
+        os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = config.GOOGLE_APPLICATION_CREDENTIALS
+
 
 def get_openrouter_fallback(model_name: str) -> Optional[str]:
     """Get OpenRouter fallback model for a given model name."""
@@ -246,36 +217,30 @@ def _configure_kimi_k2(params: Dict[str, Any], model_name: str) -> None:
         "order": ["groq", "moonshotai"] #, "groq", "together/fp8", "novita/fp8", "baseten/fp8", 
     }
 
-def _configure_gemini(params: Dict[str, Any], model_name: str) -> None:
-    """Configure Gemini-specific parameters."""
-    if not model_name.startswith("gemini/"):
-        return
-    
-    # Set the API key for Gemini models
-    if config.GEMINI_API_KEY:
-        params["api_key"] = config.GEMINI_API_KEY
-        logger.debug("Added Gemini API key to parameters")
-    
-    # Gemini models use different parameter names
-    if "max_tokens" in params:
-        params["max_output_tokens"] = params.pop("max_tokens")
-        logger.debug("Converted max_tokens to max_output_tokens for Gemini model")
-
 def _configure_vertex_ai(params: Dict[str, Any], model_name: str) -> None:
-    """Configure Vertex AI-specific parameters."""
-    if not model_name.startswith("vertexai/"):
+    """Configure Vertex AI-specific parameters for Gemini models via LiteLLM."""
+    is_vertex_route = model_name.startswith("vertex_ai/")
+    is_gemini_direct = model_name.startswith("gemini/")
+    if not (is_vertex_route or is_gemini_direct):
         return
-    
-    # Vertex AI models use different parameter names
+
+    # If calling Vertex route, pass dynamic params when available
+    if is_vertex_route:
+        # Credentials could be json string or path
+        if config.VERTEXAI_CREDENTIALS:
+            params["vertex_credentials"] = config.VERTEXAI_CREDENTIALS
+        if config.VERTEXAI_PROJECT:
+            params["vertex_project"] = config.VERTEXAI_PROJECT
+        if config.VERTEXAI_LOCATION:
+            params["vertex_location"] = config.VERTEXAI_LOCATION
+
+    # Support reasoning mapping for Gemini per LiteLLM docs using reasoning_effort
+    # (Handled centrally in _configure_thinking for other providers. For Vertex, we keep effort on params)
+
+    # Ensure token param compatibility
     if "max_tokens" in params:
+        # For Gemini unified or vertex routes, LiteLLM handles this but we align to max_output_tokens if needed
         params["max_output_tokens"] = params.pop("max_tokens")
-        logger.debug("Converted max_tokens to max_output_tokens for Vertex AI model")
-    
-    # Vertex AI specific configurations
-    if "temperature" in params and params["temperature"] == 0:
-        # Vertex AI doesn't support temperature=0, use a very low value instead
-        params["temperature"] = 0.01
-        logger.debug("Adjusted temperature for Vertex AI compatibility")
 
 def _configure_thinking(params: Dict[str, Any], model_name: str, enable_thinking: Optional[bool], reasoning_effort: Optional[str]) -> None:
     """Configure reasoning/thinking parameters for supported models."""
@@ -286,6 +251,7 @@ def _configure_thinking(params: Dict[str, Any], model_name: str, enable_thinking
     effort_level = reasoning_effort or 'low'
     is_anthropic = "anthropic" in model_name.lower() or "claude" in model_name.lower()
     is_xai = "xai" in model_name.lower() or model_name.startswith("xai/")
+    is_vertex_gemini = model_name.startswith("vertex_ai/") or model_name.startswith("gemini/")
     
     if is_anthropic:
         params["reasoning_effort"] = effort_level
@@ -294,6 +260,10 @@ def _configure_thinking(params: Dict[str, Any], model_name: str, enable_thinking
     elif is_xai:
         params["reasoning_effort"] = effort_level
         logger.info(f"xAI thinking enabled with reasoning_effort='{effort_level}'")
+    elif is_vertex_gemini:
+        # LiteLLM maps OpenAI-style reasoning_effort to Gemini thinking budget
+        params["reasoning_effort"] = effort_level
+        logger.info(f"Vertex Gemini thinking enabled with reasoning_effort='{effort_level}'")
 
 def _add_fallback_model(params: Dict[str, Any], model_name: str, messages: List[Dict[str, Any]]) -> None:
     """Add fallback model to the parameters."""
@@ -366,9 +336,7 @@ def prepare_params(
     _configure_openai_gpt5(params, model_name)
     # Add Kimi K2-specific parameters
     _configure_kimi_k2(params, model_name)
-    # Add Gemini-specific parameters
-    _configure_gemini(params, model_name)
-    # Add Vertex AI-specific parameters
+    # Add Vertex/Gemini-specific parameters
     _configure_vertex_ai(params, model_name)
     _configure_thinking(params, model_name, enable_thinking, reasoning_effort)
 
@@ -436,19 +404,7 @@ async def make_llm_api_call(
         reasoning_effort=reasoning_effort
     )
     try:
-        # Route Vertex AI models to dedicated function
-        if model_name.startswith("vertexai/"):
-            logger.debug(f"Routing Vertex AI model {model_name} to dedicated handler")
-            return await make_vertex_ai_call(
-                messages=messages,
-                model_name=model_name,
-                temperature=temperature,
-                max_tokens=max_tokens,
-                tools=tools,
-                stream=stream
-            )
-        
-        # Use LiteLLM for other models
+        # Use LiteLLM for models
         response = await litellm.acompletion(**params)
         logger.debug(f"Successfully received API response from {model_name}")
         # logger.debug(f"Response: {response}")
@@ -458,192 +414,6 @@ async def make_llm_api_call(
         logger.error(f"Unexpected error during API call: {str(e)}", exc_info=True)
         raise LLMError(f"API call failed: {str(e)}")
 
-async def make_vertex_ai_call(
-    messages: List[Dict[str, Any]],
-    model_name: str,
-    temperature: float = 0.7,
-    max_tokens: Optional[int] = None,
-    tools: Optional[List[Dict[str, Any]]] = None,
-    stream: bool = False,
-    **kwargs
-) -> Union[Dict[str, Any], AsyncGenerator]:
-    """
-    Make a direct call to Vertex AI models.
-    
-    Args:
-        messages: List of message dictionaries
-        model_name: Vertex AI model name (e.g., "vertexai/gemini-2.5-pro")
-        temperature: Sampling temperature
-        max_tokens: Maximum output tokens
-        tools: Optional tools for function calling
-        stream: Whether to stream the response
-        **kwargs: Additional parameters
-        
-    Returns:
-        API response or stream
-    """
-    if not VERTEX_AI_AVAILABLE:
-        raise LLMError("Vertex AI not available. Install dependencies: pip install google-cloud-aiplatform vertexai")
-    
-    try:
-        from vertexai.generative_models import GenerativeModel, Part, Content
-        from vertexai.preview.generative_models import Tool as VertexTool, FunctionDeclaration
-        
-        # Map model names to Vertex AI model paths
-        model_mapping = {
-            "vertexai/gemini-2.5-pro": "gemini-2.5-pro",
-            "vertexai/gemini-2.5-flash": "gemini-2.5-flash", 
-            "vertexai/gemini-2.0-flash": "gemini-2.0-flash"
-        }
-        
-        if model_name not in model_mapping:
-            raise LLMError(f"Unsupported Vertex AI model: {model_name}")
-        
-        vertex_model_name = model_mapping[model_name]
-        
-        # Ensure we're using the correct project context
-        from google.oauth2 import service_account
-        service_account_path = os.path.join(os.path.dirname(__file__), '..', 'helium-0086-f896f70d1ec1.json')
-        credentials = service_account.Credentials.from_service_account_file(service_account_path)
-        
-        # Re-initialize Vertex AI with correct project context
-        vertexai.init(
-            project=config.GOOGLE_CLOUD_PROJECT_ID,
-            location=config.GOOGLE_CLOUD_LOCATION,
-            credentials=credentials
-        )
-        
-        # Create model with explicit project path
-        model_path = f"projects/{config.GOOGLE_CLOUD_PROJECT_ID}/locations/{config.GOOGLE_CLOUD_LOCATION}/publishers/google/models/{vertex_model_name}"
-        model = GenerativeModel(model_path)
-        
-        # Convert messages to Vertex AI format - Vertex AI doesn't support system messages
-        content_parts = []
-        
-        # Process messages - convert system messages to user messages for Vertex AI
-        for message in messages:
-            role = message.get('role', 'user')
-            content = message.get('content', '')
-            
-            # Vertex AI doesn't support system messages, so convert them to user messages
-            if role == 'system':
-                role = 'user'
-            
-            content_parts.append(Content(role=role, parts=[Part.from_text(content)]))
-        
-        # Prepare generation config with model-specific token limits
-        # Gemini 2.0 Flash has lower token limits than 2.5 models
-        default_max_tokens = 8192
-        if "gemini-2.0-flash" in vertex_model_name:
-            default_max_tokens = 8192  # Gemini 2.0 Flash max
-        elif "gemini-2.5" in vertex_model_name:
-            default_max_tokens = 8192  # Gemini 2.5 models can handle higher limits
-        
-        # Use provided max_tokens or default, but ensure we don't exceed model limits
-        final_max_tokens = max_tokens or default_max_tokens
-        
-        # Safety check: ensure we don't exceed Gemini 2.0 Flash limits
-        if "gemini-2.0-flash" in vertex_model_name and final_max_tokens > 8192:
-            logger.warning(f"Reducing max_output_tokens from {final_max_tokens} to 8192 for Gemini 2.0 Flash compatibility")
-            final_max_tokens = 8192
-        
-        generation_config = {
-            "temperature": temperature,
-            "max_output_tokens": final_max_tokens,
-            **kwargs
-        }
-        
-        # Remove None values
-        generation_config = {k: v for k, v in generation_config.items() if v is not None}
-        
-        # Convert tools if provided
-        vertex_tools = None
-        if tools:
-            vertex_tools = []
-            for tool in tools:
-                if 'function' in tool:
-                    func = tool['function']
-                    function_declaration = FunctionDeclaration(
-                        name=func.get('name', ''),
-                        description=func.get('description', ''),
-                        parameters=func.get('parameters', {})
-                    )
-                    vertex_tools.append(VertexTool(function_declarations=[function_declaration]))
-        
-        if stream:
-            # Generate streaming response
-            response_stream = model.generate_content(
-                content_parts,
-                generation_config=generation_config,
-                tools=vertex_tools,
-                stream=True
-            )
-            
-            async def stream_generator():
-                for chunk in response_stream:
-                    if chunk.text:
-                        # Get finish_reason from the first candidate if available
-                        finish_reason = None
-                        if hasattr(chunk, 'candidates') and chunk.candidates:
-                            finish_reason = getattr(chunk.candidates[0], 'finish_reason', None)
-                        
-                        # Convert to LiteLLM format that response processor expects
-                        yield type('obj', (object,), {
-                            'choices': [type('obj', (object,), {
-                                'delta': type('obj', (object,), {
-                                    'content': chunk.text
-                                })
-                            })],
-                            'model': model_name,
-                            'finish_reason': finish_reason,
-                            'usage': None,
-                            'created': None
-                        })()
-                
-                # Final chunk to signal completion
-                yield type('obj', (object,), {
-                    'choices': [type('obj', (object,), {
-                        'delta': type('obj', (object,), {
-                            'content': ''
-                        }),
-                        'finish_reason': 'stop'
-                    })],
-                    'model': model_name,
-                    'finish_reason': 'stop',
-                    'usage': None,
-                    'created': None
-                })()
-            
-            return stream_generator()
-        else:
-            # Generate single response
-            response = model.generate_content(
-                content_parts,
-                generation_config=generation_config,
-                tools=vertex_tools
-            )
-            
-            return {
-                "model": model_name,
-                "content": response.text,
-                "usage": {
-                    "prompt_tokens": getattr(response.usage_metadata, 'prompt_token_count', 0) if hasattr(response, 'usage_metadata') else 0,
-                    "completion_tokens": getattr(response.usage_metadata, 'candidates_token_count', 0) if hasattr(response, 'usage_metadata') else 0,
-                    "total_tokens": getattr(response.usage_metadata, 'total_token_count', 0) if hasattr(response, 'usage_metadata') else 0
-                },
-                "finish_reason": getattr(response.candidates[0], 'finish_reason', 'stop') if (hasattr(response, 'candidates') and response.candidates) else 'stop',
-                "choices": [{
-                    "message": {
-                        "content": response.text,
-                        "role": "assistant"
-                    },
-                    "finish_reason": getattr(response.candidates[0], 'finish_reason', 'stop') if (hasattr(response, 'candidates') and response.candidates) else 'stop'
-                }]
-            }
-            
-    except Exception as e:
-        logger.error(f"Vertex AI call failed: {e}", exc_info=True)
-        raise LLMError(f"Vertex AI call failed: {e}")
 
 # Initialize API keys on module import
 setup_api_keys()
