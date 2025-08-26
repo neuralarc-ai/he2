@@ -261,7 +261,7 @@ class AppService:
             "google_analytics", "facebook", "instagram", "twitter", "linkedin", "mailchimp",
             "stripe", "paypal", "quickbooks", "xero", "square",
             "aws", "google_cloud", "microsoft_azure", "digitalocean", "heroku",
-            "shopify", "woocommerce", "magento", "bigcommerce"
+            "shopify", "woocommerce", "magento", "bigcommerce", "canva"
         ]
         
         apps = []

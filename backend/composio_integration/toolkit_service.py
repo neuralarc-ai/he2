@@ -89,6 +89,7 @@ class ToolkitService:
                 {"id": "communication", "name": "Communication"},
                 {"id": "project-management", "name": "Project Management"},
                 {"id": "scheduling", "name": "Scheduling"},
+                {"id": "Design & creative tools", "name": "Design & creative tools"},
             ]
 
             special_apps=[
