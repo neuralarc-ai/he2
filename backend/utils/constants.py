@@ -28,7 +28,7 @@ MODELS = {
         "tier_availability": ["free", "paid"]
     },    
     
-    # Paid tier only models
+    # All models available for all tiers
     "gemini/gemini-2.5-pro": {
         "aliases": ["google/gemini-2.5-pro"],
         "pricing": {
@@ -90,9 +90,10 @@ MODELS = {
 def _generate_model_structures():
     """Generate all model structures from the master MODELS dictionary."""
     
-    # Generate tier lists
-    free_models = []
-    paid_models = []
+    # Generate tier lists - all models available for all tiers
+    all_models = list(MODELS.keys())
+    free_models = all_models
+    paid_models = all_models
     
     # Generate aliases
     aliases = {}
@@ -104,7 +105,7 @@ def _generate_model_structures():
     context_windows = {}
     
     for model_name, config in MODELS.items():
-        # Add to tier lists
+        # Add to tier lists - all models available for all tiers
         if "free" in config["tier_availability"]:
             free_models.append(model_name)
         if "paid" in config["tier_availability"]:
@@ -156,18 +157,19 @@ def _generate_model_structures():
 # Generate all structures
 FREE_TIER_MODELS, PAID_TIER_MODELS, MODEL_NAME_ALIASES, HARDCODED_MODEL_PRICES, MODEL_CONTEXT_WINDOWS = _generate_model_structures()
 
+# All tiers have access to all models without constraints
 MODEL_ACCESS_TIERS = {
     "free": FREE_TIER_MODELS,
-    "tier_2_20": PAID_TIER_MODELS,
-    "tier_6_50": PAID_TIER_MODELS,
-    "tier_12_100": PAID_TIER_MODELS,
-    "tier_25_200": PAID_TIER_MODELS,
-    "tier_50_400": PAID_TIER_MODELS,
-    "tier_125_800": PAID_TIER_MODELS,
-    "tier_200_1000": PAID_TIER_MODELS,
-    "tier_25_170_yearly_commitment": PAID_TIER_MODELS,
-    "tier_6_42_yearly_commitment": PAID_TIER_MODELS,
-    "tier_12_84_yearly_commitment": PAID_TIER_MODELS,
+    "tier_2_20": FREE_TIER_MODELS,
+    "tier_6_50": FREE_TIER_MODELS,
+    "tier_12_100": FREE_TIER_MODELS,
+    "tier_25_200": FREE_TIER_MODELS,
+    "tier_50_400": FREE_TIER_MODELS,
+    "tier_125_800": FREE_TIER_MODELS,
+    "tier_200_1000": FREE_TIER_MODELS,
+    "tier_25_170_yearly_commitment": FREE_TIER_MODELS,
+    "tier_6_42_yearly_commitment": FREE_TIER_MODELS,
+    "tier_12_84_yearly_commitment": FREE_TIER_MODELS,
 }
 
 def get_model_context_window(model_name: str, default: int = 31_000) -> int:
