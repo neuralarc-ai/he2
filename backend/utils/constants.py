@@ -36,7 +36,7 @@ MODELS = {
             "output_cost_per_million_tokens": 10.00
         },
         "context_window": 2_000_000,  # 2M tokens
-        "tier_availability": ["paid"]
+        "tier_availability": ["free", "paid"]
     },
     "gemini/gemini-2.5-flash": {
         "aliases": ["google/gemini-2.5-flash"],
@@ -45,7 +45,7 @@ MODELS = {
             "output_cost_per_million_tokens": 0.60
         },
         "context_window": 2_000_000,  # 2M tokens
-        "tier_availability": ["paid"]
+        "tier_availability": ["free", "paid"]
     },
     "gemini/gemini-2.0-flash": {
         "aliases": ["google/gemini-2.0-flash"],
@@ -54,7 +54,7 @@ MODELS = {
             "output_cost_per_million_tokens": 0.60
         },
         "context_window": 1_000_000,  # 1M tokens
-        "tier_availability": ["paid"]
+        "tier_availability": ["free", "paid"]
     },
     
     # Vertex AI models
@@ -65,7 +65,7 @@ MODELS = {
             "output_cost_per_million_tokens": 10.00
         },
         "context_window": 2_000_000,  # 2M tokens
-        "tier_availability": ["paid"]
+        "tier_availability": ["free", "paid"]
     },
     "vertexai/gemini-2.5-flash": {
         "aliases": ["vertexai/gemini-2.5-flash"],
@@ -74,7 +74,7 @@ MODELS = {
             "output_cost_per_million_tokens": 0.60
         },
         "context_window": 2_000_000,  # 2M tokens
-        "tier_availability": ["paid"]
+        "tier_availability": ["free", "paid"]
     },
     "vertexai/gemini-2.0-flash": {
         "aliases": ["vertexai/gemini-2.0-flash"],
@@ -83,7 +83,7 @@ MODELS = {
             "output_cost_per_million_tokens": 0.60
         },
         "context_window": 1_000_000,  # 1M tokens
-        "tier_availability": ["paid"]
+        "tier_availability": ["free", "paid"]
     },           
 }
 

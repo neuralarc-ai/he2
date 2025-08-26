@@ -10,21 +10,6 @@ export const STORAGE_KEY_CUSTOM_MODELS = 'customModels';
 export const DEFAULT_PREMIUM_MODEL_ID = 'vertexai/gemini-2.5-pro';
 export const DEFAULT_FREE_MODEL_ID = 'vertexai/gemini-2.5-pro';
 
-// Helper to test localStorage functionality
-export const testLocalStorage = (): boolean => {
-  if (typeof window === 'undefined') return false;
-  try {
-    const testKey = 'test-storage';
-    const testValue = 'test-value';
-    localStorage.setItem(testKey, testValue);
-    const retrieved = localStorage.getItem(testKey);
-    localStorage.removeItem(testKey);
-    return retrieved === testValue;
-  } catch (error) {
-    console.error('localStorage test failed:', error);
-    return false;
-  }
-};
 
 export type SubscriptionStatus = 'no_subscription' | 'active';
 
@@ -349,8 +334,7 @@ export const useModelSelection = () => {
     
     console.log('🔧 useModelSelection: Initializing model selection...');
     console.log('🔧 useModelSelection: isLoadingModels:', isLoadingModels);
-    console.log('🔧 useModelSelection: subscriptionStatus:', subscriptionStatus);
-    console.log('🔧 useModelSelection: localStorage test passed:', testLocalStorage());
+    console.log('🔧 useModelSelection: subscriptionStatus:', subscriptionStatus);    
     
     try {
       const savedModel = localStorage.getItem(STORAGE_KEY_MODEL);
@@ -565,12 +549,9 @@ export const useModelSelection = () => {
       console.log('  subscriptionStatus:', subscriptionStatus);
       console.log('  isLoadingModels:', isLoadingModels);
       console.log('  localStorage value:', localStorage.getItem(STORAGE_KEY_MODEL));
-      console.log('🔧 useModelSelection: localStorage test passes:', testLocalStorage());
-      console.log('🔧 useModelSelection: defaultModel would be:', isProductionMode() ? `${DEFAULT_PREMIUM_MODEL_ID} (Claude Sonnet 4)` : 
-        `${subscriptionStatus === 'active' ? `${DEFAULT_PREMIUM_MODEL_ID} (Claude Sonnet 4)` : `${DEFAULT_FREE_MODEL_ID} (KIMi K2)`}`);
+      console.log('🔧 useModelSelection: defaultModel would be:', isProductionMode() ? `${DEFAULT_PREMIUM_MODEL_ID} (Gemini 2.5 Pro)` : 
+        `${subscriptionStatus === 'active' ? `${DEFAULT_PREMIUM_MODEL_ID} (Claude Sonnet 4)` : `${DEFAULT_FREE_MODEL_ID} (Gemini 2.5 pro)`}`);
       console.log('🔧 useModelSelection: availableModels:', availableModels.map(m => ({ id: m.id, requiresSubscription: m.requiresSubscription })));
     }
   };
 };
-
-// Export the hook but not any sorting logic - sorting is handled internally
