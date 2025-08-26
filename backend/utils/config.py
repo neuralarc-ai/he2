@@ -280,8 +280,8 @@ class Configuration:
     GOOGLE_CLOUD_LOCATION: Optional[str] = None
     
     # OpenRouter site metadata
-    OR_SITE_URL: Optional[str] = "https://kortix.ai"
-    OR_APP_NAME: Optional[str] = "Kortix AI"    
+    OR_SITE_URL: Optional[str] = "https://he2.ai"
+    OR_APP_NAME: Optional[str] = "Helium AI"    
     
     # AWS Bedrock credentials
     AWS_ACCESS_KEY_ID: Optional[str] = None

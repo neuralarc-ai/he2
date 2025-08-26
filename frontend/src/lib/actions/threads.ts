@@ -23,7 +23,7 @@ export const generateThreadName = async (message: string): Promise<string> => {
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'openrouter/openai/gpt-oss-20b:free',
         messages: [
           {
             role: 'system',
