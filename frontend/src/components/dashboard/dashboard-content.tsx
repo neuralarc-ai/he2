@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, Suspense, useEffect, useRef } from 'react';
+import React, { useState, Suspense, useEffect, useRef, useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
@@ -58,20 +58,62 @@ export function DashboardContent() {
   const initiateAgentMutation = useInitiateAgentWithInvalidation();
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
-  // Fixed welcome message
-  const welcomeMessage = "What shall we focus on today, {name}?";
+  // Fixed welcome message - use useMemo to prevent regeneration on every render
+  const welcomeMessages = [
+    "What do we tackle first, {name}?",
+    "Let's lock in - what's the focus, {name}?",
+    "What's the game plan, {name}?",
+    "Time to go higher, {name} — what's the move?",
+    "Ready to lift off, {name}?",
+    "Let's rise above the noise, {name}."
+  ];
+  
+  const welcomeMessage = useMemo(() => {
+    // Get cached message or generate new one
+    const cachedMessage = localStorage.getItem('cached_welcome_message');
+    if (cachedMessage) {
+      return cachedMessage;
+    }
+    
+    // Generate new random message and cache it
+    const randomMessage = welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)];
+    localStorage.setItem('cached_welcome_message', randomMessage);
+    return randomMessage;
+  }, []); // Empty dependency array - only runs once
 
   const [currentWelcomeMessage, setCurrentWelcomeMessage] = useState('');
 
-  // Set welcome message with user's name
-  useEffect(() => {
-    // Get user's first name from personal account
-    const firstName = personalAccount?.name?.split(' ')[0] || 'there';
+  // Cache user's name to avoid repeated processing
+  const cachedUserName = useMemo(() => {
+    // Check localStorage first for cached name
+    const cachedName = localStorage.getItem('cached_user_name');
     
-    // Replace {name} placeholder with actual name
-    const personalizedMessage = welcomeMessage.replace('{name}', firstName);
-    setCurrentWelcomeMessage(personalizedMessage);
+    if (cachedName && personalAccount?.name === cachedName) {
+      // Return cached capitalized name if it matches current user
+      return localStorage.getItem('cached_capitalized_name') || 'there';
+    }
+    
+    // Process and cache new name
+    if (personalAccount?.name) {
+      const firstName = personalAccount.name.split(' ')[0];
+      const capitalizedFirstName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
+      
+      // Cache both original and capitalized names
+      localStorage.setItem('cached_user_name', personalAccount.name);
+      localStorage.setItem('cached_capitalized_name', capitalizedFirstName);
+      
+      return capitalizedFirstName;
+    }
+    
+    return 'there';
   }, [personalAccount?.name]);
+
+  // Set welcome message with cached user's name - only when dependencies change
+  useEffect(() => {
+    // Replace {name} placeholder with cached capitalized name
+    const personalizedMessage = welcomeMessage.replace('{name}', cachedUserName);
+    setCurrentWelcomeMessage(personalizedMessage);
+  }, [welcomeMessage, cachedUserName]);
 
   // Feature flag for custom agents section
   const { enabled: customAgentsEnabled } = useFeatureFlag('custom_agents');
@@ -241,9 +283,19 @@ export function DashboardContent() {
             <div className="flex-1 flex items-center justify-center px-4 py-8">
               <div className="w-full max-w-[800px] flex flex-col items-center justify-center space-y-1 md:space-y-2">
                 <div className="flex flex-col items-center text-center w-full">
-                  <p className="tracking-tight text-2xl md:text-3xl font-normal text-foreground/90 libre-baskerville-regular">
-                    {currentWelcomeMessage}
-                  </p>
+                  <div className="tracking-tight text-2xl md:text-3xl font-normal text-foreground/90 libre-baskerville-regular">
+                    {currentWelcomeMessage.split('{name}').map((part, index, array) => {
+                      if (index === array.length - 1) {
+                        return part;
+                      }
+                      return (
+                        <span key={index}>
+                          {part}
+                          <span className="libre-baskerville-bold">{cachedUserName}</span>
+                        </span>
+                      );
+                    })}
+                  </div>
                 </div>
                 <div className="w-full">
                   <ChatInput
