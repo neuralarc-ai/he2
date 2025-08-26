@@ -5,10 +5,10 @@ import { useState, useEffect, useMemo } from 'react';
 import { isLocalMode, isProductionMode } from '@/lib/config';
 import { useAvailableModels } from '@/hooks/react-query/subscriptions/use-model';
 
-export const STORAGE_KEY_MODEL = 'suna-preferred-model-v3';
+export const STORAGE_KEY_MODEL = 'suna-preferred-model-v5';
 export const STORAGE_KEY_CUSTOM_MODELS = 'customModels';
-export const DEFAULT_PREMIUM_MODEL_ID = 'claude-sonnet-4';
-export const DEFAULT_FREE_MODEL_ID = 'moonshotai/kimi-k2';
+export const DEFAULT_PREMIUM_MODEL_ID = 'vertex/gemini-2.5-pro';
+export const DEFAULT_FREE_MODEL_ID = 'vertex/gemini-2.5-pro';
 
 // Helper to test localStorage functionality
 export const testLocalStorage = (): boolean => {
@@ -76,24 +76,7 @@ export const MODELS = {
     recommended: false,
     lowQuality: false
   },
-  'vertexai/gemini-2.5-pro': { 
-    tier: 'premium', 
-    priority: 97,
-    recommended: false,
-    lowQuality: false
-  },
-  'vertexai/gemini-2.5-flash': { 
-    tier: 'premium', 
-    priority: 96,
-    recommended: false,
-    lowQuality: false
-  },
-  'vertexai/gemini-2.0-flash': { 
-    tier: 'premium', 
-    priority: 95,
-    recommended: false,
-    lowQuality: false
-  },
+  // Vertex AI models removed
   'grok-4': { 
     tier: 'premium', 
     priority: 94,
@@ -255,16 +238,7 @@ export const useModelSelection = () => {
         // Format the display label
         let cleanLabel = displayName;
         
-        // Special handling for Vertex AI models - preserve the full ID but format nicely
-        if (displayName.startsWith('vertexai/')) {
-          // For Vertex AI models, show "Vertex AI Gemini 2.5 Pro" instead of just "Gemini 2.5 Pro"
-          const modelPart = displayName.replace('vertexai/', '');
-          cleanLabel = `Vertex AI ${modelPart
-            .replace(/-/g, ' ')
-            .split(' ')
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(' ')}`;
-        } else if (cleanLabel.includes('/')) {
+        if (cleanLabel.includes('/')) {
           // For other models, use the existing logic
           cleanLabel = cleanLabel.split('/').pop() || cleanLabel;
           cleanLabel = cleanLabel
