@@ -1,34 +1,34 @@
 from fastapi import APIRouter, HTTPException, Depends
 from typing import Optional, Dict
 from utils.auth_utils import verify_admin_api_key
-from utils.suna_default_agent_service import SunaDefaultAgentService
+from utils.helium_default_agent_service import HeliumDefaultAgentService
 from utils.logger import logger
 from utils.config import config, EnvMode
 from dotenv import load_dotenv, set_key, find_dotenv, dotenv_values
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
-@router.post("/suna-agents/install-user/{account_id}")
-async def admin_install_suna_for_user(
+@router.post("/helium-agents/install-user/{account_id}")
+async def admin_install_helium_for_user(
     account_id: str,
     replace_existing: bool = False,
     _: bool = Depends(verify_admin_api_key)
 ):
-    logger.debug(f"Admin installing Suna agent for user: {account_id}")
+    logger.debug(f"Admin installing Helium agent for user: {account_id}")
     
-    service = SunaDefaultAgentService()
-    agent_id = await service.install_suna_agent_for_user(account_id, replace_existing)
+    service = HeliumDefaultAgentService()
+    agent_id = await service.install_helium_agent_for_user(account_id, replace_existing)
     
     if agent_id:
         return {
             "success": True,
-            "message": f"Successfully installed Suna agent for user {account_id}",
+            "message": f"Successfully installed Helium agent for user {account_id}",
             "agent_id": agent_id
         }
     else:
         raise HTTPException(
             status_code=500, 
-            detail=f"Failed to install Suna agent for user {account_id}"
+            detail=f"Failed to install Helium agent for user {account_id}"
         )
 
 @router.get("/env-vars")

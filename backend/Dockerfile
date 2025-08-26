@@ -1,14 +1,23 @@
-FROM ghcr.io/astral-sh/uv:python3.11-alpine
+FROM python:3.11-slim
 
 ENV ENV_MODE production
 WORKDIR /app
 
-RUN apk add --no-cache curl git
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl git build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install uv
+RUN pip install uv
 
 # Install Python dependencies
 COPY pyproject.toml uv.lock ./
 ENV UV_LINK_MODE=copy
-RUN --mount=type=cache,target=/root/.cache/uv uv sync --locked --quiet
+ENV UV_CACHE_DIR=/tmp/uv-cache
+RUN --mount=type=cache,target=/tmp/uv-cache \
+    uv sync --locked --quiet --no-cache || \
+    (echo "Fallback: installing without lock file..." && \
+     uv sync --quiet --no-cache)
 
 # Copy application code
 COPY . .

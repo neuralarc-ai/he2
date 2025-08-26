@@ -27,6 +27,6 @@ $$;
 
 GRANT EXECUTE ON FUNCTION public.get_user_account_by_email(text) TO authenticated, service_role;
 
-COMMENT ON FUNCTION public.get_user_account_by_email(text) IS 'Gets user account by email address. Used by admin scripts to install Suna agents.';
+COMMENT ON FUNCTION public.get_user_account_by_email(text) IS 'Gets user account by email address. Used by admin scripts to install Helium agents.';
 
 COMMIT; 

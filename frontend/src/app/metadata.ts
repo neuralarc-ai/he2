@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   authors: [
     {
       name: 'Helium AI',
-      url: 'https://he2.ai',
+              url: 'https://he2.ai',
     },
   ],
   creator: 'Helium AI',

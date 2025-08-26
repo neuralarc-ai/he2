@@ -1,5 +1,5 @@
 """
-Stripe Billing API implementation for Suna on top of Basejump. ONLY HAS SUPPOT FOR USER ACCOUNTS – no team accounts. As we are using the user_id as account_id as is the case with personal accounts. In personal accounts, the account_id equals the user_id. In team accounts, the account_id is unique.
+Stripe Billing API implementation for Helium on top of Basejump. ONLY HAS SUPPOT FOR USER ACCOUNTS – no team accounts. As we are using the user_id as account_id as is the case with personal accounts. In personal accounts, the account_id equals the user_id. In team accounts, the account_id is unique.
 
 stripe listen --forward-to localhost:8000/api/billing/webhook
 """
@@ -2282,8 +2282,8 @@ async def purchase_credits(
                     'price_data': {
                         'currency': 'usd',
                         'product_data': {
-                            'name': f'Suna AI Credits',
-                            'description': f'${request.amount_dollars:.2f} in usage credits for Suna AI',
+                                    'name': f'Helium AI Credits',
+        'description': f'${request.amount_dollars:.2f} in usage credits for Helium AI',
                         },
                         'unit_amount': int(request.amount_dollars * 100),
                     },

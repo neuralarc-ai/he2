@@ -33,7 +33,7 @@ export type Agent = {
   version_count?: number;
   current_version?: AgentVersion | null;
   metadata?: {
-    is_suna_default?: boolean;
+    is_helium_default?: boolean;
     centrally_managed?: boolean;
     management_version?: string;
     restrictions?: {

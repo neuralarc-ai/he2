@@ -62,9 +62,9 @@ export default function ThreadPage({
     selectedAgentId, 
     setSelectedAgent, 
     initializeFromAgents,
-    getCurrentAgent,
-    isSunaAgent 
-  } = useAgentSelection();
+          getCurrentAgent,
+      isHeliumAgent 
+    } = useAgentSelection();
   
   const { data: agentsResponse } = useAgents();
   const agents = agentsResponse?.agents || [];
@@ -533,7 +533,7 @@ export default function ThreadPage({
   useEffect(() => {
     if (initialLoadCompleted && subscriptionData && !hasCheckedUpgradeDialog.current) {
       hasCheckedUpgradeDialog.current = true;
-      const hasSeenUpgradeDialog = localStorage.getItem('suna_upgrade_dialog_displayed');
+              const hasSeenUpgradeDialog = localStorage.getItem('helium_upgrade_dialog_displayed');
       const isFreeTier = subscriptionStatus === 'no_subscription';
       if (!hasSeenUpgradeDialog && isFreeTier && !isLocalMode()) {
         setShowUpgradeDialog(true);
@@ -543,7 +543,7 @@ export default function ThreadPage({
 
   const handleDismissUpgradeDialog = () => {
     setShowUpgradeDialog(false);
-    localStorage.setItem('suna_upgrade_dialog_displayed', 'true');
+                localStorage.setItem('helium_upgrade_dialog_displayed', 'true');
   };
 
   useEffect(() => {

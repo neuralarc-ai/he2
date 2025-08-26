@@ -64,7 +64,7 @@ export const siteConfig = {
   url: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
   keywords: ['AI Worker', 'Generalist AI', 'Open Source AI', 'Autonomous Agent'],
   links: {
-    email: 'support@kortix.ai',
+            email: 'support@neuralarc.ai',
     twitter: 'https://x.com/kortixai',
     // discord: 'https://discord.gg/kortixai',
     github: 'https://github.com/Kortix-ai/Suna',
@@ -1237,9 +1237,9 @@ export const siteConfig = {
     {
       title: 'Kortix',
       links: [
-        { id: 1, title: 'About', url: 'https://kortix.ai' },
-        { id: 3, title: 'Contact', url: 'mailto:hey@kortix.ai' },
-        { id: 4, title: 'Careers', url: 'https://kortix.ai/careers' },
+        { id: 1, title: 'About', url: 'https://neuralarc.ai' },
+        { id: 3, title: 'Contact', url: 'mailto:hey@neuralarc.ai' },
+        { id: 4, title: 'Careers', url: 'https://neuralarc.ai/careers' },
       ],
     },
     {

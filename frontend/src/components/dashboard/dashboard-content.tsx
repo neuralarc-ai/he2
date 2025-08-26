@@ -87,9 +87,9 @@ export function DashboardContent() {
   const selectedAgent = selectedAgentId
     ? agents.find(agent => agent.agent_id === selectedAgentId)
     : null;
-  const displayName = selectedAgent?.name || 'Suna';
+      const displayName = selectedAgent?.name || 'Helium';
   const agentAvatar = undefined;
-  const isSunaAgent = selectedAgent?.metadata?.is_suna_default || false;
+  const isHeliumAgent = selectedAgent?.metadata?.is_helium_default || false;
 
   const threadQuery = useThreadQuery(initiatedThreadId || '');
 
@@ -99,7 +99,7 @@ export function DashboardContent() {
     console.log('🚀 Dashboard effect:', { 
       agentsLength: agents.length, 
       selectedAgentId, 
-      agents: agents.map(a => ({ id: a.agent_id, name: a.name, isDefault: a.metadata?.is_suna_default })) 
+      agents: agents.map(a => ({ id: a.agent_id, name: a.name, isDefault: a.metadata?.is_helium_default })) 
     });
     
     if (agents.length > 0) {

@@ -12,7 +12,7 @@ export interface MarketplaceTemplate {
   avatar?: string;
   avatar_color?: string;
   template_id: string;
-  is_kortix_team?: boolean;
+      is_he2_team?: boolean;
   model?: string;
   agentpress_tools?: Record<string, any>;
   mcp_requirements?: Array<{
