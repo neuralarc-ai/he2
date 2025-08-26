@@ -1817,7 +1817,11 @@ async def get_available_models(
         # Create model info with display names for ALL models
         model_info = []
         for model in all_models:
-            display_name = model_aliases.get(model, model.split('/')[-1] if '/' in model else model)
+            # For Vertex AI models, preserve the full model ID as display name
+            if model.startswith('vertexai/'):
+                display_name = model
+            else:
+                display_name = model_aliases.get(model, model.split('/')[-1] if '/' in model else model)
             
             # Check if model requires subscription (not in free tier)
             requires_sub = model not in free_tier_models
@@ -1867,6 +1871,11 @@ async def get_available_models(
                     if model.startswith('gemini/'):
                         google_model_name = model.replace('gemini/', '')
                         models_to_try.append(google_model_name)
+                    
+                    # Special handling for Vertex AI models
+                    if model.startswith('vertexai/'):
+                        vertex_model_name = model.replace('vertexai/', '')
+                        models_to_try.append(vertex_model_name)
                     
                     # Try each model name variation until we find one that works
                     input_cost_per_token = None

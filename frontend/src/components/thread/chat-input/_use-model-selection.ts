@@ -76,6 +76,24 @@ export const MODELS = {
     recommended: false,
     lowQuality: false
   },
+  'vertexai/gemini-2.5-pro': { 
+    tier: 'premium', 
+    priority: 97,
+    recommended: false,
+    lowQuality: false
+  },
+  'vertexai/gemini-2.5-flash': { 
+    tier: 'premium', 
+    priority: 96,
+    recommended: false,
+    lowQuality: false
+  },
+  'vertexai/gemini-2.0-flash': { 
+    tier: 'premium', 
+    priority: 95,
+    recommended: false,
+    lowQuality: false
+  },
   'grok-4': { 
     tier: 'premium', 
     priority: 94,
@@ -236,15 +254,32 @@ export const useModelSelection = () => {
         
         // Format the display label
         let cleanLabel = displayName;
-        if (cleanLabel.includes('/')) {
-          cleanLabel = cleanLabel.split('/').pop() || cleanLabel;
-        }
         
-        cleanLabel = cleanLabel
-          .replace(/-/g, ' ')
-          .split(' ')
-          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(' ');
+        // Special handling for Vertex AI models - preserve the full ID but format nicely
+        if (displayName.startsWith('vertexai/')) {
+          // For Vertex AI models, show "Vertex AI Gemini 2.5 Pro" instead of just "Gemini 2.5 Pro"
+          const modelPart = displayName.replace('vertexai/', '');
+          cleanLabel = `Vertex AI ${modelPart
+            .replace(/-/g, ' ')
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ')}`;
+        } else if (cleanLabel.includes('/')) {
+          // For other models, use the existing logic
+          cleanLabel = cleanLabel.split('/').pop() || cleanLabel;
+          cleanLabel = cleanLabel
+            .replace(/-/g, ' ')
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+        } else {
+          // For models without slashes, format normally
+          cleanLabel = cleanLabel
+            .replace(/-/g, ' ')
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+        }
         
         // Get model data from our central MODELS constant
         const modelData = MODELS[shortName] || {};
