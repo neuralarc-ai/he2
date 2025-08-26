@@ -218,13 +218,13 @@ export const useModelSelection = () => {
           models = [
             { 
               id: DEFAULT_FREE_MODEL_ID, 
-              label: 'KIMI K2', 
+              label: 'Gemini 2.5 Pro', 
               requiresSubscription: false,
               priority: MODELS[DEFAULT_FREE_MODEL_ID]?.priority || 100
             },
             { 
               id: DEFAULT_PREMIUM_MODEL_ID, 
-              label: 'Claude Sonnet 4', 
+              label: 'Gemini 2.5 Pro', 
               requiresSubscription: true, 
               priority: MODELS[DEFAULT_PREMIUM_MODEL_ID]?.priority || 100
             },
