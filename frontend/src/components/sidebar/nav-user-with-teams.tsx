@@ -206,7 +206,23 @@ export function NavUserWithTeams({
                 <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:text-center group-data-[collapsible=icon]:ml-0 ml-2">
                   <span className="truncate font-medium group-data-[collapsible=icon]:hidden">Settings</span>
                 </div>
-                <EllipsisIcon className="ml-auto size-4 group-data-[collapsible=icon]:mr-2" />
+                {/* <EllipsisIcon className="ml-auto size-4 group-data-[collapsible=icon]:mr-2" /> */}
+                <>
+                  <Image
+                    src="/icons/more-horizontal-light.svg"
+                    alt="menu"
+                    width={16}
+                    height={16}
+                    className="ml-auto size-4 group-data-[collapsible=icon]:mr-2 block dark:hidden"
+                  />
+                  <Image
+                    src="/icons/more-horizontal-dark.svg"
+                    alt="menu"
+                    width={16}
+                    height={16}
+                    className="ml-auto size-4 group-data-[collapsible=icon]:mr-2 hidden dark:block"
+                  />
+                </>
               </SidebarMenuButton>
             </DropdownMenuTrigger>
             <DropdownMenuContent
@@ -252,13 +268,21 @@ export function NavUserWithTeams({
                     className="gap-1 px-2"
                   >
                     <div className="flex size-8 items-center justify-center">
-                      <Image 
-                        src="/icons/user.svg" 
-                        alt="User" 
-                        width={28} 
-                        height={28}
-                        className="text-foreground"
-                      />
+                      <Image
+                                       src="/icons/user.svg" 
+                                       alt="user Light Logo"
+                                       width={28}
+                                       height={28}
+                                       className="block dark:hidden mb-0"
+                                     />
+                                     <Image
+                                       src="/icons/user-dark.svg"
+                                       alt="user Dark Logo"
+                                       width={28}
+                                       height={28}
+                                       className="hidden dark:block mb-0"
+                                     />
+                      
                     </div>
                     {personalAccount.name}
                     <DropdownMenuShortcut>⌘1</DropdownMenuShortcut>
@@ -305,13 +329,20 @@ export function NavUserWithTeams({
                   }}
                 >
                   <div className="flex size-8 items-center justify-center">
-                    <Image 
-                      src="/icons/team.svg" 
-                      alt="Team" 
-                      width={32} 
-                      height={32}
-                      className="text-foreground"
-                    />
+                    <Image
+                                      src="/icons/team.svg" 
+                                       alt="team Light Logo"
+                                       width={28}
+                                       height={28}
+                                       className="block dark:hidden mb-0"
+                                     />
+                                     <Image
+                                       src="/icons/team-dark.svg"
+                                       alt="team Dark Logo"
+                                       width={28}
+                                       height={28}
+                                       className="hidden dark:block mb-0"
+                                     />
                   </div>
                   <div className="text-muted-foreground font-medium">Add team</div>
                 </DropdownMenuItem>
@@ -330,13 +361,20 @@ export function NavUserWithTeams({
                 {!flagLoading && customAgentsEnabled && (
                   <DropdownMenuItem asChild>
                     <Link href="/settings/credentials">
-                      <Image 
-                        src="/icons/integrations.svg" 
-                        alt="Integrations" 
-                        width={20} 
-                        height={20}
-                        className="h-5 w-5 text-black dark:text-white"
-                      />
+                       <Image
+                                     src="/icons/integrations.svg" 
+                                       alt="integration Light Logo"
+                                       width={19}
+                                       height={19}
+                                       className="block dark:hidden mb-0"
+                                     />
+                                     <Image
+                                       src="/icons/integration-dark.svg"
+                                       alt="integration Dark Logo"
+                                       width={19}
+                                       height={19}
+                                       className="hidden dark:block mb-0"
+                                     />
                       Integrations
                     </Link>
                   </DropdownMenuItem>

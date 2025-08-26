@@ -49,7 +49,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-
+import Image from 'next/image'
 function getNodeText(node: any): string {
   if (typeof node === 'string') return node;
   if (Array.isArray(node)) return node.map(getNodeText).join('');
@@ -1228,7 +1228,23 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                       {copiedPromptIdx === groupIndex ? (
                                         <Check className="h-4 w-4" />
                                       ) : (
-                                        <Copy className="h-4 w-4" />
+                                        <>
+                                        <Image
+                                                                       src="/icons/copy-light.svg"
+                                                                       alt="copy Light Logo"
+                                                                       width={20}
+                                                                       height={20}
+                                                                       className="block dark:hidden mb-0"
+                                                                     />
+                                                                     {/* Dark logo */}
+                                                                     <Image
+                                                                       src="/icons/copy-dark.svg"
+                                                                       alt="copy Dark Logo"
+                                                                       width={20}
+                                                                       height={20}
+                                                                       className="hidden dark:block mb-0"
+                                                                     />
+                                      </>
                                       )}
                                     </Button>
                                   </TooltipTrigger>
@@ -1344,7 +1360,20 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                           }
                                         }}
                                       >
-                                        <Pencil className="h-4 w-4" />
+                                          <Image
+                                      src="/icons/pencil-light.svg"
+                                      alt="pencil Light Logo"
+                                      width={21}
+                                      height={21}
+                                      className="block dark:hidden mb-0"
+                                    />
+                                    <Image
+                                      src="/icons/pencil-dark.svg"
+                                      alt="pencil Dark Logo"
+                                      width={21}  
+                                      height={21}
+                                      className="hidden dark:block mb-0"
+                                    />
                                       </Button>
                                     </TooltipTrigger>
                                     <TooltipContent>
@@ -1546,7 +1575,23 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                             {copied ? (
                                               <Check className="h-4 w-4" />
                                             ) : (
-                                              <Copy className="h-4 w-4" />
+                                              <>
+                                              <Image
+                                                                        src="/icons/copy-light.svg"
+                                                                        alt="copy Light Logo"
+                                                                        width={22}
+                                                                        height={22}
+                                                                        className="block dark:hidden mb-0"
+                                                                      />
+                                                                      {/* Dark logo */}
+                                                                      <Image
+                                                                        src="/icons/copy-dark.svg"
+                                                                        alt="copy Dark Logo"
+                                                                        width={22}
+                                                                        height={22}
+                                                                        className="hidden dark:block mb-0"
+                                                                      />
+                                              </>
                                             )}
                                           </Button>
                                         </TooltipTrigger>
@@ -1578,12 +1623,38 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                             }}
                                           >
                                             {feedback === 'up' ? (
-                                              <ThumbsUpFilled
-                                                fill="currentColor"
-                                                className="h-4 w-4"
-                                              />
+                                               <>
+                                               <Image
+                                               src="/icons/thumbs-up-filled-light.svg"
+                                               alt="thumbs up filled Light Logo"
+                                               width={18}
+                                               height={18}
+                                               className="block dark:hidden mb-0"
+                                             />
+                                             <Image
+                                               src="/icons/thumbs-up-filled-dark.svg"
+                                               alt="thumbs up filled Dark Logo"
+                                               width={18}
+                                               height={18}
+                                               className="hidden dark:block mb-0"
+                                             /></>
                                             ) : (
-                                              <ThumbsUp className="h-4 w-4" />
+                                              <>
+                                              <Image
+                                              src="/icons/thumbs-up-light.svg"
+                                              alt="thumbs up Light Logo"
+                                              width={18}
+                                              height={18}
+                                              className="block dark:hidden mb-0"
+                                            />
+                                            <Image
+                                              src="/icons/thumbs-up-dark.svg"
+                                              alt="thumbs up Dark Logo"
+                                              width={18}
+                                              height={18}
+                                              className="hidden dark:block mb-0"
+                                            /></>
+                                              
                                             )}
                                           </Button>
                                         </TooltipTrigger>
@@ -1617,12 +1688,39 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                             }}
                                           >
                                             {feedback === 'down' ? (
-                                              <ThumbsDownFilled
-                                                fill="currentColor"
-                                                className="h-4 w-4"
-                                              />
+                                              <>
+                                               <Image
+                                               src="/icons/thumbs-down-filled-light.svg"
+                                               alt="filled Light Logo"
+                                               width={18}
+                                               height={18}
+                                               className="block dark:hidden mb-0"
+                                             />
+                                             <Image
+                                               src="/icons/thumbs-down-filled-dark.svg"
+                                               alt="filled Dark Logo"
+                                               width={18}
+                                               height={18}
+                                               className="hidden dark:block mb-0"
+                                             /></>
+                                              
                                             ) : (
-                                              <ThumbsDown className="h-4 w-4" />
+                                              <>
+                                               <Image
+                                            src="/icons/thumbs-down-light.svg"
+                                            alt="thumbs down Light Logo"
+                                            width={18}
+                                            height={18}
+                                            className="block dark:hidden mb-0"
+                                          />
+                                          <Image
+                                            src="/icons/thumbs-down-dark.svg"
+                                            alt="thumbs down Dark Logo"
+                                            width={18}
+                                            height={18}
+                                            className="hidden dark:block mb-0"
+                                          /></>
+                                             
                                             )}
                                           </Button>
                                         </TooltipTrigger>
@@ -1690,7 +1788,20 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                               );
                                             }}
                                           >
-                                            <RotateCcw className="h-4 w-4 mr-1" />
+                                             <Image
+                                            src="/icons/rotate-ccw-light.svg"
+                                            alt="rotate Light Logo"
+                                            width={17}
+                                            height={17}
+                                            className="block dark:hidden mb-0"
+                                          />
+                                          <Image
+                                            src="/icons/rotate-ccw-dark.svg"
+                                            alt="rotate Dark Logo"
+                                            width={17}
+                                            height={17}
+                                            className="hidden dark:block mb-0"
+                                          />
                                           </Button>
                                         </TooltipTrigger>
                                         <TooltipContent>

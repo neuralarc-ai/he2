@@ -20,6 +20,7 @@ import { ShareModal } from "@/components/sidebar/share-modal"
 import { useQueryClient } from "@tanstack/react-query";
 import { projectKeys } from "@/hooks/react-query/sidebar/keys";
 import { threadKeys } from "@/hooks/react-query/threads/keys";
+import Image from 'next/image';
 import {
   Dialog,
   DialogContent,
@@ -180,7 +181,8 @@ export function SiteHeader({
                   onClick={onViewFiles}
                   className="h-9 w-9 cursor-pointer"
                 >
-                  <FolderOpen className="h-4 w-4" />
+                  <Image src="/icons/folder-open-light.svg" alt="folder open" width={21} height={21} className="block dark:hidden mb-0" />
+                  <Image src="/icons/folder-open-dark.svg" alt="folder open" width={21} height={21} className="hidden dark:block mb-0" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent side={isMobile ? "bottom" : "bottom"}>
@@ -196,7 +198,8 @@ export function SiteHeader({
                   onClick={openShareModal}
                   className="h-9 w-9 cursor-pointer"
                 >
-                  <Share2 className="h-4 w-4" />
+                 <Image src="/icons/share-light.svg" alt="share" width={16} height={16} className="block dark:hidden mb-0" />
+                 <Image src="/icons/share-dark.svg" alt="share" width={16} height={16} className="hidden dark:block mb-0" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent side={isMobile ? "bottom" : "bottom"}>
