@@ -109,9 +109,9 @@ export const siteConfig = {
     ),
     badge: '100% OPEN SOURCE',
     githubUrl: 'https://github.com/kortix-ai/suna',
-    title: 'Helium AI – Build, manage and train your AI Workforce.',
+    title: 'Helium AI – Build, manage and train your AI Workforce.',
     description:
-      'Helium AI – open-source platform to build, manage and train your AI Workforce.',
+      'Helium AI – open-source platform to build, manage and train your AI Workforce.',
     inputPlaceholder: 'Ask Helium AI to...',
   },
   cloudPricingItems: [
@@ -125,7 +125,7 @@ export const siteConfig = {
       /** @deprecated */
       hours: '60 min',
       features: [
-        '$5 free AI tokens included',
+        '$500 free AI tokens included',
         '2 custom agents',
         'Public projects',
         'Basic Models',
