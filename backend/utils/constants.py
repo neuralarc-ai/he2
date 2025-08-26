@@ -101,6 +101,35 @@ MODELS = {
         "context_window": 1_000_000,  # 1M tokens
         "tier_availability": ["paid"]
     },
+    
+    # Vertex AI models
+    "vertexai/gemini-2.5-pro": {
+        "aliases": ["vertexai/gemini-2.5-pro"],
+        "pricing": {
+            "input_cost_per_million_tokens": 1.25,
+            "output_cost_per_million_tokens": 10.00
+        },
+        "context_window": 2_000_000,  # 2M tokens
+        "tier_availability": ["paid"]
+    },
+    "vertexai/gemini-2.5-flash": {
+        "aliases": ["vertexai/gemini-2.5-flash"],
+        "pricing": {
+            "input_cost_per_million_tokens": 0.15,
+            "output_cost_per_million_tokens": 0.60
+        },
+        "context_window": 2_000_000,  # 2M tokens
+        "tier_availability": ["paid"]
+    },
+    "vertexai/gemini-2.0-flash": {
+        "aliases": ["vertexai/gemini-2.0-flash"],
+        "pricing": {
+            "input_cost_per_million_tokens": 0.15,
+            "output_cost_per_million_tokens": 0.60
+        },
+        "context_window": 1_000_000,  # 1M tokens
+        "tier_availability": ["paid"]
+    },
     # "openai/gpt-4o": {
     #     "aliases": ["gpt-4o"],
     #     "pricing": {
@@ -211,6 +240,12 @@ def _generate_model_structures():
                 context_windows[legacy_name] = config["context_window"]
         elif model_name.startswith("gemini/"):
             legacy_name = model_name.replace("gemini/", "")
+            pricing[legacy_name] = config["pricing"]
+            if "context_window" in config:
+                context_windows[legacy_name] = config["context_window"]
+        elif model_name.startswith("vertexai/"):
+            # Add pricing for Vertex AI models
+            legacy_name = model_name.replace("vertexai/", "")
             pricing[legacy_name] = config["pricing"]
             if "context_window" in config:
                 context_windows[legacy_name] = config["context_window"]

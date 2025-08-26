@@ -494,8 +494,8 @@ When using the tools:
                         )
 
                     llm_response = await make_llm_api_call(
-                        prepared_messages, # Pass the potentially modified messages
-                        llm_model,
+                        messages=prepared_messages, # Pass the potentially modified messages
+                        model_name=llm_model,
                         temperature=llm_temperature,
                         max_tokens=llm_max_tokens,
                         tools=openapi_tool_schemas,
