@@ -268,10 +268,18 @@ class Configuration:
     GEMINI_API_KEY: Optional[str] = None
     OPENROUTER_API_BASE: Optional[str] = "https://openrouter.ai/api/v1"
     
-    # Vertex AI Configuration
-    GOOGLE_CLOUD_PROJECT_ID: str = "helium-0086"
-    GOOGLE_CLOUD_LOCATION: str = "us-central1"
-    VERTEX_AI_ENABLED: bool = True
+    # Google Vertex AI / Gemini via LiteLLM
+    VERTEXAI_PROJECT: Optional[str] = None
+    VERTEXAI_LOCATION: Optional[str] = None
+    # Either a JSON string of the service account or a path to the json file
+    VERTEXAI_CREDENTIALS: Optional[str] = None
+    # Standard Google ADC file path; if set we propagate it as env for SDK auth
+    GOOGLE_APPLICATION_CREDENTIALS: Optional[str] = None
+    # Alternate env var names some users set
+    GOOGLE_CLOUD_PROJECT_ID: Optional[str] = None
+    GOOGLE_CLOUD_LOCATION: Optional[str] = None
+    
+    # OpenRouter site metadata
     OR_SITE_URL: Optional[str] = "https://kortix.ai"
     OR_APP_NAME: Optional[str] = "Kortix AI"    
     
