@@ -5,11 +5,10 @@ import { useState, useEffect, useMemo } from 'react';
 import { isLocalMode, isProductionMode } from '@/lib/config';
 import { useAvailableModels } from '@/hooks/react-query/subscriptions/use-model';
 
-export const STORAGE_KEY_MODEL = 'suna-preferred-model-v4';
+export const STORAGE_KEY_MODEL = 'suna-preferred-model-v3';
 export const STORAGE_KEY_CUSTOM_MODELS = 'customModels';
-export const DEFAULT_PREMIUM_MODEL_ID = 'openrouter/anthropic/claude-sonnet-4';
-export const DEFAULT_FREE_MODEL_ID = 'openrouter/anthropic/claude-sonnet-4';
-export const DEFAULT_PRODUCTION_FALLBACK_MODEL_ID = 'gemini/gemini-2.5-pro';
+export const DEFAULT_PREMIUM_MODEL_ID = 'claude-sonnet-4';
+export const DEFAULT_FREE_MODEL_ID = 'moonshotai/kimi-k2';
 
 // Helper to test localStorage functionality
 export const testLocalStorage = (): boolean => {
@@ -47,12 +46,6 @@ export interface CustomModel {
 // SINGLE SOURCE OF TRUTH for all model data - aligned with backend constants
 export const MODELS = {
   // Premium tier models (require subscription) - using aliases from backend
-  'openrouter/anthropic/claude-sonnet-4': { 
-    tier: 'premium',
-    priority: 100, 
-    recommended: true,
-    lowQuality: false
-  },
   'claude-sonnet-4': { 
     tier: 'premium',
     priority: 100, 
@@ -62,12 +55,6 @@ export const MODELS = {
   'gpt-5': { 
     tier: 'premium', 
     priority: 99,
-    recommended: false,
-    lowQuality: false
-  },
-  'gemini/gemini-2.5-pro': { 
-    tier: 'premium', 
-    priority: 96,
     recommended: false,
     lowQuality: false
   },
@@ -230,13 +217,13 @@ export const useModelSelection = () => {
           models = [
             { 
               id: DEFAULT_FREE_MODEL_ID, 
-              label: 'OpenRouter Claude Sonnet 4', 
+              label: 'KIMI K2', 
               requiresSubscription: false,
               priority: MODELS[DEFAULT_FREE_MODEL_ID]?.priority || 100
             },
             { 
               id: DEFAULT_PREMIUM_MODEL_ID, 
-              label: 'OpenRouter Claude Sonnet 4', 
+              label: 'Claude Sonnet 4', 
               requiresSubscription: true, 
               priority: MODELS[DEFAULT_PREMIUM_MODEL_ID]?.priority || 100
             },
@@ -382,8 +369,8 @@ export const useModelSelection = () => {
       const defaultModel = isProductionMode() ? DEFAULT_PREMIUM_MODEL_ID : 
         (subscriptionStatus === 'active' ? DEFAULT_PREMIUM_MODEL_ID : DEFAULT_FREE_MODEL_ID);
       console.log('🔧 useModelSelection: Using default model:', defaultModel);
-      console.log('🔧 useModelSelection: Environment:', isProductionMode() ? 'PRODUCTION (OpenRouter Claude Sonnet 4)' : 
-        `Subscription status: ${subscriptionStatus} -> Default: ${subscriptionStatus === 'active' ? 'PREMIUM (OpenRouter Claude Sonnet 4)' : 'FREE (KIMi K2)'}`);
+      console.log('🔧 useModelSelection: Environment:', isProductionMode() ? 'PRODUCTION (Claude Sonnet 4)' : 
+        `Subscription status: ${subscriptionStatus} -> Default: ${subscriptionStatus === 'active' ? 'PREMIUM (Claude Sonnet 4)' : 'FREE (KIMi K2)'}`);
       setSelectedModel(defaultModel);
       saveModelPreference(defaultModel);
       setHasInitialized(true);
@@ -393,8 +380,8 @@ export const useModelSelection = () => {
       const defaultModel = isProductionMode() ? DEFAULT_PREMIUM_MODEL_ID : 
         (subscriptionStatus === 'active' ? DEFAULT_PREMIUM_MODEL_ID : DEFAULT_FREE_MODEL_ID);
       console.log('🔧 useModelSelection: Using fallback default model:', defaultModel);
-      console.log('🔧 useModelSelection: Environment:', isProductionMode() ? 'PRODUCTION (OpenRouter Claude Sonnet 4)' : 
-        `Subscription status: ${subscriptionStatus} -> Fallback: ${subscriptionStatus === 'active' ? 'PREMIUM (OpenRouter Claude Sonnet 4)' : 'FREE (KIMi K2)'}`);
+      console.log('🔧 useModelSelection: Environment:', isProductionMode() ? 'PRODUCTION (Claude Sonnet 4)' : 
+        `Subscription status: ${subscriptionStatus} -> Fallback: ${subscriptionStatus === 'active' ? 'PREMIUM (Claude Sonnet 4)' : 'FREE (KIMi K2)'}`);
       setSelectedModel(defaultModel);
       saveModelPreference(defaultModel);
       setHasInitialized(true);
@@ -544,8 +531,8 @@ export const useModelSelection = () => {
       console.log('  isLoadingModels:', isLoadingModels);
       console.log('  localStorage value:', localStorage.getItem(STORAGE_KEY_MODEL));
       console.log('🔧 useModelSelection: localStorage test passes:', testLocalStorage());
-              console.log('🔧 useModelSelection: defaultModel would be:', isProductionMode() ? `${DEFAULT_PREMIUM_MODEL_ID} (OpenRouter Claude Sonnet 4)` : 
-        `${subscriptionStatus === 'active' ? `${DEFAULT_PREMIUM_MODEL_ID} (Claude Sonnet 4)` : `${DEFAULT_FREE_MODEL_ID} (OpenRouter Claude Sonnet 4)`}`);
+      console.log('🔧 useModelSelection: defaultModel would be:', isProductionMode() ? `${DEFAULT_PREMIUM_MODEL_ID} (Claude Sonnet 4)` : 
+        `${subscriptionStatus === 'active' ? `${DEFAULT_PREMIUM_MODEL_ID} (Claude Sonnet 4)` : `${DEFAULT_FREE_MODEL_ID} (KIMi K2)`}`);
       console.log('🔧 useModelSelection: availableModels:', availableModels.map(m => ({ id: m.id, requiresSubscription: m.requiresSubscription })));
     }
   };

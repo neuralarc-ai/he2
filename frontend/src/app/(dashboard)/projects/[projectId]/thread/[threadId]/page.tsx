@@ -679,7 +679,7 @@ export default function ThreadPage({
 
         <div
           className={cn(
-            "fixed bottom-0 z-20 bg-gradient-to-t from-background via-background/90 to-transparent pt-16 pb-6",
+            "fixed bottom-0 z-20 bg-gradient-to-t from-background via-background/90 to-transparent pt-16",
             "transition-[left,right] duration-200 ease-in-out will-change-[left,right]",
             leftSidebarState === 'expanded' ? 'left-[72px] md:left-[256px]' : (isSidePanelOpen ? 'left-[56px]' : 'left-[50px]'),
             isSidePanelOpen ? (isLeftSidebarExpanded ? 'right-[45.5vw]' : 'right-[51vw]') : 'right-0',
