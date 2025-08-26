@@ -1,7 +1,7 @@
 import React, { forwardRef, useEffect, useState } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Square, Loader2, ArrowUp, Settings } from 'lucide-react';
+import { Square, Loader2, ArrowUp, Settings, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from 'next-themes';
 import { UploadedFile } from './chat-input';
@@ -17,6 +17,12 @@ import { TooltipProvider, TooltipTrigger } from '@radix-ui/react-tooltip';
 import { BillingModal } from '@/components/billing/billing-modal';
 import { handleFiles } from './file-upload-handler';
 import Image from 'next/image';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface MessageInputProps {
   value: string;
@@ -107,7 +113,8 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
   ) => {
     const [billingModalOpen, setBillingModalOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
-    const { enabled: customAgentsEnabled, loading: flagsLoading } = useFeatureFlag('custom_agents');
+    const { enabled: customAgentsEnabled, loading: flagsLoading } =
+      useFeatureFlag('custom_agents');
     const { resolvedTheme } = useTheme();
 
     useEffect(() => {
@@ -171,8 +178,34 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
       }
     };
 
+    const handleFileUpload = () => {
+      if (fileInputRef && 'current' in fileInputRef && fileInputRef.current) {
+        fileInputRef.current.click();
+      }
+    };
+
+    const processFileUpload = async (
+      event: React.ChangeEvent<HTMLInputElement>,
+    ) => {
+      if (!event.target.files || event.target.files.length === 0) return;
+
+      const files = Array.from(event.target.files);
+      handleFiles(
+        files,
+        sandboxId,
+        setPendingFiles,
+        setUploadedFiles,
+        setIsUploading,
+        messages,
+      );
+
+      event.target.value = '';
+    };
+
     const renderDropdown = () => {
-      const showAdvancedFeatures = isLoggedIn && (enableAdvancedConfig || (customAgentsEnabled && !flagsLoading));
+      const showAdvancedFeatures =
+        isLoggedIn &&
+        (enableAdvancedConfig || (customAgentsEnabled && !flagsLoading));
       // Don't render dropdown components until after hydration to prevent ID mismatches
       if (!mounted) {
         return <div className="flex items-center gap-2 h-8" />; // Placeholder with same height
@@ -182,8 +215,16 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
         <div className="flex items-center gap-2">
           <UnifiedConfigMenu
             isLoggedIn={isLoggedIn}
-            selectedAgentId={showAdvancedFeatures && !hideAgentSelection ? selectedAgentId : undefined}
-            onAgentSelect={showAdvancedFeatures && !hideAgentSelection ? onAgentSelect : undefined}
+            selectedAgentId={
+              showAdvancedFeatures && !hideAgentSelection
+                ? selectedAgentId
+                : undefined
+            }
+            onAgentSelect={
+              showAdvancedFeatures && !hideAgentSelection
+                ? onAgentSelect
+                : undefined
+            }
             selectedModel={selectedModel}
             onModelChange={onModelChange}
             modelOptions={modelOptions}
@@ -193,11 +234,10 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
           />
         </div>
       );
-    }
+    };
 
     return (
       <div className="relative flex flex-col w-full h-full gap-2 justify-between">
-
         <div className="flex flex-col gap-1 px-2">
           <Textarea
             ref={ref}
@@ -218,55 +258,75 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
         <div className="flex items-center justify-between mt-0 mb-1 px-2">
           <div className="flex items-center gap-3">
             {!hideAttachments && (
-              <FileUploadHandler
-                ref={fileInputRef}
-                loading={loading}
-                disabled={disabled}
-                isAgentRunning={isAgentRunning}
-                isUploading={isUploading}
-                sandboxId={sandboxId}
-                setPendingFiles={setPendingFiles}
-                setUploadedFiles={setUploadedFiles}
-                setIsUploading={setIsUploading}
-                messages={messages}
-                isLoggedIn={isLoggedIn}
-              />
-            )}
-
-            {/* Integrations button - only show when advanced config is enabled and agent is selected */}
-            {selectedAgentId && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
+              <>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
                     <Button
                       type="button"
                       size="icon"
                       variant="ghost"
-                      onClick={onOpenIntegrations}
                       className="w-8 h-8 flex-shrink-0 rounded-full hover:bg-muted/50"
-                      title="Integrations"
+                      disabled={
+                        !isLoggedIn ||
+                        loading ||
+                        (disabled && !isAgentRunning) ||
+                        isUploading
+                      }
                     >
-                       <Image
-                                                           src="/icons/integrations.svg" 
-                                                             alt="integration Light Logo"
-                                                             width={19}
-                                                             height={19}
-                                                             className="block dark:hidden mb-0"
-                                                           />
-                                                           <Image
-                                                             src="/icons/integration-dark.svg"
-                                                             alt="integration Dark Logo"
-                                                             width={19}
-                                                             height={19}
-                                                             className="hidden dark:block mb-0"
-                                                           />
+                      <Plus className="h-4 w-4" />
                     </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Integrations</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="start"
+                    className="p-2 space-y-1 rounded-2xl -translate-x-2.5 dark:bg-background"
+                  >
+                    <DropdownMenuItem
+                      onClick={handleFileUpload}
+                      className="cursor-pointer rounded-lg"
+                    >
+                      <Image
+                        src={
+                          resolvedTheme === 'dark'
+                            ? '/icons/paperclip-dark.svg'
+                            : '/icons/Vector-light.svg'
+                        }
+                        alt="Paperclip"
+                        width={resolvedTheme === 'dark' ? 20 : 16}
+                        height={resolvedTheme === 'dark' ? 20 : 16}
+                        className="mr-1"
+                      />
+                      Attach files
+                    </DropdownMenuItem>
+                    {selectedAgentId && onOpenIntegrations && (
+                      <DropdownMenuItem
+                        onClick={onOpenIntegrations}
+                        className="cursor-pointer rounded-lg"
+                      >
+                        <Image
+                          src={
+                            resolvedTheme === 'dark'
+                              ? '/icons/integration-dark.svg'
+                              : '/icons/integrations.svg'
+                          }
+                          alt="Integrations"
+                          width={19}
+                          height={19}
+                          className="mr-1"
+                        />
+                        Integrations
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  className="hidden"
+                  onChange={processFileUpload}
+                  multiple
+                />
+              </>
             )}
           </div>
 
@@ -283,46 +343,58 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
             </TooltipProvider>
           } */}
 
-          <div className='flex items-center gap-2'>
+          <div className="flex items-center gap-2">
             {renderDropdown()}
             <BillingModal
               open={billingModalOpen}
               onOpenChange={setBillingModalOpen}
-              returnUrl={typeof window !== 'undefined' ? window.location.href : '/'}
+              returnUrl={
+                typeof window !== 'undefined' ? window.location.href : '/'
+              }
             />
 
-            {isLoggedIn && <VoiceRecorder
-              onTranscription={onTranscription}
-              disabled={loading || (disabled && !isAgentRunning)}
-            />}
+            {isLoggedIn && (
+              <VoiceRecorder
+                onTranscription={onTranscription}
+                disabled={loading || (disabled && !isAgentRunning)}
+              />
+            )}
 
-                                                 <Button
-               type="submit"
-               onClick={isAgentRunning && onStopAgent ? onStopAgent : onSubmit}
-               size="icon"
-               className={cn(
-                 'w-8 h-8 flex-shrink-0 rounded-full cursor-pointer',
-                 resolvedTheme === 'dark' 
-                   ? 'bg-helium-yellow hover:bg-helium-yellow/80' 
-                   : 'bg-helium-blue hover:bg-helium-blue/80',
-                 (!value.trim() && uploadedFiles.length === 0 && !isAgentRunning) ||
-                   loading ||
-                   (disabled && !isAgentRunning)
-                     ? 'opacity-50'
-                     : '',
-               )}
-               disabled={
-                 (!value.trim() && uploadedFiles.length === 0 && !isAgentRunning) ||
-                 loading ||
-                 (disabled && !isAgentRunning)
-               }
-             >
+            <Button
+              type="submit"
+              onClick={isAgentRunning && onStopAgent ? onStopAgent : onSubmit}
+              size="icon"
+              className={cn(
+                'w-8 h-8 flex-shrink-0 rounded-full cursor-pointer',
+                resolvedTheme === 'dark'
+                  ? 'bg-helium-yellow hover:bg-helium-yellow/80'
+                  : 'bg-helium-blue hover:bg-helium-blue/80',
+                (!value.trim() &&
+                  uploadedFiles.length === 0 &&
+                  !isAgentRunning) ||
+                  loading ||
+                  (disabled && !isAgentRunning)
+                  ? 'opacity-50'
+                  : '',
+              )}
+              disabled={
+                (!value.trim() &&
+                  uploadedFiles.length === 0 &&
+                  !isAgentRunning) ||
+                loading ||
+                (disabled && !isAgentRunning)
+              }
+            >
               {loading ? (
                 <Loader2 className="h-5 w-5 animate-spin" />
               ) : isAgentRunning ? (
                 <div className="min-h-[14px] min-w-[14px] w-[14px] h-[14px] rounded-sm bg-current" />
               ) : (
-                <div className={mounted && resolvedTheme === 'light' ? 'text-black' : ''}>
+                <div
+                  className={
+                    mounted && resolvedTheme === 'light' ? 'text-black' : ''
+                  }
+                >
                   <ArrowUp className="h-5 w-5" />
                 </div>
               )}
