@@ -2409,3 +2409,152 @@ async def can_purchase_credits(
     except Exception as e:
         logger.error(f"Error checking credit purchase eligibility: {str(e)}")
         raise HTTPException(status_code=500, detail="Error checking eligibility")
+
+@router.get("/thread-credit-usage/{thread_id}")
+async def get_thread_credit_usage(
+    thread_id: str,
+    current_user_id: str = Depends(get_current_user_id_from_jwt)
+):
+    """Get credit usage for a specific thread."""
+    try:
+        db = DBConnection()
+        client = await db.client
+        
+        # Verify thread access
+        thread_result = await client.table('threads').select('account_id').eq('thread_id', thread_id).execute()
+        if not thread_result.data:
+            raise HTTPException(status_code=404, detail="Thread not found")
+        
+        thread = thread_result.data[0]
+        if thread['account_id'] != current_user_id:
+            raise HTTPException(status_code=403, detail="Access denied to this thread")
+        
+        # Get credit usage for this thread
+        credit_usage_result = await client.table('credit_usage') \
+            .select('amount_dollars, created_at, description, message_id') \
+            .eq('user_id', current_user_id) \
+            .eq('thread_id', thread_id) \
+            .order('created_at', desc=True) \
+            .execute()
+        
+        if not credit_usage_result.data:
+            return {
+                "total_credits_used": 0.0,
+                "usage_count": 0,
+                "usage_details": []
+            }
+        
+        # Calculate total credits used
+        total_credits_used = sum(float(usage['amount_dollars']) for usage in credit_usage_result.data)
+        usage_count = len(credit_usage_result.data)
+        
+        # Format usage details
+        usage_details = [
+            {
+                "amount": float(usage['amount_dollars']),
+                "created_at": usage['created_at'],
+                "description": usage.get('description', ''),
+                "message_id": usage.get('message_id')
+            }
+            for usage in credit_usage_result.data
+        ]
+        
+        return {
+            "total_credits_used": total_credits_used,
+            "usage_count": usage_count,
+            "usage_details": usage_details
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting thread credit usage: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error retrieving thread credit usage")
+
+@router.get("/thread-token-usage/{thread_id}")
+async def get_thread_token_usage(
+    thread_id: str,
+    current_user_id: str = Depends(get_current_user_id_from_jwt)
+):
+    """Get token usage for a specific thread."""
+    try:
+        db = DBConnection()
+        client = await db.client
+        
+        # Check if we're in local development mode
+        if config.ENV_MODE == EnvMode.LOCAL:
+            logger.debug("Running in local development mode - thread token usage not available")
+            return {
+                "total_completion_tokens": 0,
+                "total_prompt_tokens": 0,
+                "total_tokens": 0,
+                "estimated_cost": 0.0,
+                "request_count": 0,
+                "models": [],
+                "message": "Thread token usage is not available in local development mode"
+            }
+        
+        # Verify thread access
+        thread_result = await client.table('threads').select('account_id').eq('thread_id', thread_id).execute()
+        if not thread_result.data:
+            raise HTTPException(status_code=404, detail="Thread not found")
+        
+        thread = thread_result.data[0]
+        if thread['account_id'] != current_user_id:
+            raise HTTPException(status_code=403, detail="Access denied to this thread")
+        
+        # Get usage logs for this specific thread
+        usage_result = await client.table('usage_logs') \
+            .select('content, total_tokens, estimated_cost, created_at') \
+            .eq('thread_id', thread_id) \
+            .eq('user_id', current_user_id) \
+            .order('created_at', desc=True) \
+            .execute()
+        
+        if not usage_result.data:
+            return {
+                "total_completion_tokens": 0,
+                "total_prompt_tokens": 0,
+                "total_tokens": 0,
+                "estimated_cost": 0.0,
+                "request_count": 0,
+                "models": []
+            }
+        
+        # Calculate totals
+        total_completion_tokens = 0
+        total_prompt_tokens = 0
+        total_tokens = 0
+        estimated_cost = 0.0
+        models = set()
+        
+        for log in usage_result.data:
+            content = log.get('content', {})
+            usage = content.get('usage', {})
+            
+            total_completion_tokens += usage.get('completion_tokens', 0)
+            total_prompt_tokens += usage.get('prompt_tokens', 0)
+            total_tokens += log.get('total_tokens', 0)
+            
+            cost = log.get('estimated_cost')
+            if isinstance(cost, (int, float)):
+                estimated_cost += cost
+            
+            model = content.get('model', '')
+            if model:
+                models.add(model)
+        
+        return {
+            "total_completion_tokens": total_completion_tokens,
+            "total_prompt_tokens": total_prompt_tokens,
+            "total_tokens": total_tokens,
+            "estimated_cost": estimated_cost,
+            "request_count": len(usage_result.data),
+            "models": list(models)
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting thread token usage: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error retrieving thread token usage")

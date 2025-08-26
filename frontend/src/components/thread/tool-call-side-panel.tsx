@@ -443,11 +443,11 @@ export function ToolCallSidePanel({
       } else {
         return (
           <div
-            className={`${baseClasses} bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors cursor-pointer`}
+            className={`${baseClasses} bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors cursor-pointer`}
             onClick={jumpToLatest}
           >
-            <div className={`${dotClasses} bg-helium-blue`} />
-            <span className={`${textClasses} text-helium-blue`}>Jump to Latest</span>
+            <div className={`${dotClasses} bg-green-500`} />
+            <span className={`${textClasses} text-green-600`}>Jump to Latest</span>
           </div>
         );
       }
@@ -728,20 +728,20 @@ export function ToolCallSidePanel({
           </div>
           <div className="flex flex-col items-center justify-center flex-1 p-8">
             <div className="flex flex-col items-center justify-center w-full h-full">
-              <div className="relative w-[30%] h-[30%] flex items-center justify-center">
+              <div className="relative w-[20%] h-[20%] flex items-center justify-center">
                 <Image 
                   src="/helium-brain.png" 
                   alt="Helium Core Initiating" 
-                  width={400}
-                  height={400}
+                  width={240}
+                  height={240}
                   className="w-full h-full object-contain dark:hidden"
                   priority
                 />
                 <Image 
                   src="/helium-brain(dark).png" 
                   alt="Helium Core Initiating" 
-                  width={400}
-                  height={400}
+                  width={240}
+                  height={240}
                   className="w-full h-full object-contain hidden dark:block"
                   priority
                 />
