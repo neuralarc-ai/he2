@@ -5,10 +5,10 @@ import { useState, useEffect, useMemo } from 'react';
 import { isLocalMode, isProductionMode } from '@/lib/config';
 import { useAvailableModels } from '@/hooks/react-query/subscriptions/use-model';
 
-export const STORAGE_KEY_MODEL = 'suna-preferred-model-v3';
+export const STORAGE_KEY_MODEL = 'suna-preferred-model-v5';
 export const STORAGE_KEY_CUSTOM_MODELS = 'customModels';
-export const DEFAULT_PREMIUM_MODEL_ID = 'claude-sonnet-4';
-export const DEFAULT_FREE_MODEL_ID = 'moonshotai/kimi-k2';
+export const DEFAULT_PREMIUM_MODEL_ID = 'gemini/gemini-2.5-pro';
+export const DEFAULT_FREE_MODEL_ID = 'gemini/gemini-2.5-pro';
 
 // Helper to test localStorage functionality
 export const testLocalStorage = (): boolean => {
@@ -235,13 +235,13 @@ export const useModelSelection = () => {
           models = [
             { 
               id: DEFAULT_FREE_MODEL_ID, 
-              label: 'KIMI K2', 
+              label: 'Gemini 2.5 Pro', 
               requiresSubscription: false,
               priority: MODELS[DEFAULT_FREE_MODEL_ID]?.priority || 100
             },
             { 
               id: DEFAULT_PREMIUM_MODEL_ID, 
-              label: 'Claude Sonnet 4', 
+              label: 'Gemini 2.5 Pro', 
               requiresSubscription: true, 
               priority: MODELS[DEFAULT_PREMIUM_MODEL_ID]?.priority || 100
             },
