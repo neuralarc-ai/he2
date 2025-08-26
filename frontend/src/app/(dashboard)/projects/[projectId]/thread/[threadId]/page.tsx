@@ -706,8 +706,8 @@ export default function ThreadPage({
             leftSidebarState === 'expanded' ? 'left-[72px] md:left-[256px]' : (isSidePanelOpen ? 'left-[53px]' : 'left-[50px]'),
             isSidePanelOpen 
               ? (leftSidebarState === 'expanded' 
-                  ? 'right-[42.5vw] 2xl:right-[42.5vw] xl:right-[41.4vw] lg:right-[40.5vw]' 
-                  : 'right-[49vw]')
+                  ? 'right-[45.5vw] 2xl:right-[45.5vw] xl:right-[45.4vw] lg:right-[45.5vw]' 
+                  : 'right-[51vw]')
               : 'right-0',
             isMobile ? 'left-0 right-0 pb-6' : ''
           )}>
