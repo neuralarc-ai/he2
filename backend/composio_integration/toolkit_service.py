@@ -139,8 +139,9 @@ class ToolkitService:
                 auth_schemes = toolkit_data.get("auth_schemes", [])
                 composio_managed_auth_schemes = toolkit_data.get("composio_managed_auth_schemes", [])
 
-                if "OAUTH2" not in auth_schemes or "OAUTH2" not in composio_managed_auth_schemes:
-                    continue
+                # Remove the OAUTH2 filter to include all toolkits
+                # The frontend will handle filtering based on authentication requirements
+                pass
                 
                 logo_url = None
                 meta = toolkit_data.get("meta", {})
@@ -217,29 +218,44 @@ class ToolkitService:
     
     async def search_toolkits(self, query: str, category: Optional[str] = None, limit: int = 100, cursor: Optional[str] = None) -> Dict[str, Any]:
         try:
-            all_toolkits_response = await self.list_toolkits(limit=500, cursor=cursor, category=category)
-            toolkits = all_toolkits_response.get("items", [])
+            all_toolkits = []
+            current_cursor = cursor
             query_lower = query.lower()
             
-            filtered_toolkits = [
-                toolkit for toolkit in toolkits
-                if query_lower in toolkit.name.lower() 
-                or (toolkit.description and query_lower in toolkit.description.lower())
-                or any(query_lower in tag.lower() for tag in toolkit.tags)
-            ]
+            # Keep fetching until we have enough results or no more pages
+            while len(all_toolkits) < limit:
+                # Fetch a batch of toolkits
+                batch = await self.list_toolkits(limit=100, cursor=current_cursor, category=category)
+                if not batch.get('items'):
+                    break
+                    
+                # Filter the batch
+                filtered = [
+                    toolkit for toolkit in batch['items']
+                    if (query_lower in toolkit.name.lower() or 
+                       (toolkit.description and query_lower in toolkit.description.lower()) or
+                       any(query_lower in tag.lower() for tag in toolkit.tags))
+                ]
+                
+                all_toolkits.extend(filtered)
+                current_cursor = batch.get('next_cursor')
+                
+                # If there are no more pages or we've reached the limit, stop
+                if not current_cursor or len(all_toolkits) >= limit:
+                    break
             
-            limited_results = filtered_toolkits[:limit]
+            # Apply the limit
+            limited_results = all_toolkits[:limit]
+            total_items = len(all_toolkits)
             
-            result = {
+            logger.debug(f"Found {total_items} toolkits matching query: {query}" + (f" in category {category}" if category else ""))
+            return {
                 "items": limited_results,
-                "total_items": len(filtered_toolkits),
-                "total_pages": 1,
+                "total_items": total_items,
+                "total_pages": (total_items + limit - 1) // limit if limit > 0 else 0,
                 "current_page": 1,
-                "next_cursor": None
+                "next_cursor": current_cursor if len(all_toolkits) > len(limited_results) else None
             }
-            
-            logger.debug(f"Found {len(filtered_toolkits)} toolkits with OAUTH2 in both auth schemes matching query: {query}" + (f" in category {category}" if category else ""))
-            return result
             
         except Exception as e:
             logger.error(f"Failed to search toolkits: {e}", exc_info=True)
