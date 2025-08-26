@@ -5,7 +5,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { isLocalMode, isProductionMode } from '@/lib/config';
 import { useAvailableModels } from '@/hooks/react-query/subscriptions/use-model';
 
-export const STORAGE_KEY_MODEL = 'suna-preferred-model-v3';
+export const STORAGE_KEY_MODEL = 'suna-preferred-model-v4';
 export const STORAGE_KEY_CUSTOM_MODELS = 'customModels';
 export const DEFAULT_PREMIUM_MODEL_ID = 'openrouter/anthropic/claude-sonnet-4';
 export const DEFAULT_FREE_MODEL_ID = 'openrouter/anthropic/claude-sonnet-4';
