@@ -2,7 +2,8 @@
 
 import React, { forwardRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Paperclip, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+import Image from 'next/image';
 import { toast } from 'sonner';
 import { createClient } from '@/lib/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
@@ -260,9 +261,14 @@ export const FileUploadHandler = forwardRef<
                   {isUploading ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    <Paperclip className="h-4 w-4" />
+                    <Image 
+                      src="/icons/paperclip.svg" 
+                      alt="Attach files" 
+                      width={16} 
+                      height={16}
+                      className="h-4 w-4 text-black dark:text-white"
+                    />
                   )}
-                  <span className="text-sm">Attach</span>
                 </Button>
               </span>
             </TooltipTrigger>

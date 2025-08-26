@@ -16,6 +16,7 @@ import { Tooltip } from '@/components/ui/tooltip';
 import { TooltipProvider, TooltipTrigger } from '@radix-ui/react-tooltip';
 import { BillingModal } from '@/components/billing/billing-modal';
 import { handleFiles } from './file-upload-handler';
+import Image from 'next/image';
 
 interface MessageInputProps {
   value: string;
@@ -245,13 +246,13 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
                       className="w-8 h-8 flex-shrink-0 rounded-full hover:bg-muted/50"
                       title="Integrations"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plug-zap-icon lucide-plug-zap text-muted-foreground">
-                        <path d="M6.3 20.3a2.4 2.4 0 0 0 3.4 0L12 18l-6-6-2.3 2.3a2.4 2.4 0 0 0 0 3.4Z"/>
-                        <path d="m2 22 3-3"/>
-                        <path d="M7.5 13.5 10 11"/>
-                        <path d="M10.5 16.5 13 14"/>
-                        <path d="m18 3-4 4h6l-4 4"/>
-                      </svg>
+                      <Image 
+                        src="/icons/integrations.svg" 
+                        alt="Integrations" 
+                        width={24} 
+                        height={24}
+                        className="h-5 w-5 text-black dark:text-white"
+                      />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
