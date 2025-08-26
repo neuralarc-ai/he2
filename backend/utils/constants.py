@@ -36,7 +36,7 @@ MODELS = {
             "output_cost_per_million_tokens": 10.00
         },
         "context_window": 2_000_000,  # 2M tokens
-        "tier_availability": ["paid"]
+        "tier_availability": ["free", "paid"]
     },
     "gemini/gemini-2.5-flash": {
         "aliases": ["google/gemini-2.5-flash"],
@@ -45,7 +45,7 @@ MODELS = {
             "output_cost_per_million_tokens": 0.60
         },
         "context_window": 2_000_000,  # 2M tokens
-        "tier_availability": ["paid"]
+        "tier_availability": ["free", "paid"]
     },
     "gemini/gemini-2.0-flash": {
         "aliases": ["google/gemini-2.0-flash"],
@@ -54,7 +54,7 @@ MODELS = {
             "output_cost_per_million_tokens": 0.60
         },
         "context_window": 1_000_000,  # 1M tokens
-        "tier_availability": ["paid"]
+        "tier_availability": ["free", "paid"]
     },
     # Vertex AI routes for Gemini (same pricing/tier)
     "vertex_ai/gemini-2.5-pro": {
@@ -63,8 +63,8 @@ MODELS = {
             "input_cost_per_million_tokens": 1.25,
             "output_cost_per_million_tokens": 10.00
         },
-        "context_window": 2_000_000,
-        "tier_availability": ["paid"]
+        "context_window": 2_000_000,  # 2M tokens
+        "tier_availability": ["free", "paid"]
     },
     "vertex_ai/gemini-2.5-flash": {
         "aliases": ["vertex/gemini-2.5-flash", "gemini-2.5-flash-vertex"],
@@ -72,8 +72,8 @@ MODELS = {
             "input_cost_per_million_tokens": 0.15,
             "output_cost_per_million_tokens": 0.60
         },
-        "context_window": 2_000_000,
-        "tier_availability": ["paid"]
+        "context_window": 2_000_000,  # 2M tokens
+        "tier_availability": ["free", "paid"]
     },
     "vertex_ai/gemini-2.0-flash": {
         "aliases": ["vertex/gemini-2.0-flash", "gemini-2.0-flash-vertex"],
@@ -81,8 +81,8 @@ MODELS = {
             "input_cost_per_million_tokens": 0.15,
             "output_cost_per_million_tokens": 0.60
         },
-        "context_window": 1_000_000,
-        "tier_availability": ["paid"]
+        "context_window": 1_000_000,  # 1M tokens
+        "tier_availability": ["free", "paid"]
     },           
 }
 
