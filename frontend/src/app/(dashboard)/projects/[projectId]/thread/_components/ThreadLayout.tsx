@@ -121,11 +121,13 @@ export function ThreadLayout({
           threadId={threadId}
           projectName={projectName}
           projectId={projectId}
+          createdAt={project?.created_at}
           onViewFiles={onViewFiles}
           onToggleSidePanel={onToggleSidePanel}
           onProjectRenamed={onProjectRenamed}
           isMobileView={isMobile}
           debugMode={debugMode}
+          isSidePanelOpen={isSidePanelOpen}
         />
 
         {children}

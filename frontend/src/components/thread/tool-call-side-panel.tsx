@@ -816,20 +816,20 @@ export function ToolCallSidePanel({
           </div>
           <div className="flex flex-col items-center justify-center flex-1 p-8">
             <div className="flex flex-col items-center justify-center w-full h-full">
-              <div className="relative w-[30%] h-[30%] flex items-center justify-center">
+              <div className="relative w-[20%] h-[20%] flex items-center justify-center">
                 <Image 
                   src="/helium-brain.png" 
                   alt="Helium Core Initiating" 
-                  width={400}
-                  height={400}
+                  width={240}
+                  height={240}
                   className="w-full h-full object-contain dark:hidden"
                   priority
                 />
                 <Image 
                   src="/helium-brain(dark).png" 
                   alt="Helium Core Initiating" 
-                  width={400}
-                  height={400}
+                  width={240}
+                  height={240}
                   className="w-full h-full object-contain hidden dark:block"
                   priority
                 />
