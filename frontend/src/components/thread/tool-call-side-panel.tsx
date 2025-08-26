@@ -531,11 +531,11 @@ export function ToolCallSidePanel({
       } else {
         return (
           <div
-            className={`${baseClasses} bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors cursor-pointer`}
+            className={`${baseClasses} bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors cursor-pointer`}
             onClick={jumpToLatest}
           >
-            <div className={`${dotClasses} bg-helium-blue`} />
-            <span className={`${textClasses} text-helium-blue`}>Jump to Latest</span>
+            <div className={`${dotClasses} bg-green-500`} />
+            <span className={`${textClasses} text-green-600`}>Jump to Latest</span>
           </div>
         );
       }
