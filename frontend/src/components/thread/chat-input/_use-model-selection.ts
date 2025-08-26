@@ -7,8 +7,8 @@ import { useAvailableModels } from '@/hooks/react-query/subscriptions/use-model'
 
 export const STORAGE_KEY_MODEL = 'suna-preferred-model-v5';
 export const STORAGE_KEY_CUSTOM_MODELS = 'customModels';
-export const DEFAULT_PREMIUM_MODEL_ID = 'gemini/gemini-2.5-pro';
-export const DEFAULT_FREE_MODEL_ID = 'gemini/gemini-2.5-pro';
+export const DEFAULT_PREMIUM_MODEL_ID = 'vertexai/gemini-2.5-pro';
+export const DEFAULT_FREE_MODEL_ID = 'vertexai/gemini-2.5-pro';
 
 // Helper to test localStorage functionality
 export const testLocalStorage = (): boolean => {

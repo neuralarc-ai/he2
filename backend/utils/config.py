@@ -272,8 +272,8 @@ class Configuration:
     GOOGLE_CLOUD_PROJECT_ID: str = "helium-0086"
     GOOGLE_CLOUD_LOCATION: str = "us-central1"
     VERTEX_AI_ENABLED: bool = True
-    OR_SITE_URL: Optional[str] = "https://kortix.ai"
-    OR_APP_NAME: Optional[str] = "Kortix AI"    
+    OR_SITE_URL: Optional[str] = "https://he2.ai"
+    OR_APP_NAME: Optional[str] = "Helium AI"    
     
     # AWS Bedrock credentials
     AWS_ACCESS_KEY_ID: Optional[str] = None
