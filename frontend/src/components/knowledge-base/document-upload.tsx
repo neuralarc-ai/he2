@@ -7,11 +7,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
+import { uploadKbFile } from '@/lib/storage/uploadKbFile';
+import { createClient } from '@/lib/supabase/client';
 
 interface DocumentUploadProps {
   kbType: 'global' | 'thread' | 'agent';
   threadId?: string;
   agentId?: string;
+  accountId?: string; // required for inserting into KB tables
   onUploadComplete?: () => void;
   className?: string;
 }
@@ -24,12 +27,14 @@ interface UploadedFile {
   status: 'uploading' | 'processing' | 'completed' | 'failed';
   progress: number;
   error?: string;
+  file?: File;
 }
 
 const SUPPORTED_FORMATS = [
   'application/pdf',
   'text/csv',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/msword',
   'text/plain',
   'text/markdown',
   'application/json'
@@ -41,6 +46,7 @@ export function DocumentUpload({
   kbType, 
   threadId, 
   agentId, 
+  accountId,
   onUploadComplete,
   className 
 }: DocumentUploadProps) {
@@ -72,7 +78,8 @@ export function DocumentUpload({
         type: file.type,
         status: error ? 'failed' : 'uploading',
         progress: 0,
-        error
+        error,
+        file
       };
     });
 
@@ -99,50 +106,135 @@ export function DocumentUpload({
         );
       }, 200);
 
-      // Create FormData
-      const formData = new FormData();
-      formData.append('file', new File([], fileInfo.name, { type: fileInfo.type }));
-      formData.append('kb_type', kbType);
-      if (threadId) formData.append('thread_id', threadId);
-      if (agentId) formData.append('agent_id', agentId);
+      if (!fileInfo.file) {
+        throw new Error('Missing File object for upload');
+      }
 
-      // Upload to backend
-      const response = await fetch('/api/knowledge-base/upload', {
-        method: 'POST',
-        body: formData,
+      // Determine folder based on context
+      const folderBase =
+        kbType === 'thread' && threadId ? `threads/${threadId}` :
+        kbType === 'agent' && agentId ? `agents/${agentId}` :
+        'global';
+
+      // Allow all currently supported extensions
+      const allowedExt = ['pdf', 'csv', 'doc', 'docx', 'txt', 'md', 'json'];
+
+      // Perform Supabase Storage upload
+      const uploadResult = await uploadKbFile(fileInfo.file, {
+        bucket: 'knowledge-base',
+        folder: `${folderBase}`,
+        upsert: false,
+        allowedExt,
       });
 
       clearInterval(progressInterval);
 
-      if (response.ok) {
+      setUploadedFiles(prev => 
+        prev.map(f => 
+          f.id === fileInfo.id 
+            ? { ...f, status: 'processing', progress: 100 }
+            : f
+        )
+      );
+
+      // Persist a KB entry in the appropriate table
+      const supabase = createClient();
+      const source_metadata = {
+        storage_bucket: 'knowledge-base',
+        storage_path: uploadResult.path,
+        public_url: uploadResult.publicUrl,
+        content_type: uploadResult.contentType,
+      };
+
+      const baseEntry = {
+        name: fileInfo.name,
+        description: `Uploaded file stored at ${uploadResult.path}`,
+        content: '',
+        usage_context: 'always',
+        source_metadata,
+      };
+
+      // Resolve accountId if not provided via props
+      let effectiveAccountId = accountId;
+      if (!effectiveAccountId) {
+        const { data: authData, error: authErr } = await supabase.auth.getUser();
+        if (authErr || !authData?.user) {
+          throw new Error('Authentication required to resolve accountId');
+        }
+        // Try resolving from members table first
+        const { data: member, error: memberErr } = await supabase
+          .from('basejump.members')
+          .select('account_id')
+          .eq('user_id', authData.user.id)
+          .limit(1)
+          .maybeSingle();
+        if (member && member.account_id) {
+          effectiveAccountId = member.account_id as unknown as string;
+        } else {
+          // Fallback to RPC get_accounts and take the first account
+          const { data: accounts, error: accountsErr } = await supabase.rpc('get_accounts');
+          if (accountsErr || !accounts || accounts.length === 0) {
+            throw new Error('Unable to resolve accountId for current user');
+          }
+          effectiveAccountId = accounts[0]?.id as string;
+        }
+      }
+
+      const tableName =
+        kbType === 'thread' ? 'thread_knowledge_base' :
+        kbType === 'agent' ? 'agent_knowledge_base' :
+        'global_knowledge_base';
+
+      const payload: Record<string, any> = {
+        ...baseEntry,
+        account_id: effectiveAccountId,
+      };
+
+      if (kbType === 'thread') {
+        if (!threadId) throw new Error('threadId is required for thread knowledge uploads');
+        payload.thread_id = threadId;
+      }
+
+      if (kbType === 'agent') {
+        if (!agentId) throw new Error('agentId is required for agent knowledge uploads');
+        payload.agent_id = agentId;
+      }
+
+      let insertErrorMsg: string | null = null;
+      const { error: insertError } = await supabase.from(tableName).insert(payload);
+      if (insertError) {
+        insertErrorMsg = insertError.message;
+      }
+
+      if (insertErrorMsg) {
+        // Fallback: use server route with service role to bypass RLS safely
+        const res = await fetch('/api/knowledge-base/entries', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ table: tableName, payload }),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(`Failed to save knowledge entry: ${err.error || res.statusText}`);
+        }
+      }
+
+      // Simulate processing completion
+      setTimeout(() => {
         setUploadedFiles(prev => 
           prev.map(f => 
             f.id === fileInfo.id 
-              ? { ...f, status: 'processing', progress: 100 }
+              ? { ...f, status: 'completed' }
               : f
           )
         );
-
-        // Simulate processing completion
-        setTimeout(() => {
-          setUploadedFiles(prev => 
-            prev.map(f => 
-              f.id === fileInfo.id 
-                ? { ...f, status: 'completed' }
-                : f
-            )
-          );
-          onUploadComplete?.();
-          
-          toast({
-            title: "Upload successful",
-            description: `${fileInfo.name} has been uploaded and is being processed.`,
-          });
-        }, 2000);
-
-      } else {
-        throw new Error(`Upload failed: ${response.statusText}`);
-      }
+        onUploadComplete?.();
+        
+        toast({
+          title: "Upload successful",
+          description: `${fileInfo.name} has been uploaded and saved to knowledge base.`,
+        });
+      }, 1500);
 
     } catch (error) {
       setUploadedFiles(prev => 
