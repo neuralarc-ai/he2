@@ -3,7 +3,7 @@ from agent.prompt import SYSTEM_PROMPT
 # Helium default configuration - simplified and centralized
 HELIUM_CONFIG = {
     "name": "Helium",
-    "description": "Helium is, the God mode Agent created by the NeuralArc, powered by the brilliant Helios o1 model - God Mode",
+    "description": "Meet Helium - the God mode agent that transforms how you work with AI. Powered by the brilliant Helio o1 model, Helium delivers human-like understanding with superhuman capabilities, making complex tasks feel effortless.",
     "avatar": "⚡",
     "avatar_color": "#F59E0B",
     "model": "vertexai/gemini-2.5-pro",

@@ -403,10 +403,10 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
               ) : (
                 <div
                   className={
-                    mounted && resolvedTheme === 'light' ? 'text-black' : ''
+                    mounted && resolvedTheme === 'light' ? 'text-white' : 'text-black'
                   }
                 >
-                  <ArrowUp className="h-5 w-5" />
+                  <ArrowUp className="h-5 w-5 text" />
                 </div>
               )}
             </Button>
