@@ -19,6 +19,8 @@ interface DeployResult {
   output?: string;
   success?: boolean;
   url?: string;
+  custom_domain?: string;
+  next_steps?: string;
 }
 
 function extractDeployData(assistantContent: any, toolContent: any): {
@@ -93,6 +95,8 @@ function extractDeployData(assistantContent: any, toolContent: any): {
                   output: typeof explicitRaw === 'string' ? explicitRaw : (explicitRaw ? JSON.stringify(explicitRaw) : null),
                   success: resultData.success !== undefined ? resultData.success : true,
                   url: typeof explicitUrl === 'string' ? explicitUrl : undefined,
+                  custom_domain: parsedOutput?.custom_domain || resultData.custom_domain,
+                  next_steps: parsedOutput?.next_steps || resultData.next_steps,
               };
 
               // Fallback to extracting from raw output if URL not explicitly provided
@@ -272,6 +276,59 @@ export function DeployToolView({
                           </a>
                         </Button>
                       </div>
+                    </div>
+                  )}
+
+                  {/* Custom Domain Setup Instructions */}
+                  {deployResult.custom_domain && (
+                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-6 h-6 rounded bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                          <Globe className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                          Custom Domain Setup
+                        </span>
+                        <Badge
+                          variant="outline"
+                          className="text-xs h-5 px-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800"
+                        >
+                          he2.ai
+                        </Badge>
+                      </div>
+                      
+                      <p className="text-sm text-blue-800 dark:text-blue-200 mb-3">
+                        Your site is deployed to <strong>{deployResult.url}</strong>. To use the custom domain <strong>{deployResult.custom_domain}</strong>:
+                      </p>
+
+                      {deployResult.next_steps && (
+                        <div className="bg-blue-100 dark:bg-blue-900/40 rounded p-3 mb-3">
+                          <ol className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+                            {deployResult.next_steps.split('\n').map((step, index) => (
+                              <li key={index} className="flex items-start gap-2">
+                                <span className="text-blue-600 dark:text-blue-400 font-medium">{index + 1}.</span>
+                                <span>{step}</span>
+                              </li>
+                            ))}
+                          </ol>
+                        </div>
+                      )}
+
+                      <Button
+                        asChild
+                        size="sm"
+                        variant="outline"
+                        className="w-full border-blue-300 text-blue-700 hover:bg-blue-100 dark:border-blue-600 dark:text-blue-300 dark:hover:bg-blue-900/40"
+                      >
+                        <a
+                          href="https://dash.cloudflare.com/pages"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <ExternalLink className="h-3.5 w-3.5 mr-2" />
+                          Open Cloudflare Pages
+                        </a>
+                      </Button>
                     </div>
                   )}
 

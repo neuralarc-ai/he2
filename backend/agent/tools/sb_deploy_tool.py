@@ -24,13 +24,13 @@ class SandboxDeployTool(SandboxToolsBase):
         "type": "function",
         "function": {
             "name": "deploy",
-            "description": "Deploy a static website (HTML+CSS+JS) from a directory in the sandbox to Cloudflare Pages. Only use this tool when permanent deployment to a production environment is needed. The directory path must be relative to /workspace. The website will be deployed to {name}.kortix.cloud.",
+            "description": "Deploy a static website (HTML+CSS+JS) from a directory in the sandbox to Cloudflare Pages. Only use this tool when permanent deployment to a production environment is needed. The directory path must be relative to /workspace. The website will be deployed to {name}.he2.ai.",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "name": {
                         "type": "string",
-                        "description": "Name for the deployment, will be used in the URL as {name}.kortix.cloud"
+                        "description": "Name for the deployment, will be used in the URL as {name}.he2.ai"
                     },
                     "directory_path": {
                         "type": "string",
@@ -63,7 +63,7 @@ class SandboxDeployTool(SandboxToolsBase):
         Only use this tool when permanent deployment to a production environment is needed.
         
         Args:
-            name: Name for the deployment, will be used in the URL as {name}.kortix.cloud
+            name: Name for the deployment, will be used in the URL as {name}.he2.ai
             directory_path: Path to the directory to deploy, relative to /workspace
             
         Returns:
@@ -86,32 +86,56 @@ class SandboxDeployTool(SandboxToolsBase):
             except Exception as e:
                 return self.fail_response(f"Directory '{directory_path}' does not exist: {str(e)}")
             
-            # Deploy to Cloudflare Pages directly from the container
+            # Deploy to Cloudflare Pages with he2.ai domain
             try:
                 # Get Cloudflare API token from environment
                 if not self.cloudflare_api_token:
                     return self.fail_response("CLOUDFLARE_API_TOKEN environment variable not set")
-                    
+                
                 # Single command that creates the project if it doesn't exist and then deploys
                 project_name = f"{self.sandbox_id}-{name}"
+                full_domain = f"{name}.he2.ai"
+                
+                # Deploy the project first (without custom domain)
                 deploy_cmd = f'''cd {self.workspace_path} && export CLOUDFLARE_API_TOKEN={self.cloudflare_api_token} && 
                     (npx wrangler pages deploy {full_path} --project-name {project_name} || 
                     (npx wrangler pages project create {project_name} --production-branch production && 
                     npx wrangler pages deploy {full_path} --project-name {project_name}))'''
 
-                # Execute the command directly using the sandbox's process.exec method
+                print(f"Executing deployment command...")
+                
+                # Execute the deployment command
                 response = await self.sandbox.process.exec(f"/bin/sh -c \"{deploy_cmd}\"",
                                  timeout=300)
                 
                 print(f"Deployment command output: {response.result}")
                 
                 if response.exit_code == 0:
+                    # Get the default Pages URL from the output
+                    pages_url = None
+                    if response.result:
+                        # Look for the Pages URL in the output
+                        import re
+                        pages_match = re.search(r'https://[^.\s]+\.pages\.dev', response.result)
+                        if pages_match:
+                            pages_url = pages_match.group(0)
+                    
                     return self.success_response({
-                        "message": f"Website deployed successfully",
-                        "output": response.result
+                        "message": f"Website deployed successfully! To use {full_domain}, configure the custom domain in Cloudflare Pages dashboard.",
+                        "url": pages_url or f"https://{project_name}.pages.dev",
+                        "custom_domain": full_domain,
+                        "project_name": project_name,
+                        "output": response.result,
+                        "next_steps": f"1. Go to Cloudflare Pages dashboard\n2. Select project '{project_name}'\n3. Go to Custom domains tab\n4. Add '{full_domain}' as a custom domain"
                     })
                 else:
-                    return self.fail_response(f"Deployment failed with exit code {response.exit_code}: {response.result}")
+                    # Check for specific authentication errors
+                    if "authentication error" in response.result.lower() or "code: 10000" in response.result:
+                        return self.fail_response(f"Cloudflare authentication failed. Please check your API token permissions. Error: {response.result}")
+                    elif "permission" in response.result.lower():
+                        return self.fail_response(f"Permission denied. Your API token may not have the required permissions for Cloudflare Pages. Error: {response.result}")
+                    else:
+                        return self.fail_response(f"Deployment failed with exit code {response.exit_code}: {response.result}")
             except Exception as e:
                 return self.fail_response(f"Error during deployment: {str(e)}")
         except Exception as e:
