@@ -393,16 +393,16 @@ export const ChatInput = forwardRef<ChatInputHandles, ChatInputProps>(
                 {/* Border Beam Effect */}
                 <div className="absolute inset-0 rounded-[inherit] overflow-hidden">
                   <BorderBeam 
-                    duration={4}
+                    duration={3}
                     borderWidth={1}
-                    size={240}
+                    size={220}
                     className="from-transparent via-helium-blue to-transparent"
                   />
                   <BorderBeam 
-                    duration={4}
+                    duration={3}
                     borderWidth={1}
-                    delay={2}
-                    size={240}
+                    delay={1.5}
+                    size={220}
                     className="from-transparent via-helium-green to-transparent"
                   />
                 </div>

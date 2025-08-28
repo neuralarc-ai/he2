@@ -267,10 +267,10 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
                       size="icon"
                       variant="outline"
                       className={cn(
-                        "w-8 h-8 flex-shrink-0 dark:border-muted-foreground/30 shadow-none rounded-full transition-all duration-200",
+                        "w-8 h-8 flex-shrink-0 bg-transparent dark:border-muted-foreground/30 shadow-none rounded-full transition-all duration-200",
                         isDropdownOpen 
-                          ? "bg-background/50" 
-                          : "bg-white dark:bg-sidebar-accent hover:bg-background/50"
+                          ? "bg-background/50!" 
+                          : "bg-white dark:bg-sidebar-accent hover:bg-background/50!"
                       )}
                       disabled={
                         !isLoggedIn ||
@@ -289,11 +289,11 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
                     align="start"
-                    className="p-2 space-y-1 rounded-2xl dark:bg-background"
+                    className="p-2 rounded-3xl dark:bg-background"
                   >
                     <DropdownMenuItem
                       onClick={handleFileUpload}
-                      className="cursor-pointer rounded-lg"
+                      className="cursor-pointer rounded-2xl"
                     >
                       <Image
                         src={
@@ -311,7 +311,7 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
                     {selectedAgentId && onOpenIntegrations && (
                       <DropdownMenuItem
                         onClick={onOpenIntegrations}
-                        className="cursor-pointer rounded-lg"
+                        className="cursor-pointer rounded-2xl"
                       >
                         <Image
                           src={

@@ -32,8 +32,14 @@ interface ThreadLayoutProps {
   currentToolIndex: number;
   onSidePanelNavigate: (index: number) => void;
   onSidePanelClose: () => void;
-  renderAssistantMessage: (assistantContent?: string, toolContent?: string) => React.ReactNode;
-  renderToolResult: (toolContent?: string, isSuccess?: boolean) => React.ReactNode;
+  renderAssistantMessage: (
+    assistantContent?: string,
+    toolContent?: string,
+  ) => React.ReactNode;
+  renderToolResult: (
+    toolContent?: string,
+    isSuccess?: boolean,
+  ) => React.ReactNode;
   isLoading: boolean;
   showBillingAlert: boolean;
   billingData: BillingData;
@@ -79,29 +85,35 @@ export function ThreadLayout({
   initialLoadCompleted,
   agentName,
   disableInitialAnimation = false,
-  agentRunId
+  agentRunId,
 }: ThreadLayoutProps) {
   const { state: leftSidebarState } = useSidebar();
   const isLeftSidebarExpanded = leftSidebarState === 'expanded';
   const isMediumScreen = useMediumScreen();
   const isCustomBreakpoint = useCustomBreakpoint();
 
-   // Determine when to apply margin-right
-   const shouldApplyMarginRight = React.useMemo(() => {
+  // Determine when to apply margin-right
+  const shouldApplyMarginRight = React.useMemo(() => {
     // Don't apply margin if:
     // 1. Not initialized yet
     // 2. Panel is closed
     if (!initialLoadCompleted || !isSidePanelOpen) return false;
-    
+
     // Don't apply margin in these cases:
     // 1. On medium screens (768px-934px)
     // 2. On custom breakpoint (1024px-1227px) when sidebar is expanded
     if (isMediumScreen) return false;
     if (isCustomBreakpoint && isLeftSidebarExpanded) return false;
-    
+
     // Apply margin in all other cases
     return true;
-  }, [initialLoadCompleted, isSidePanelOpen, isMediumScreen, isCustomBreakpoint, isLeftSidebarExpanded]);
+  }, [
+    initialLoadCompleted,
+    isSidePanelOpen,
+    isMediumScreen,
+    isCustomBreakpoint,
+    isLeftSidebarExpanded,
+  ]);
   return (
     <div className="flex h-screen">
       {debugMode && (
@@ -110,10 +122,12 @@ export function ThreadLayout({
         </div>
       )}
 
-<div
+      <div
         className={`flex flex-col flex-1 overflow-hidden transition-[margin] duration-200 ease-in-out will-change-[margin] ${
           shouldApplyMarginRight
-            ? (isLeftSidebarExpanded ? 'mr-[45vw]' : 'mr-[50vw]')
+            ? isLeftSidebarExpanded
+              ? 'mr-[40vw]'
+              : 'mr-[45vw]'
             : ''
         }`}
       >
@@ -175,4 +189,4 @@ export function ThreadLayout({
       />
     </div>
   );
-} 
+}

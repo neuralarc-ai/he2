@@ -24,6 +24,7 @@ import {
 } from '@/components/thread/tool-views/xml-parser';
 import { ShowToolStream } from './ShowToolStream';
 import { ComposioUrlDetector } from './composio-url-detector';
+import { StreamingText } from './StreamingText';
 import { HIDE_STREAMING_XML_TAGS } from '@/components/thread/utils';
 
 // Helper function to render all attachments as standalone messages
@@ -499,8 +500,8 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
   const { preloadFiles } = useFilePreloader();
 
   const containerClassName = isPreviewMode
-    ? 'flex-1 overflow-y-auto scrollbar-thin scrollbar-track-secondary/0 scrollbar-thumb-primary/10 scrollbar-thumb-rounded-full hover:scrollbar-thumb-primary/10 py-4 pb-0'
-    : 'flex-1 overflow-y-auto scrollbar-thin scrollbar-track-secondary/0 scrollbar-thumb-primary/10 scrollbar-thumb-rounded-full hover:scrollbar-thumb-primary/10 py-4 pb-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60';
+    ? 'flex-1 overflow-y-auto scrollbar-none py-4 pb-0'
+    : 'flex-1 overflow-y-auto scrollbar-none py-4 pb-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60';
 
   // In playback mode, we use visibleMessages instead of messages
   const displayMessages =
@@ -508,97 +509,36 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
 
   // Helper function to get agent info robustly
   const getAgentInfo = useCallback(() => {
-    // Check if this is a Suna default agent from metadata
-    const isSunaDefaultAgent = agentMetadata?.is_suna_default || false;
+    // Always use HeliumLogo for all agents in thread content
+    const avatar = (
+      <div className="h-5 w-5 flex items-center justify-center rounded text-xs">
+        <HeliumLogo size={16} />
+      </div>
+    );
 
-    // Then check recent messages for agent info
-    const recentAssistantWithAgent = [...displayMessages]
-      .reverse()
-      .find((msg) => msg.type === 'assistant' && msg.agents?.name);
-
-    if (agentData && !isSunaDefaultAgent) {
-      const profileUrl = agentData.profile_image_url;
-      const avatar = profileUrl ? (
-        <img
-          src={profileUrl}
-          alt={agentData.name || agentName}
-          className="h-5 w-5 rounded object-cover"
-        />
-      ) : agentData.avatar ? (
-        <div className="h-5 w-5 flex items-center justify-center rounded text-xs">
-          <span className="text-lg">{agentData.avatar}</span>
-        </div>
-      ) : (
-        <div className="h-5 w-5 flex items-center justify-center rounded text-xs">
-          <HeliumLogo size={16} />
-        </div>
-      );
-      return {
-        name: agentData.name || agentName,
-        avatar,
-      };
-    }
-
-    if (recentAssistantWithAgent?.agents?.name) {
-      const isSunaAgent =
-        recentAssistantWithAgent.agents.name === 'Suna' || isSunaDefaultAgent;
-      // Prefer profile image if available on the agent payload
-      const profileUrl = (recentAssistantWithAgent as any)?.agents
-        ?.profile_image_url;
-      const avatar =
-        profileUrl && !isSunaDefaultAgent ? (
-          <img
-            src={profileUrl}
-            alt={recentAssistantWithAgent.agents.name}
-            className="h-5 w-5 rounded object-cover"
-          />
-        ) : !isSunaDefaultAgent ? (
-          <>
-            {isSunaAgent ? (
-              <div className="h-5 w-5 flex items-center justify-center rounded text-xs">
-                <HeliumLogo size={16} />
-              </div>
-            ) : (
-              <div className="h-5 w-5 flex items-center justify-center rounded text-xs">
-                <span className="text-lg">
-                  {recentAssistantWithAgent.agents.name.charAt(0).toUpperCase()}
-                </span>
-              </div>
-            )}
-          </>
-        ) : (
-          <div className="h-5 w-5 flex items-center justify-center rounded text-xs">
-            <HeliumLogo size={16} />
-          </div>
-        );
-      return {
-        name: recentAssistantWithAgent.agents.name,
-        avatar,
-      };
-    }
-
-    // Fallback: if this is a Suna default agent, always show Heliumlogo
-    if (isSunaDefaultAgent) {
-      return {
-        name: agentName || 'Helio',
-        avatar: (
-          <div className="h-5 w-5 flex items-center justify-center rounded text-xs">
-            <HeliumLogo size={16} />
-          </div>
-        ),
-      };
+    // Get agent name from various sources
+    let agentNameToUse = agentName || 'Helium';
+    
+    if (agentData?.name) {
+      agentNameToUse = agentData.name;
+    } else {
+      // Check recent messages for agent info
+      const recentAssistantWithAgent = [...displayMessages]
+        .reverse()
+        .find((msg) => msg.type === 'assistant' && msg.agents?.name);
+      
+      if (recentAssistantWithAgent?.agents?.name) {
+        agentNameToUse = recentAssistantWithAgent.agents.name;
+      }
     }
 
     return {
-      name: agentName || 'Helio',
-      avatar: agentAvatar,
+      name: agentNameToUse,
+      avatar,
     };
   }, [
-    threadMetadata,
     displayMessages,
     agentName,
-    agentAvatar,
-    agentMetadata,
     agentData,
   ]);
 
@@ -695,7 +635,7 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
         >
           <div
             ref={contentRef}
-            className="mx-auto min-w-0 w-full max-w-3xl px-4 md:px-6"
+            className="mx-auto min-w-0 w-full max-w-4xl px-4 md:px-6 lg:px-12"
           >
             <div className="space-y-8 min-w-0">
               {(() => {
@@ -989,7 +929,7 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                               {groupAgentId ? (
                                 <AgentAvatar
                                   agentId={groupAgentId}
-                                  size={20}
+                                  size={16}
                                   className="h-5 w-5"
                                 />
                               ) : (
@@ -1171,23 +1111,14 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                             0,
                                             tagStartIndex,
                                           )
-                                        : textToRender;
-                                      const showCursor =
-                                        (streamHookStatus === 'streaming' ||
-                                          streamHookStatus === 'connecting') &&
-                                        !detectedTag;
+                                        : textToRender;                                      
 
                                       return (
                                         <>
-                                          {textBeforeTag && (
-                                            <ComposioUrlDetector
-                                              content={textBeforeTag}
-                                              className="text-sm xl:text-base prose prose-sm dark:prose-invert chat-markdown max-w-none [&>:first-child]:mt-0 prose-headings:mt-3 break-words overflow-wrap-anywhere"
-                                            />
-                                          )}
-                                          {showCursor && (
-                                            <span className="inline-block h-4 w-0.5 bg-primary ml-0.5 -mb-1 animate-pulse" />
-                                          )}
+                                          <StreamingText
+                                            content={textBeforeTag}
+                                            className="text-sm prose prose-sm dark:prose-invert chat-markdown max-w-none [&>:first-child]:mt-0 prose-headings:mt-3 break-words overflow-wrap-anywhere"
+                                          />
 
                                           {detectedTag && (
                                             <ShowToolStream

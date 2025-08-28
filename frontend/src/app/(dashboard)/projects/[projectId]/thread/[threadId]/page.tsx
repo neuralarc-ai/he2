@@ -797,8 +797,8 @@ export default function ThreadPage({
                 : 'left-[50px]',
             isSidePanelOpen
               ? leftSidebarState === 'expanded'
-                ? 'right-[45vw] 2xl:right-[45vw] xl:right-[44vw] lg:right-[43vw]'
-                : 'right-[51vw]'
+                ? 'right-[45vw] 2xl:right-[40.5vw] xl:right-[40.5vw] lg:right-[43vw]'
+                : 'right-[46vw]'
               : 'right-0',
             isMobile ? 'left-0 right-0 pb-6' : '',
           )}
@@ -812,7 +812,7 @@ export default function ThreadPage({
             <div
               className={cn(
                 'w-full',
-                isSidePanelOpen ? 'max-w-3xl' : 'max-w-4xl',
+                isSidePanelOpen ? 'max-w-4xl' : 'max-w-4xl',
               )}
             >
               <ChatInput

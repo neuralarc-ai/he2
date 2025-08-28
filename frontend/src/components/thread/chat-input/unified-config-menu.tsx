@@ -117,9 +117,9 @@ const LoggedInMenu: React.FC<UnifiedConfigMenuProps> = ({
             <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
                 <DropdownMenuTrigger asChild>
                     <Button
-                        variant="ghost"
+                        variant="outline"
                         size="sm"
-                        className="h-8 px-2 bg-transparent border-0 rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/50 flex items-center gap-1.5"
+                        className="h-8 px-2 border-0 shadow-none rounded-2xl text-muted-foreground hover:text-foreground dark:bg-sidebar-accent! hover:bg-background/50! flex items-center gap-1.5"
                         aria-label="Config menu"
                     >
                         {onAgentSelect ? (
@@ -141,10 +141,10 @@ const LoggedInMenu: React.FC<UnifiedConfigMenuProps> = ({
                     </Button>
                 </DropdownMenuTrigger>
 
-                <DropdownMenuContent align="end" className="w-80 p-0" sideOffset={6}>
-                    <div className="p-2" ref={searchContainerRef}>
-                        <div className="relative">
-                            <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                <DropdownMenuContent align="end" className="w-80 p-1 dark:bg-background rounded-3xl" sideOffset={6}>
+                    <div className="p-2 rounded-full" ref={searchContainerRef}>
+                        <div className="relative rounded-full">
+                            <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-muted-foreground" />
                             <input
                                 ref={searchInputRef}
                                 type="text"
@@ -152,7 +152,7 @@ const LoggedInMenu: React.FC<UnifiedConfigMenuProps> = ({
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 onKeyDown={handleSearchInputKeyDown}
-                                className="w-full h-8 pl-8 pr-2 rounded-lg text-sm bg-muted focus:outline-none"
+                                className="w-full h-8 pl-8 pr-2 rounded-full text-sm bg-muted focus:outline-none"
                             />
                         </div>
                     </div>
@@ -172,7 +172,7 @@ const LoggedInMenu: React.FC<UnifiedConfigMenuProps> = ({
                                 </Button>
                             </div>
                             {topAgents.length === 0 ? (
-                                <div className="px-3 py-2 text-xs rounded-full text-muted-foreground">No agents</div>
+                                <div className="px-2 py-2 text-xs rounded-full text-muted-foreground">No agents</div>
                             ) : (
                                 <div className="max-h-[132px] mb-1 overflow-y-auto">
                                     {filteredAgents.map((agent) => (
@@ -196,7 +196,7 @@ const LoggedInMenu: React.FC<UnifiedConfigMenuProps> = ({
                         </div>
                     )}
 
-                    {onAgentSelect && <DropdownMenuSeparator className="!mt-0" />}
+                    {onAgentSelect && !isProductionMode() && <DropdownMenuSeparator className="!mt-0" />}
 
                     {/* Models - Hidden in production */}
                     {!isProductionMode() && (
