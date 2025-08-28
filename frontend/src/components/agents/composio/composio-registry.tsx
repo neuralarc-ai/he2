@@ -512,7 +512,7 @@ export const ComposioRegistry: React.FC<ComposioRegistryProps> = ({
                 <p className="text-sm text-muted-foreground">
                   {mode === 'profile-only' 
                     ? 'Create a connection profile for your favorite apps'
-                    : `Connect your favorite apps with ${currentAgentId && agent?.name ? agent.name : 'your agent'}`
+                    : `Connect your favorite apps with ${currentAgentId && agent?.name ? agent.name : 'your agent'} Agent`
                   }
                 </p>
               </div>
@@ -579,7 +579,7 @@ export const ComposioRegistry: React.FC<ComposioRegistryProps> = ({
                       <div className="w-full hover:underline flex items-center justify-between p-0 h-auto">
                         <div className="flex items-center gap-2">
                           <h3 className="text-lg font-medium">
-                            Connected to {currentAgentId && agent?.name ? agent.name : 'this agent'}
+                            Connected to {currentAgentId && agent?.name ? agent.name : 'this agent'} Agent
                           </h3>
                           {isLoadingConnectedApps ? (
                             <Skeleton className="w-6 h-5 rounded ml-2" />

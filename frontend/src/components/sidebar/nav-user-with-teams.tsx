@@ -491,34 +491,34 @@ export function NavUserWithTeams({
                     <DropdownMenuItem className="rounded-full cursor-pointer">
                       <div className="flex items-center gap-2 w-full">
                         <span>Theme</span>
-                        <ChevronDown className="h-4 w-4 ml-auto" />
+                        <ChevronDown className="h-4 w-4 ml-auto rotate-[-90deg]" />
                       </div>
                     </DropdownMenuItem>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent 
                     side="right" 
                     align="start" 
-                    className="w-32"
-                    sideOffset={8}
+                    className="w-32 p-3 space-y-1"
+                    sideOffset={12}
                   >
                     <DropdownMenuItem
                       onClick={() => setTheme('light')}
-                      className="cursor-pointer"
+                      className="cursor-pointer rounded-md"
                     >
                       <Sun className="h-4 w-4 mr-2" />
                       Light
                       {theme === 'light' && (
-                        <span className="ml-auto text-green-500">✓</span>
+                        <span className="ml-auto w-2 h-2 bg-foreground rounded-full" />
                       )}
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => setTheme('dark')}
-                      className="cursor-pointer"
+                      className="cursor-pointer rounded-md"
                     >
                       <Moon className="h-4 w-4 mr-2" />
                       Dark
                       {theme === 'dark' && (
-                        <span className="ml-auto text-green-500">✓</span>
+                        <span className="ml-auto w-2 h-2 bg-foreground rounded-full" />
                       )}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
