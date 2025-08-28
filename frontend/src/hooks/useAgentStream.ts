@@ -287,6 +287,18 @@ export function useAgentStream(
         queryClient.invalidateQueries({
           queryKey: knowledgeBaseKeys.agent(agentId),
         });
+
+        // Invalidate versioning queries for agent config page
+        queryClient.invalidateQueries({ queryKey: ['versions', 'list', agentId] });
+        // Invalidate current version details if available
+        queryClient.invalidateQueries({ 
+          queryKey: ['versions', 'detail'], 
+          predicate: (query) => {
+            return query.queryKey.includes(agentId);
+          }
+        });
+        
+        console.log(`[useAgentStream] Invalidated agent queries for refetch instead of page reload - Agent ID: ${agentId}`);
       }
 
       if (

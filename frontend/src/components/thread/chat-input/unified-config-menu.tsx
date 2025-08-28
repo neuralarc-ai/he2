@@ -119,7 +119,7 @@ const LoggedInMenu: React.FC<UnifiedConfigMenuProps> = ({
                     <Button
                         variant="outline"
                         size="sm"
-                        className="h-8 px-2 border-0 shadow-none rounded-2xl text-muted-foreground hover:text-foreground dark:bg-sidebar-accent! hover:bg-background/50! flex items-center gap-1.5"
+                        className="h-8 px-2 border-0 bg-transparent shadow-none rounded-2xl text-muted-foreground hover:text-foreground hover:bg-background dark:hover:bg-background/50! flex items-center gap-1.5"
                         aria-label="Config menu"
                     >
                         {onAgentSelect ? (
