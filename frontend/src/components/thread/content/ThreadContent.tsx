@@ -936,7 +936,7 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                 getAgentInfo().avatar
                               )}
                             </div>
-                            <p className="ml-2 text-sm text-muted-foreground">
+                            <p className="ml-2 text-base text-muted-foreground">
                               {groupAgentId ? (
                                 <AgentName
                                   agentId={groupAgentId}
@@ -1247,7 +1247,7 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                         <div className="rounded-md flex items-center justify-center">
                           {getAgentInfo().avatar}
                         </div>
-                        <p className="ml-2 text-sm text-muted-foreground">
+                        <p className="ml-2 text-base text-muted-foreground">
                           {getAgentInfo().name}
                         </p>
                       </div>
@@ -1267,7 +1267,7 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                       <div className="rounded-md flex items-center justify-center">
                         {getAgentInfo().avatar}
                       </div>
-                      <p className="ml-2 text-sm text-muted-foreground">
+                      <p className="ml-2 text-base text-muted-foreground">
                         {getAgentInfo().name}
                       </p>
                     </div>
@@ -1297,7 +1297,7 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                         <div className="rounded-md flex items-center justify-center">
                           {getAgentInfo().avatar}
                         </div>
-                        <p className="ml-2 text-sm text-muted-foreground">
+                        <p className="ml-2 text-base text-muted-foreground">
                           {getAgentInfo().name}
                         </p>
                       </div>
