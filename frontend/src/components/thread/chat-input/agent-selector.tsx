@@ -229,11 +229,11 @@ export const AgentSelector: React.FC<AgentSelectorProps> = ({
             <TooltipTrigger asChild>
               <DropdownMenuTrigger asChild>
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
                   className={cn(
                     compact 
-                      ? "px-2 py-1 text-xs hover:bg-accent/40 transition-all duration-200 rounded-lg"
+                      ? "px-2 py-1 text-xs hover:bg-accent/40 transition-all duration-200 rounded-full"
                       : "px-2.5 py-1.5 text-sm font-normal hover:bg-accent/40 transition-all duration-200 rounded-xl",
                     "focus:ring-1 focus:ring-ring focus:ring-offset-1 focus:outline-none",
                     isOpen && "bg-accent/40"

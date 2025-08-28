@@ -7,7 +7,6 @@ from utils.config import config
 import os
 import json
 import litellm
-import openai
 import asyncio
 from typing import Optional
 
@@ -340,49 +339,49 @@ class SandboxFilesTool(SandboxToolsBase):
         except Exception as e:
             return self.fail_response(f"Error deleting file: {str(e)}")
 
-    async def _call_morph_api(self, file_content: str, code_edit: str, instructions: str, file_path: str) -> tuple[Optional[str], Optional[str]]:
+    async def _call_vertex_ai_api(self, file_content: str, code_edit: str, instructions: str, file_path: str) -> tuple[Optional[str], Optional[str]]:
         """
-        Call Morph API to apply edits to file content.
+        Call Vertex AI Gemini API to apply edits to file content.
         Returns a tuple (new_content, error_message).
         On success, error_message is None.
         On failure, new_content is None.
         """
         try:
-            morph_api_key = getattr(config, 'MORPH_API_KEY', None) or os.getenv('MORPH_API_KEY')
-            openrouter_key = getattr(config, 'OPENROUTER_API_KEY', None) or os.getenv('OPENROUTER_API_KEY')
+            # Check if Vertex AI is properly configured
+            if not config.VERTEXAI_PROJECT:
+                error_msg = "Vertex AI project not configured. Please set VERTEXAI_PROJECT environment variable."
+                logger.warning(error_msg)
+                return None, error_msg
+            
+            if not config.VERTEXAI_LOCATION:
+                error_msg = "Vertex AI location not configured. Please set VERTEXAI_LOCATION environment variable."
+                logger.warning(error_msg)
+                return None, error_msg
             
             messages = [{
                 "role": "user", 
                 "content": f"<instruction>{instructions}</instruction>\n<code>{file_content}</code>\n<update>{code_edit}</update>"
             }]
 
-            response = None
-            if morph_api_key:
-                logger.debug("Using direct Morph API for file editing.")
-                client = openai.AsyncOpenAI(
-                    api_key=morph_api_key,
-                    base_url="https://api.morphllm.com/v1"
-                )
-                response = await client.chat.completions.create(
-                    model="morph-v3-large",
-                    messages=messages,
-                    temperature=0.0,
-                    timeout=30.0
-                )
-            elif openrouter_key:
-                logger.debug("Morph API key not set, falling back to OpenRouter for file editing via litellm.")
-                response = await litellm.acompletion(
-                    model="openrouter/morph/morph-v3-large",
-                    messages=messages,
-                    api_key=openrouter_key,
-                    api_base="https://openrouter.ai/api/v1",
-                    temperature=0.0,
-                    timeout=30.0
-                )
-            else:
-                error_msg = "No Morph or OpenRouter API key found, cannot perform AI edit."
-                logger.warning(error_msg)
-                return None, error_msg
+            logger.debug("Using Vertex AI Gemini API for file editing.")
+            
+            # Prepare parameters for Vertex AI call
+            params = {
+                "model": "vertexai/gemini-2.0-flash",
+                "messages": messages,
+                "temperature": 0.0,
+                "timeout": 30.0
+            }
+            
+            # Add Vertex AI specific configuration
+            if config.VERTEXAI_CREDENTIALS:
+                params["vertex_credentials"] = config.VERTEXAI_CREDENTIALS
+            if config.VERTEXAI_PROJECT:
+                params["vertex_project"] = config.VERTEXAI_PROJECT
+            if config.VERTEXAI_LOCATION:
+                params["vertex_location"] = config.VERTEXAI_LOCATION
+            
+            response = await litellm.acompletion(**params)
             
             if response and response.choices and len(response.choices) > 0:
                 content = response.choices[0].message.content.strip()
@@ -395,7 +394,7 @@ class SandboxFilesTool(SandboxToolsBase):
                 
                 return content, None
             else:
-                error_msg = f"Invalid response from Morph/OpenRouter API: {response}"
+                error_msg = f"Invalid response from Vertex AI Gemini API: {response}"
                 logger.error(error_msg)
                 return None, error_msg
                 
@@ -406,7 +405,7 @@ class SandboxFilesTool(SandboxToolsBase):
                 error_message += f"\n\nAPI Response Body:\n{e.response.text}"
             elif hasattr(e, 'body'): # litellm sometimes puts it in body
                 error_message += f"\n\nAPI Response Body:\n{e.body}"
-            logger.error(f"Error calling Morph/OpenRouter API: {error_message}", exc_info=True)
+            logger.error(f"Error calling Vertex AI Gemini API: {error_message}", exc_info=True)
             return None, error_message
 
     @openapi_schema({
@@ -494,13 +493,13 @@ def authenticate_user(username, password):
             # Read current content
             original_content = (await self.sandbox.fs.download_file(full_path)).decode()
             
-            # Try Morph AI editing first
+            # Try Vertex AI Gemini editing first
             logger.debug(f"Attempting AI-powered edit for file '{target_file}' with instructions: {instructions[:100]}...")
-            new_content, error_message = await self._call_morph_api(original_content, code_edit, instructions, target_file)
+            new_content, error_message = await self._call_vertex_ai_api(original_content, code_edit, instructions, target_file)
 
             if error_message:
                 return ToolResult(success=False, output=json.dumps({
-                    "message": f"AI editing failed: {error_message}",
+                    "message": f"Vertex AI Gemini editing failed: {error_message}",
                     "file_path": target_file,
                     "original_content": original_content,
                     "updated_content": None
@@ -508,7 +507,7 @@ def authenticate_user(username, password):
 
             if new_content is None:
                 return ToolResult(success=False, output=json.dumps({
-                    "message": "AI editing failed for an unknown reason. The model returned no content.",
+                    "message": "Vertex AI Gemini editing failed for an unknown reason. The model returned no content.",
                     "file_path": target_file,
                     "original_content": original_content,
                     "updated_content": None
@@ -522,12 +521,12 @@ def authenticate_user(username, password):
                     "updated_content": original_content
                 }))
 
-            # AI editing successful
+            # Vertex AI Gemini editing successful
             await self.sandbox.fs.upload_file(new_content.encode(), full_path)
             
             # Return rich data for frontend diff view
             return ToolResult(success=True, output=json.dumps({
-                "message": f"File '{target_file}' edited successfully.",
+                "message": f"File '{target_file}' edited successfully using Vertex AI Gemini.",
                 "file_path": target_file,
                 "original_content": original_content,
                 "updated_content": new_content

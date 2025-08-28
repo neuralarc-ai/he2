@@ -6,10 +6,12 @@ import React from 'react';
 import { Slider } from '@/components/ui/slider';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ApiMessageType } from '@/components/thread/types';
-import { CircleDashed, X, Minimize2, SkipForward, SkipBack } from 'lucide-react';
+import { CircleDashed, X, Minimize2, SkipForward, SkipBack, Wrench, Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { ToolView, extractFilePathFromToolCall } from './tool-views/wrapper';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
@@ -299,8 +301,8 @@ export function ToolCallSidePanel({
   const widthClass = React.useMemo(() => {
     if (isFullScreen) return 'left-2';
     if (isCustomBreakpoint && isLeftSidebarExpanded) return 'left-2';
-    if (isMediumScreen) return 'w-[calc(100vw-32px)]';
-    const base = isLeftSidebarExpanded ? 'w-[45vw]' : 'w-[50vw]';
+    if (isMediumScreen) return 'w-[calc(100vw-12px)]';
+    const base = isLeftSidebarExpanded ? 'w-[40vw]' : 'w-[45vw]';
     return `${base} sm:${base} md:${base} lg:${base} xl:${base}`;
   }, [isFullScreen, isLeftSidebarExpanded, isMediumScreen, isCustomBreakpoint]);
 
@@ -1166,7 +1168,7 @@ export function ToolCallSidePanel({
             }
           }}
           className={cn(
-            'fixed top-3 right-2 bottom-4 shadow-[0px_12px_32px_0px_rgba(0,0,0,0.02)] border bg-gradient-to-bl from-green-500/10 to-blue-500/10 rounded-[22px] flex flex-col z-30 transition-[width] duration-200 ease-in-out will-change-[width]',
+            'fixed top-3 right-2 bottom-4 shadow-[0px_12px_32px_0px_rgba(0,0,0,0.02)] dark:shadow-[0px_8px_8px_0px_rgba(255,255,255,0.02)] border rounded-[22px] flex flex-col z-30 transition-[width] duration-200 ease-in-out will-change-[width]',
             widthClass,
           )}  
           style={{
