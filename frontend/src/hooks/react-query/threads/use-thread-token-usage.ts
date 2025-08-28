@@ -12,17 +12,7 @@ export function useThreadTokenUsage(threadId: string) {
       console.log('Fetching thread token usage for:', threadId);
       
       try {
-        // First try the dedicated endpoint
-        const result = await billingApi.getThreadTokenUsage(threadId);
-        console.log('Thread token usage result:', result);
-        
-        // If we get a result with actual data (not just 0s), use it
-        if (result && result.total_completion_tokens > 0) {
-          return result;
-        }
-        
-        // If the dedicated endpoint returns 0s (likely local mode), fall back to filtering usage logs
-        console.log('Dedicated endpoint returned 0s, falling back to usage logs filtering');
+        // Use the working usage logs method directly
         const allLogs = await billingApi.getUsageLogs(0, 1000);
         
         if (!allLogs?.logs) return null;
@@ -51,7 +41,7 @@ export function useThreadTokenUsage(threadId: string) {
         
         const models = [...new Set(threadLogs.map(log => log.content.model))];
         
-        const fallbackResult = {
+        const result = {
           total_completion_tokens: totalCompletionTokens,
           total_prompt_tokens: totalPromptTokens,
           total_tokens: totalTokens,
@@ -60,8 +50,8 @@ export function useThreadTokenUsage(threadId: string) {
           models,
         };
         
-        console.log('Fallback result from usage logs:', fallbackResult);
-        return fallbackResult;
+        console.log('Thread token usage result:', result);
+        return result;
         
       } catch (error) {
         console.error('Error fetching thread token usage:', error);
