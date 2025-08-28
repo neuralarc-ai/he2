@@ -20,6 +20,7 @@ import {
   Moon,
   KeyRound,
   EllipsisIcon,
+  SquarePen,
 } from 'lucide-react';
 import { useAccounts } from '@/hooks/use-accounts';
 import NewTeamForm from '@/components/basejump/new-team-form';
@@ -53,6 +54,9 @@ import { createClient } from '@/lib/supabase/client';
 import { useTheme } from 'next-themes';
 import { isLocalMode } from '@/lib/config';
 import { useFeatureFlag } from '@/lib/feature-flags';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 // Custom Logout Icon component using the logout.svg
 const LogoutIcon = ({ className }: { className?: string }) => (
@@ -120,6 +124,11 @@ export function NavUserWithTeams({
   const { isMobile } = useSidebar();
   const { data: accounts } = useAccounts();
   const [showNewTeamDialog, setShowNewTeamDialog] = React.useState(false);
+  const [showEditNameDialog, setShowEditNameDialog] = React.useState(false);
+  const [editName, setEditName] = React.useState(user.name);
+  const [editLoading, setEditLoading] = React.useState(false);
+  const [tokenUsage, setTokenUsage] = React.useState(0);
+  const [totalTokens, setTotalTokens] = React.useState(250000);
   const { theme, setTheme } = useTheme();
   const { enabled: customAgentsEnabled, loading: flagLoading } =
     useFeatureFlag('custom_agents');
@@ -214,6 +223,80 @@ export function NavUserWithTeams({
       .substring(0, 2);
   };
 
+  // Fetch token usage
+  const fetchTokenUsage = React.useCallback(async () => {
+    try {
+      // Replace this with your real API call
+      const response = await fetch('/api/token-usage');
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('Token usage API response:', data);
+      setTokenUsage(data.used_tokens);
+    } catch (err) {
+      console.error('Error fetching token usage:', err);
+      console.log('Using fallback token usage: 22000');
+      setTokenUsage(1222); // Fallback value
+    }
+  }, []);
+
+  // Fetch token usage on component mount
+  React.useEffect(() => {
+    fetchTokenUsage();
+  }, [fetchTokenUsage]);
+
+  // Handle name editing
+  const handleEditName = async () => {
+    if (!editName.trim() || editName === user.name) {
+      setShowEditNameDialog(false);
+      return;
+    }
+    
+    if (!personalAccount?.account_id) {
+      toast.error('Unable to update account name. Please try again.');
+      return;
+    }
+    
+    setEditLoading(true);
+    try {
+      const supabase = createClient();
+      
+      // Update both auth user data and account data
+      const [authResult, accountResult] = await Promise.all([
+        // Update auth user data
+        supabase.auth.updateUser({
+          data: { name: editName.trim() },
+        }),
+        // Update account name in basejump.accounts table
+        supabase.rpc('update_account', {
+          account_id: personalAccount.account_id,
+          name: editName.trim(),
+        })
+      ]);
+      
+      if (authResult.error) throw authResult.error;
+      if (accountResult.error) throw accountResult.error;
+      
+      // Clear cached names so dashboard will pick up the new name
+      localStorage.removeItem('cached_user_name');
+      localStorage.removeItem('cached_capitalized_name');
+      localStorage.removeItem('cached_welcome_message');
+      
+      toast.success('Name updated successfully!');
+      setShowEditNameDialog(false);
+      // Refresh the page to update the sidebar name and clear cache
+      window.location.reload();
+    } catch (err) {
+      console.error('Error updating name:', err);
+      toast.error('Failed to update name. Please try again.');
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
   if (!activeTeam) {
     return null;
   }
@@ -258,15 +341,49 @@ export function NavUserWithTeams({
                     </AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-medium">{user.name}</span>
+                    <div className="flex items-center gap-2 group">
+                      <span className="truncate font-medium">{user.name}</span>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setEditName(user.name);
+                          setShowEditNameDialog(true);
+                        }}
+                        className="text-muted-foreground hover:text-foreground transition-colors duration-200"
+                        aria-label="Edit name"
+                      >
+                        <SquarePen className="h-3 w-3" />
+                      </button>
+                    </div>
                     <span className="truncate text-xs">{user.email}</span>
                   </div>
                 </div>
               </DropdownMenuLabel>
-              <DropdownMenuSeparator />
+              
+              {/* Token Usage Section */}
+              <div className="px-1.5 py-2">
+                <div className="text-xs text-muted-foreground mb-2">
+                  {tokenUsage >= totalTokens 
+                    ? "You have used 100% of your tokens"
+                    : `You have used ${Math.round((tokenUsage / totalTokens) * 100)}% of your tokens`
+                  }
+                </div>
+                <div className="text-xs text-muted-foreground mb-2">
+                  {tokenUsage.toLocaleString()} / {totalTokens.toLocaleString()}
+                </div>
+                <div className="w-full bg-muted rounded-full h-2">
+                  <div 
+                    className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${Math.min((tokenUsage / totalTokens) * 100, 100)}%` }}
+                  />
+                </div>
+              </div>
+              
+              
 
               {/* Teams Section */}
-              {personalAccount && (
+              {/* {personalAccount && (
                 <>
                   <DropdownMenuLabel className="text-muted-foreground text-sm">
                     Personal Account
@@ -285,18 +402,18 @@ export function NavUserWithTeams({
                     }
                     className="gap-1 rounded-full cursor-pointer"
                   >
-                      <DynamicIcon
+                      {/* <DynamicIcon
                         lightPath="/icons/user.svg"
                         darkPath="/icons/user-dark.svg"
                         alt="user"
                         width={20}
                         height={20}
                         className="mb-0 mr-1"
-                      />
+                      /> 
                     {personalAccount.name}                    
                   </DropdownMenuItem>
                 </>
-              )}
+              )} */}
 
               {/* {teamAccounts?.length > 0 && (
                 <>
@@ -357,35 +474,62 @@ export function NavUserWithTeams({
                 {!flagLoading && customAgentsEnabled && (
                   <DropdownMenuItem asChild className="rounded-full cursor-pointer">
                     <Link href="/settings/credentials">
-                      <DynamicIcon
+                      {/* <DynamicIcon
                         lightPath="/icons/integrations.svg"
                         darkPath="/icons/integration-dark.svg"
                         alt="integration"
                         width={17}
                         height={17}
                         className="mb-0"
-                      />
+                      /> */}
                       Integrations
                     </Link>
                   </DropdownMenuItem>
                 )}
-                <DropdownMenuItem
-                  onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-                  className="rounded-full cursor-pointer"
-                >
-                  <div className="flex items-center gap-2">
-                    <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                    <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                    <span>Theme</span>
-                  </div>
-                </DropdownMenuItem>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <DropdownMenuItem className="rounded-full cursor-pointer">
+                      <div className="flex items-center gap-2 w-full">
+                        <span>Theme</span>
+                        <ChevronDown className="h-4 w-4 ml-auto" />
+                      </div>
+                    </DropdownMenuItem>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent 
+                    side="right" 
+                    align="start" 
+                    className="w-32"
+                    sideOffset={8}
+                  >
+                    <DropdownMenuItem
+                      onClick={() => setTheme('light')}
+                      className="cursor-pointer"
+                    >
+                      <Sun className="h-4 w-4 mr-2" />
+                      Light
+                      {theme === 'light' && (
+                        <span className="ml-auto text-green-500">✓</span>
+                      )}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => setTheme('dark')}
+                      className="cursor-pointer"
+                    >
+                      <Moon className="h-4 w-4 mr-2" />
+                      Dark
+                      {theme === 'dark' && (
+                        <span className="ml-auto text-green-500">✓</span>
+                      )}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuItem
-                className="text-destructive focus:text-destructive focus:bg-destructive/10 rounded-full cursor-pointer"
+                className="text-red-500 hover:text-red-400 focus:text-red-400 focus:bg-red-500/10 rounded-full cursor-pointer"
                 onClick={handleLogout}
               >
-                <LogoutIcon className="h-4 w-4 text-destructive" />
+                {/* <LogoutIcon className="h-4 w-4 text-red-500" /> */}
                 Log out
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -404,6 +548,34 @@ export function NavUserWithTeams({
         </DialogHeader>
         <NewTeamForm />
       </DialogContent>
+
+      {/* Edit Name Dialog */}
+      <Dialog open={showEditNameDialog} onOpenChange={setShowEditNameDialog}>
+        <DialogContent className="sm:max-w-[400px] bg-background border border-border rounded-lg shadow-lg p-0">
+          <div className="flex items-center justify-between p-4 border-b border-border">
+            <h3 className="text-lg font-semibold text-foreground">Edit Name</h3>
+          </div>
+          <div className="p-4">
+            <Input
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              placeholder="Enter your name"
+              disabled={editLoading}
+              autoFocus
+              className="mb-4"
+            />
+            <div className="flex justify-end">
+              <Button 
+                onClick={handleEditName} 
+                disabled={editLoading || !editName.trim() || editName === user.name}
+                size="sm"
+              >
+                {editLoading ? 'Saving...' : 'Save'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 }
