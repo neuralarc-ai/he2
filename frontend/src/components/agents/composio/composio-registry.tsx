@@ -512,7 +512,7 @@ export const ComposioRegistry: React.FC<ComposioRegistryProps> = ({
                 <p className="text-sm text-muted-foreground">
                   {mode === 'profile-only' 
                     ? 'Create a connection profile for your favorite apps'
-                    : `Connect your favorite apps with ${currentAgentId ? 'this agent' : 'your agent'}`
+                    : `Connect your favorite apps with ${currentAgentId && agent?.name ? agent.name : 'your agent'}`
                   }
                 </p>
               </div>
@@ -578,7 +578,9 @@ export const ComposioRegistry: React.FC<ComposioRegistryProps> = ({
                     <CollapsibleTrigger asChild>
                       <div className="w-full hover:underline flex items-center justify-between p-0 h-auto">
                         <div className="flex items-center gap-2">
-                          <h3 className="text-lg font-medium">Connected to this agent</h3>
+                          <h3 className="text-lg font-medium">
+                            Connected to {currentAgentId && agent?.name ? agent.name : 'this agent'}
+                          </h3>
                           {isLoadingConnectedApps ? (
                             <Skeleton className="w-6 h-5 rounded ml-2" />
                           ) : connectedApps.length > 0 && (
