@@ -276,7 +276,7 @@ export function CompleteToolView({
                             className={cn(
                               "w-full",
                               isImage ? "h-auto min-h-[54px]" :
-                                isPreviewable ? "min-h-[240px] max-h-[400px] overflow-auto" : "h-[54px]"
+                                isPreviewable ? "min-h-[240px] max-h-[400px] overflow-auto" : "h-[300px]"
                             )}
                             customStyle={
                               isImage ? {

@@ -659,14 +659,14 @@ export function FileAttachmentGrid({
                     
                     {/* View all files in this task button - shown as 4th item when there are more than 3 files */}
                     {showViewAll && (
-                        <div className="w-full h-[54px] flex items-center">
+                        <div className="w-full h-[300px] flex items-center">
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     setIsWorkspaceDialogOpen(true);
                                 }}
                                 className={cn(
-                                    "w-full h-[54px] flex flex-col items-center justify-center gap-1 p-2 rounded-xl",
+                                    "w-full h-full flex flex-col items-center justify-center gap-1 p-2 rounded-xl",
                                     "bg-sidebar hover:bg-accent/10 transition-colors",
                                     "text-sm font-medium text-foreground"
                                 )}
