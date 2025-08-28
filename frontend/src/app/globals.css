@@ -9,6 +9,7 @@
   --color-helium-green: var(--helium-green);
   --color-helium-yellow: var(--helium-yellow);
   --color-helium-blue: var(--helium-blue);
+  --color-helium-teal: var(--helium-teal);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
@@ -277,6 +278,7 @@
   --helium-yellow: oklch(0.9699 0.1925 109.51);
   --helium-blue: oklch(0.5608 0.2416 270.34);
   --helium-green: oklch(0.9024 0.2346 134.77);
+  --helium-teal: oklch(0.7197 0.1217 174.92);
 }
 
 .dark {
@@ -315,6 +317,7 @@
   --helium-yellow: oklch(0.9699 0.1925 109.51);
   --helium-blue: oklch(0.5608 0.2416 270.34);
   --helium-green: oklch(0.9024 0.2346 134.77);
+  --helium-teal: oklch(0.7197 0.1217 174.92);
 }
 
 @layer base {
@@ -364,6 +367,53 @@
       Consolas, 'Liberation Mono', 'Courier New', monospace,
       'Noto Sans Mono CJK JP', 'Noto Sans Mono CJK KR', 'Noto Sans Mono CJK SC',
       'Noto Sans Mono CJK TC';
+  }
+
+  /* Custom text selection color using helium-blue */
+  ::selection {
+    background-color: var(--helium-blue);
+    color: white;
+  }
+
+  ::-moz-selection {
+    background-color: var(--helium-blue);
+    color: white;
+  }
+
+  /* Force override Fustat font for markdown content */
+  .prose,
+  .prose *,
+  .markdown-content,
+  .markdown-content * {
+    font-family: 
+      -apple-system, 
+      BlinkMacSystemFont, 
+      'Segoe UI', 
+      Roboto, 
+      'Helvetica Neue', 
+      Arial, 
+      'Noto Sans',
+      'Noto Sans CJK JP',
+      'Noto Sans CJK KR',
+      'Noto Sans CJK SC',
+      'Noto Sans CJK TC',
+      sans-serif !important;
+  }
+
+  /* Ensure headings in markdown use Libre Baskerville */
+  .prose h1,
+  .prose h2,
+  .prose h3,
+  .prose h4,
+  .prose h5,
+  .prose h6,
+  .markdown-content h1,
+  .markdown-content h2,
+  .markdown-content h3,
+  .markdown-content h4,
+  .markdown-content h5,
+  .markdown-content h6 {
+    font-family: "Libre Baskerville", serif !important;
   }
 }
 
@@ -720,4 +770,11 @@
       background-position: calc(100% + var(--shiny-width)) 0;
     }
   }
+  }
+
+  pre.shiki {
+    background-color: #fff;
+  }
+  pre.shiki {
+    background: transparent !important;
   }

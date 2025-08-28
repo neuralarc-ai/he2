@@ -37,6 +37,8 @@ interface DailyUsage {
   date: string;
   logs: UsageLogEntry[];
   totalTokens: number;
+  totalCompletionTokens: number;
+  totalPromptTokens: number;
   totalCost: number;
   requestCount: number;
   models: string[];
@@ -117,6 +119,8 @@ export default function UsageLogs({ accountId }: Props) {
             date,
             logs: [],
             totalTokens: 0,
+            totalCompletionTokens: 0,
+            totalPromptTokens: 0,
             totalCost: 0,
             requestCount: 0,
             models: [],
@@ -125,6 +129,8 @@ export default function UsageLogs({ accountId }: Props) {
 
         acc[date].logs.push(log);
         acc[date].totalTokens += log.total_tokens;
+        acc[date].totalCompletionTokens += log.content.usage.completion_tokens;
+        acc[date].totalPromptTokens += log.content.usage.prompt_tokens;
         acc[date].totalCost +=
           typeof log.estimated_cost === 'number' ? log.estimated_cost : 0;
         acc[date].requestCount += 1;
@@ -264,7 +270,12 @@ export default function UsageLogs({ accountId }: Props) {
                             {formatCost(day.totalCost)}
                           </div>
                           <div className="text-sm text-muted-foreground font-mono">
-                            {day.totalTokens.toLocaleString()} tokens
+                            <div className="text-blue-600 font-semibold">
+                              {day.totalCompletionTokens.toLocaleString()} completion
+                            </div>
+                            <div className="text-xs">
+                              {day.totalTokens.toLocaleString()} total tokens
+                            </div>
                           </div>
                         </div>
                       </div>

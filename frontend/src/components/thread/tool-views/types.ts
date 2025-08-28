@@ -14,7 +14,7 @@ export interface ToolViewProps {
   currentIndex?: number;
   totalCalls?: number;
   onFileClick?: (filePath: string) => void;
-  viewToggle?: React.ReactNode;
+  isFirstFileOperation?: boolean;
 }
 
 export interface BrowserToolViewProps extends ToolViewProps {

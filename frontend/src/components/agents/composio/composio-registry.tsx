@@ -27,6 +27,7 @@ const CATEGORY_EMOJIS: Record<string, string> = {
   'communication': '💬',
   'project-management': '📋',
   'scheduling': '📅',
+  'Design & creative tools': '🎨',
 };
 
 interface ConnectedApp {

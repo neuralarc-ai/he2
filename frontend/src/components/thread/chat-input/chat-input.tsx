@@ -18,10 +18,8 @@ import { useModelSelection } from './_use-model-selection';
 import { useFileDelete } from '@/hooks/react-query/files';
 import { useQueryClient } from '@tanstack/react-query';
 import { ToolCallInput } from './floating-tool-preview';
-import { ChatSnack } from './chat-snack';
-import { Brain, Zap, Workflow, Database, ArrowDown } from 'lucide-react';
-import { useComposioToolkitIcon } from '@/hooks/react-query/composio/use-composio';
-import { Skeleton } from '@/components/ui/skeleton';
+import { ChatSnack,type AgentStatus } from './chat-snack';
+import { ArrowDown } from 'lucide-react';
 
 import { IntegrationsRegistry } from '@/components/agents/integrations-registry';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -147,7 +145,7 @@ export const ChatInput = forwardRef<ChatInputHandles, ChatInputProps>(
     const [showSnackbar, setShowSnackbar] = useState(defaultShowSnackbar);
     const [userDismissedUsage, setUserDismissedUsage] = useState(false);
     const [billingModalOpen, setBillingModalOpen] = useState(false);
-
+    const [wasManuallyStopped, setWasManuallyStopped] = useState(false);
     const {
       selectedModel,
       setSelectedModel: handleModelChange,
@@ -162,12 +160,18 @@ export const ChatInput = forwardRef<ChatInputHandles, ChatInputProps>(
     const deleteFileMutation = useFileDelete();
     const queryClient = useQueryClient();
 
-    // Fetch integration icons only when logged in and advanced config UI is in use
-    const shouldFetchIcons = isLoggedIn && !!enableAdvancedConfig;
-    const { data: googleDriveIcon } = useComposioToolkitIcon('googledrive', { enabled: shouldFetchIcons });
-    const { data: slackIcon } = useComposioToolkitIcon('slack', { enabled: shouldFetchIcons });
-    const { data: notionIcon } = useComposioToolkitIcon('notion', { enabled: shouldFetchIcons });
-
+    const agentStatus: AgentStatus = (() => {
+      if (isAgentRunning || loading) {
+        return 'running';
+      }
+      if (wasManuallyStopped) {
+        return 'stopped';
+      }
+      if (toolCalls && toolCalls.length > 0) {
+        return 'completed';
+      }
+      return 'idle';
+    })();
     // Show usage preview logic:
     // - Always show to free users when showToLowCreditUsers is true
     // - For paid users, only show when they're at 70% or more of their cost limit (30% or below remaining)
@@ -230,11 +234,11 @@ export const ChatInput = forwardRef<ChatInputHandles, ChatInputProps>(
       )
         return;
 
-      if (isAgentRunning && onStopAgent) {
-        onStopAgent();
-        return;
-      }
-
+      // if (isAgentRunning && onStopAgent) {
+      //   onStopAgent();
+      //   return;
+      // }
+      setWasManuallyStopped(false);
       let message = value;
 
       if (uploadedFiles.length > 0) {
@@ -296,6 +300,12 @@ export const ChatInput = forwardRef<ChatInputHandles, ChatInputProps>(
       }
     };
 
+    const handleStopAgent = () => {
+      if (onStopAgent) {
+        onStopAgent();
+        setWasManuallyStopped(true);
+      }
+    };
     const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       const newValue = e.target.value;
       if (isControlled) {
@@ -370,21 +380,14 @@ export const ChatInput = forwardRef<ChatInputHandles, ChatInputProps>(
       setIsDraggingOver(false);
     };
 
-    const handleStopAgent = () => {
-      if (onStopAgent) {
-        onStopAgent();
-        // setWasManuallyStopped(true);
-      }
-    };
-
-
     return (
-      <div className="mx-auto w-full max-w-4xl relative">
+      <div className="mx-auto w-full max-w-5xl relative">
         <div className="relative">
           <ChatSnack
             toolCalls={toolCalls}
             toolCallIndex={toolCallIndex}
             onExpandToolPreview={onExpandToolPreview}
+            agentStatus={agentStatus}
             agentName={agentName}
             showToolPreview={showToolPreview}
             showUsagePreview={showSnackbar}
@@ -406,7 +409,7 @@ export const ChatInput = forwardRef<ChatInputHandles, ChatInputProps>(
             </button>
           )}
           <Card
-            className={`-mb-2 shadow-none w-full max-w-4xl mx-auto bg-transparent border-none overflow-visible ${enableAdvancedConfig && selectedAgentId ? '' : 'rounded-3xl'} relative z-10`}
+            className={`-mb-2 shadow-none w-full max-w-5xl mx-auto bg-transparent border-none overflow-visible ${enableAdvancedConfig && selectedAgentId ? '' : 'rounded-3xl'} relative z-10`}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={(e) => {
@@ -428,20 +431,20 @@ export const ChatInput = forwardRef<ChatInputHandles, ChatInputProps>(
             }}
           >
             <div className="w-full text-sm flex flex-col justify-between items-start rounded-lg">
-              <CardContent className={`w-full p-2 pb-3 ${bgColor} rounded-3xl relative overflow-hidden`}>
+              <CardContent className={`w-full p-2 pt-0 pb-3 bg-white dark:bg-sidebar-accent rounded-3xl relative overflow-hidden`}>
                 {/* Border Beam Effect */}
                 <div className="absolute inset-0 rounded-[inherit] overflow-hidden">
                   <BorderBeam 
-                    duration={6}
+                    duration={4}
                     borderWidth={1}
-                    size={200}
+                    size={240}
                     className="from-transparent via-helium-blue to-transparent"
                   />
                   <BorderBeam 
-                    duration={6}
+                    duration={4}
                     borderWidth={1}
-                    delay={3}
-                    size={200}
+                    delay={2}
+                    size={240}
                     className="from-transparent via-helium-green to-transparent"
                   />
                 </div>
@@ -489,83 +492,15 @@ export const ChatInput = forwardRef<ChatInputHandles, ChatInputProps>(
                   hideAgentSelection={hideAgentSelection}
                   selectedMode={selectedMode}
                   onModeChange={setSelectedMode}
+                  onOpenIntegrations={() => setRegistryDialogOpen(true)}
+                  onOpenInstructions={() => router.push(`/agents/config/${selectedAgentId}?tab=configuration&accordion=instructions`)}
+                  onOpenKnowledge={() => router.push(`/agents/config/${selectedAgentId}?tab=configuration&accordion=knowledge`)}
+                  onOpenTriggers={() => router.push(`/agents/config/${selectedAgentId}?tab=configuration&accordion=triggers`)}
+                  onOpenWorkflows={() => router.push(`/agents/config/${selectedAgentId}?tab=configuration&accordion=workflows`)}
                 />
               </CardContent>
             </div>
           </Card>
-
-          {enableAdvancedConfig && selectedAgentId && (
-            <div className="w-full max-w-4xl mx-auto -mt-12 relative z-20">
-              <div className="bg-gradient-to-b from-transparent via-transparent to-muted/30 pt-8 pb-2 px-4 rounded-b-3xl border border-t-0 border-border/50 transition-all duration-300 ease-out">
-                <div className="flex items-center justify-between gap-1 overflow-x-auto scrollbar-none relative">
-                  <button
-                    onClick={() => setRegistryDialogOpen(true)}
-                    className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-all duration-200 px-2.5 py-1.5 rounded-lg hover:bg-muted/50 border border-transparent hover:border-border/30 flex-shrink-0 cursor-pointer relative pointer-events-auto"
-                  >
-                    <div className="flex items-center -space-x-0.5">
-                      {googleDriveIcon?.icon_url && slackIcon?.icon_url && notionIcon?.icon_url ? (
-                        <>
-                          <div className="w-4 h-4 bg-white dark:bg-muted border border-border rounded-full flex items-center justify-center shadow-sm">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={googleDriveIcon.icon_url} className="w-2.5 h-2.5" alt="Google Drive" />
-                          </div>
-                          <div className="w-4 h-4 bg-white dark:bg-muted border border-border rounded-full flex items-center justify-center shadow-sm">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={slackIcon.icon_url} className="w-2.5 h-2.5" alt="Slack" />
-                          </div>
-                          <div className="w-4 h-4 bg-white dark:bg-muted border border-border rounded-full flex items-center justify-center shadow-sm">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={notionIcon.icon_url} className="w-2.5 h-2.5" alt="Notion" />
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <div className="w-4 h-4 bg-white dark:bg-muted border border-border rounded-full flex items-center justify-center shadow-sm">
-                            <Skeleton className="w-2.5 h-2.5 rounded" />
-                          </div>
-                          <div className="w-4 h-4 bg-white dark:bg-muted border border-border rounded-full flex items-center justify-center shadow-sm">
-                            <Skeleton className="w-2.5 h-2.5 rounded" />
-                          </div>
-                          <div className="w-4 h-4 bg-white dark:bg-muted border border-border rounded-full flex items-center justify-center shadow-sm">
-                            <Skeleton className="w-2.5 h-2.5 rounded" />
-                          </div>
-                        </>
-                      )}
-                    </div>
-                    <span className="text-xs font-medium">Integrations</span>
-                  </button>
-                  <button
-                    onClick={() => router.push(`/agents/config/${selectedAgentId}?tab=configuration&accordion=instructions`)}
-                    className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-all duration-200 px-2.5 py-1.5 rounded-lg hover:bg-muted/50 border border-transparent hover:border-border/30 flex-shrink-0 cursor-pointer relative pointer-events-auto"
-                  >
-                    <Brain className="h-3.5 w-3.5 flex-shrink-0" />
-                    <span className="text-xs font-medium">Instructions</span>
-                  </button>
-                  <button
-                    onClick={() => router.push(`/agents/config/${selectedAgentId}?tab=configuration&accordion=knowledge`)}
-                    className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-all duration-200 px-2.5 py-1.5 rounded-lg hover:bg-muted/50 border border-transparent hover:border-border/30 flex-shrink-0 cursor-pointer relative pointer-events-auto"
-                  >
-                    <Database className="h-3.5 w-3.5 flex-shrink-0" />
-                    <span className="text-xs font-medium">Knowledge</span>
-                  </button>
-                  <button
-                    onClick={() => router.push(`/agents/config/${selectedAgentId}?tab=configuration&accordion=triggers`)}
-                    className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-all duration-200 px-2.5 py-1.5 rounded-lg hover:bg-muted/50 border border-transparent hover:border-border/30 flex-shrink-0 cursor-pointer relative pointer-events-auto"
-                  >
-                    <Zap className="h-3.5 w-3.5 flex-shrink-0" />
-                    <span className="text-xs font-medium">Triggers</span>
-                  </button>
-                  <button
-                    onClick={() => router.push(`/agents/config/${selectedAgentId}?tab=configuration&accordion=workflows`)}
-                    className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-all duration-200 px-2.5 py-1.5 rounded-lg hover:bg-muted/50 border border-transparent hover:border-border/30 flex-shrink-0 cursor-pointer relative pointer-events-auto"
-                  >
-                    <Workflow className="h-3.5 w-3.5 flex-shrink-0" />
-                    <span className="text-xs font-medium">Playbooks</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
 
           <Dialog open={registryDialogOpen} onOpenChange={setRegistryDialogOpen}>
             <DialogContent className="p-0 max-w-6xl h-[90vh] overflow-hidden">

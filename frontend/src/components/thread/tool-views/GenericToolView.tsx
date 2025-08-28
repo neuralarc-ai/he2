@@ -6,17 +6,18 @@ import {
   AlertTriangle,
   Clock,
   Wrench,
-  Copy,
-  Check,
+  Settings,
+  FileText,
+  CheckCircle2,
+  XCircle,
 } from 'lucide-react';
 import { ToolViewProps } from './types';
 import { formatTimestamp, getToolTitle, extractToolData } from './utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Button } from '@/components/ui/button';
 import { LoadingState } from './shared/LoadingState';
-import { toast } from 'sonner';
+import { Separator } from '@/components/ui/separator';
 
 export function GenericToolView({
   name = 'generic-tool',
@@ -29,173 +30,480 @@ export function GenericToolView({
 }: ToolViewProps) {
   const toolTitle = getToolTitle(name);
 
+  // Add debugging to see what content is being passed
+  React.useEffect(() => {
+    if (assistantContent && typeof assistantContent === 'object') {
+      console.log('GenericToolView: assistantContent is an object:', assistantContent);
+    }
+    if (toolContent && typeof toolContent === 'object') {
+      console.log('GenericToolView: toolContent is an object:', toolContent);
+    }
+  }, [assistantContent, toolContent]);
+
   const formatContent = (content: any) => {
     if (!content) return null;
+
+    // Add debugging
+    console.log('GenericToolView: formatContent called with:', content, 'type:', typeof content);
 
     // Use the new parser for backwards compatibility
     const { toolResult } = extractToolData(content);
 
     if (toolResult) {
-      // Format the structured content nicely
-      const formatted: any = {
+      const result = {
         tool: toolResult.xmlTagName || toolResult.functionName,
+        arguments: toolResult.arguments || {},
+        output: typeof toolResult.toolOutput === 'string' ? toolResult.toolOutput : String(toolResult.toolOutput || ''),
+        success: toolResult.isSuccess,
+        summary: toolResult.summary || '',
+        timestamp: toolResult.timestamp,
       };
-
-      if (toolResult.arguments && Object.keys(toolResult.arguments).length > 0) {
-        formatted.parameters = toolResult.arguments;
-      }
-
-      if (toolResult.toolOutput) {
-        formatted.output = toolResult.toolOutput;
-      }
-
-      if (toolResult.isSuccess !== undefined) {
-        formatted.success = toolResult.isSuccess;
-      }
-
-      return JSON.stringify(formatted, null, 2);
+      console.log('GenericToolView: formatContent returning toolResult:', result);
+      return result;
     }
 
     // Fallback to legacy format handling
     if (typeof content === 'object') {
       // Check for direct structured format (legacy)
       if ('tool_name' in content || 'xml_tag_name' in content) {
-        const formatted: any = {
+        const result = {
           tool: content.tool_name || content.xml_tag_name || 'unknown',
+          arguments: content.parameters || {},
+          output: content.result || '',
+          success: content.success !== false,
+          summary: '',
+          timestamp: undefined,
         };
-
-        if (content.parameters && Object.keys(content.parameters).length > 0) {
-          formatted.parameters = content.parameters;
-        }
-
-        if (content.result) {
-          formatted.result = content.result;
-        }
-
-        return JSON.stringify(formatted, null, 2);
+        console.log('GenericToolView: formatContent returning legacy structured:', result);
+        return result;
       }
 
       // Check if it has a content field that might contain the structured data (legacy)
       if ('content' in content && typeof content.content === 'object') {
         const innerContent = content.content;
         if ('tool_name' in innerContent || 'xml_tag_name' in innerContent) {
-          const formatted: any = {
+          const result = {
             tool: innerContent.tool_name || innerContent.xml_tag_name || 'unknown',
+            arguments: innerContent.parameters || {},
+            output: innerContent.result || '',
+            success: innerContent.success !== false,
+            summary: '',
+            timestamp: undefined,
           };
-
-          if (innerContent.parameters && Object.keys(innerContent.parameters).length > 0) {
-            formatted.parameters = innerContent.parameters;
-          }
-
-          if (innerContent.result) {
-            formatted.result = innerContent.result;
-          }
-
-          return JSON.stringify(formatted, null, 2);
+          console.log('GenericToolView: formatContent returning nested legacy structured:', result);
+          return result;
         }
       }
 
       // Fall back to old format handling
       if (content.content && typeof content.content === 'string') {
-        return content.content;
+        const result = { 
+          tool: 'unknown',
+          arguments: {},
+          output: content.content,
+          success: true,
+          summary: '',
+          timestamp: undefined,
+        };
+        console.log('GenericToolView: formatContent returning content string:', result);
+        return result;
       }
-      return JSON.stringify(content, null, 2);
+      
+      // Ensure we always return a string output for objects to prevent React rendering issues
+      const safeOutput = typeof content === 'object' ? JSON.stringify(content, null, 2) : String(content);
+      const result = { 
+        tool: 'unknown',
+        arguments: {},
+        output: safeOutput,
+        success: true,
+        summary: '',
+        timestamp: undefined,
+      };
+      console.log('GenericToolView: formatContent returning safe object output:', result);
+      return result;
     }
 
     if (typeof content === 'string') {
       try {
         const parsedJson = JSON.parse(content);
-        return JSON.stringify(parsedJson, null, 2);
+        if (typeof parsedJson === 'object') {
+          const result = { 
+            tool: 'unknown',
+            arguments: {},
+            output: JSON.stringify(parsedJson, null, 2),
+            success: true,
+            summary: '',
+            timestamp: undefined,
+          };
+          console.log('GenericToolView: formatContent returning parsed JSON string:', result);
+          return result;
+        }
+        const result = { 
+          tool: 'unknown',
+          arguments: {},
+          output: content,
+          success: true,
+          summary: '',
+          timestamp: undefined,
+        };
+        console.log('GenericToolView: formatContent returning original string:', result);
+        return result;
       } catch (e) {
-        return content;
+        const result = { 
+          tool: 'unknown',
+          arguments: {},
+          output: content,
+          success: true,
+          summary: '',
+          timestamp: undefined,
+        };
+        console.log('GenericToolView: formatContent returning original string (parse failed):', result);
+        return result;
       }
     }
 
-    return String(content);
+    // Ensure we always return a string output to prevent React rendering issues
+    const result = { 
+      tool: 'unknown',
+      arguments: {},
+      output: String(content),
+      success: true,
+      summary: '',
+      timestamp: undefined,
+    };
+    console.log('GenericToolView: formatContent returning final fallback:', result);
+    return result;
+  };
+
+  // Ensure the formatted content always has the expected structure
+  const ensureFormattedContent = (formatted: any) => {
+    if (!formatted) return null;
+    
+    // Ensure output is always a string
+    if (formatted.output && typeof formatted.output !== 'string') {
+      formatted.output = String(formatted.output);
+    }
+    
+    return formatted;
   };
 
   const formattedAssistantContent = React.useMemo(
-    () => formatContent(assistantContent),
+    () => ensureFormattedContent(formatContent(assistantContent)),
     [assistantContent],
   );
   const formattedToolContent = React.useMemo(
-    () => formatContent(toolContent),
+    () => ensureFormattedContent(formatContent(toolContent)),
     [toolContent],
   );
 
-  // Add copy functionality state
-  const [isCopyingInput, setIsCopyingInput] = React.useState(false);
-  const [isCopyingOutput, setIsCopyingOutput] = React.useState(false);
+  const renderArguments = (args: Record<string, any>) => {
+    if (!args || Object.keys(args).length === 0) return null;
 
-  // Copy functions
-  const copyToClipboard = React.useCallback(async (text: string) => {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+          <Settings className="h-4 w-4 text-purple-500 dark:text-purple-400" />
+          Parameters
+        </div>
+        <div className="bg-accent rounded-xl border p-4 space-y-3">
+          {Object.entries(args).map(([key, value]) => (
+            <div key={key} className="space-y-2">
+              <div className="text-xs font-semibold text-foreground uppercase tracking-wide">
+                {key.replace(/_/g, ' ')}
+              </div>
+              <div className="bg-background rounded-lg border p-3">
+                {/* Ensure we never try to render objects directly */}
+                {renderValue(value)}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  const renderOutput = (output: string, title: string = 'Output') => {
+    if (!output) return null;
+
+    // Try to parse JSON for better formatting
+    let parsedOutput;
     try {
-      await navigator.clipboard.writeText(text);
-      return true;
-    } catch (err) {
-      console.error('Failed to copy text: ', err);
-      return false;
+      parsedOutput = typeof output === 'string' ? JSON.parse(output) : output;
+    } catch {
+      parsedOutput = output;
     }
-  }, []);
 
-  const handleCopyInput = React.useCallback(async () => {
-    if (!formattedAssistantContent) return;
+    return (
+      <div className="space-y-4">
+        {typeof parsedOutput === 'object' && parsedOutput !== null ? (
+          <div className="bg-accent rounded-xl border p-4 space-y-4">
+            {Object.entries(parsedOutput).map(([key, value]) => (
+              <div key={key} className="space-y-2">
+                <div className="text-xs font-semibold text-foreground uppercase tracking-wide">
+                  {key.replace(/_/g, ' ')}
+                </div>
+                <div className="bg-background rounded-lg border p-3">
+                  {/* Ensure we never try to render objects directly */}
+                  {renderValue(value)}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="bg-muted/50 rounded-xl border p-4">
+              <div className="text-base text-foreground whitespace-pre-wrap break-words">
+                {/* Ensure we never try to render objects directly */}
+                {renderValue(parsedOutput)}
+              </div>
+          </div>
+        )}
+      </div>
+    );
+  };
 
-    setIsCopyingInput(true);
-    const success = await copyToClipboard(formattedAssistantContent);
-    if (success) {
-      toast.success('File content copied to clipboard');
-    } else {
-      toast.error('Failed to copy file content');
+  const renderValue = (value: any): React.ReactNode => {
+    // Ensure we never try to render objects directly
+    if (value === null || value === undefined) {
+      return <span className="text-muted-foreground italic">null</span>;
     }
-    setTimeout(() => setIsCopyingInput(false), 500);
-  }, [formattedAssistantContent, copyToClipboard]);
-
-  const handleCopyOutput = React.useCallback(async () => {
-    if (!formattedToolContent) return;
-
-    setIsCopyingOutput(true);
-    const success = await copyToClipboard(formattedToolContent);
-    if (success) {
-      toast.success('File content copied to clipboard');
-    } else {
-      toast.error('Failed to copy file content');
+    
+    if (typeof value === 'boolean') {
+      return (
+        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
+          value 
+            ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' 
+            : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+        }`}>
+          {value ? '✓ True' : '✗ False'}
+        </span>
+      );
     }
-    setTimeout(() => setIsCopyingOutput(false), 500);
-  }, [formattedToolContent, copyToClipboard]);
+    
+    if (typeof value === 'number') {
+      return <span className="font-mono text-foreground">{value}</span>;
+    }
+    
+    if (typeof value === 'string') {
+      // Check if it's a URL
+      if (value.startsWith('http://') || value.startsWith('https://')) {
+        return (
+          <a 
+            href={value} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-foreground hover:text-muted-foreground underline break-all"
+          >
+            {value}
+          </a>
+        );
+      }
+      // Check if it's JSON
+      try {
+        const parsed = JSON.parse(value);
+        if (typeof parsed === 'object') {
+          return (
+            <div className="bg-muted/50 rounded p-2">
+              <pre className="text-xs text-foreground overflow-x-auto">
+                {JSON.stringify(parsed, null, 2)}
+              </pre>
+            </div>
+          );
+        }
+      } catch {
+        // Not JSON, treat as regular string
+      }
+      return <span className="text-foreground">{value}</span>;
+    }
+    
+    if (Array.isArray(value)) {
+      return (
+        <div className="space-y-1">
+          {value.map((item, index) => (
+            <div key={index} className="flex items-center gap-2">
+              <span className="text-xs text-foreground font-mono">[{index}]</span>
+              <div className="flex-1">{renderValue(item)}</div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+    
+    if (typeof value === 'object') {
+      // Ensure we always return a string representation for objects
+      // This prevents React from trying to render objects directly
+      const jsonString = JSON.stringify(value, null, 2);
+      return (
+        <div className="bg-muted/50 rounded p-2">
+          <pre className="text-xs text-foreground overflow-x-auto">
+            {jsonString}
+          </pre>
+        </div>
+      );
+    }
+    
+    // For any other type, convert to string safely
+    // This is the final fallback to prevent any rendering issues
+    const safeString = String(value);
+    return <span className="text-foreground">{safeString}</span>;
+  };
+
+  const renderSummary = (summary: string) => {
+    if (!summary) return null;
+
+    // Ensure we never try to render objects directly
+    const safeSummary = typeof summary === 'string' ? summary : String(summary);
+
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+          <CheckCircle2 className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
+          Summary
+        </div>
+        <div className="bg-muted/50 rounded-xl border p-4">
+            <div className="text-base text-foreground whitespace-pre-wrap break-words">
+              {/* Ensure we never try to render objects directly */}
+              {renderValue(safeSummary)}
+            </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderErrorOutput = (output: string) => {
+    if (!output) return null;
+
+    // Ensure we never try to render objects directly
+    const safeOutput = typeof output === 'string' ? output : String(output);
+
+    // Try to parse the error output to extract meaningful information
+    let errorInfo = {
+      type: 'general',
+      message: safeOutput,
+      details: null,
+      suggestions: []
+    };
+
+    try {
+      // Check if it's a JSON error
+      if (safeOutput.includes('Error parsing arguments:') || safeOutput.includes('Error executing')) {
+        const errorMatch = safeOutput.match(/Error (?:parsing arguments|executing [^:]+):\s*(.*)/);
+        if (errorMatch) {
+          errorInfo.type = 'execution';
+          errorInfo.message = errorMatch[1];
+          
+          // Try to extract validation errors
+          try {
+            const jsonMatch = safeOutput.match(/\[([\s\S]*)\]/);
+            if (jsonMatch) {
+              const validationErrors = JSON.parse(jsonMatch[1]);
+              errorInfo.details = validationErrors;
+              errorInfo.suggestions = [
+                'Check parameter types and formats',
+                'Verify required fields are provided',
+                'Ensure data matches expected schema'
+              ];
+            }
+          } catch {
+            // If JSON parsing fails, keep the original message
+          }
+        }
+      } else if (safeOutput.includes('Error')) {
+        // Handle any other error format
+        errorInfo.type = 'general';
+        errorInfo.message = safeOutput.replace(/^Error\s*:?\s*/i, '');
+        errorInfo.suggestions = [
+          'Review the input parameters',
+          'Check if all required fields are provided',
+          'Verify the data format matches expectations'
+        ];
+      }
+    } catch {
+      // If any parsing fails, use the original output
+    }
+
+    return (
+      <div className="space-y-4">
+        <div className="bg-accent rounded-xl border p-4">
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0 mt-0.5">
+              <div className="w-6 h-6 rounded-full bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center">
+                <AlertTriangle className="h-3 w-3 text-amber-600 dark:text-amber-400" />
+              </div>
+            </div>
+            
+            <div className="flex-1 space-y-3">
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium text-foreground">
+                  {errorInfo.type === 'execution' ? 'Parameter Validation' : 'Processing Notice'}
+                </h4>
+                <div className="text-sm text-foreground leading-relaxed">
+                  {errorInfo.message}
+                </div>
+              </div>
+
+              {errorInfo.details && (
+                <div className="space-y-2">
+                  <div className="text-xs font-medium text-foreground uppercase tracking-wide">
+                    Field Issues
+                  </div>
+                  <div className="bg-background rounded-lg border p-2 space-y-1">
+                    {Array.isArray(errorInfo.details) ? errorInfo.details.map((detail: any, index: number) => (
+                      <div key={index} className="flex items-start gap-2 text-xs">
+                        <span className="text-amber-500 dark:text-amber-400">•</span>
+                        <div className="flex-1">
+                          <span className="font-medium text-foreground">
+                            {detail.path?.join('.') || 'Field'}: 
+                          </span>
+                          <span className="text-foreground ml-1">
+                            {detail.message || 'Invalid value'}
+                          </span>
+                        </div>
+                      </div>
+                    )) : (
+                      <div className="text-xs text-foreground">
+                        {JSON.stringify(errorInfo.details, null, 2)}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {errorInfo.suggestions.length > 0 && (
+                <div className="space-y-2">
+                  <div className="text-xs font-medium text-foreground uppercase tracking-wide">
+                    Next Steps
+                  </div>
+                  <div className="bg-background rounded-lg border p-2">
+                    <ul className="space-y-1">
+                      {errorInfo.suggestions.map((suggestion, index) => (
+                        <li key={index} className="flex items-start gap-2 text-xs">
+                          <span className="text-amber-500 dark:text-amber-400">•</span>
+                          <span className="text-foreground">{suggestion}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
-    <Card className="gap-0 flex border shadow-none border-t border-b-0 border-x-0 p-0 rounded-none flex-col h-full overflow-hidden bg-card">
-      <CardHeader className="h-14 bg-zinc-50/80 dark:bg-zinc-900/80 backdrop-blur-sm border-b p-2 px-4 space-y-2">
+    <Card className="gap-0 flex border shadow-none p-0 rounded-lg flex-col h-full overflow-hidden bg-card">
+      <CardHeader className="h-9 bg-gradient-to-t from-muted/80 to-muted/70 text-center backdrop-blur-lg border-b p-2 px-4 space-y-2 rounded-t-lg">
         <div className="flex flex-row items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="relative p-2 rounded-lg bg-gradient-to-br from-orange-500/20 to-orange-600/10 border border-orange-500/20">
-              <Wrench className="w-5 h-5 text-orange-500 dark:text-orange-400" />
-            </div>
+          <div className="flex w-full justify-center items-center gap-1">
+            <Wrench className="w-4 h-4 text-muted-foreground" />
             <div>
-              <CardTitle className="text-base font-medium text-zinc-900 dark:text-zinc-100">
+              <CardTitle className="text-sm font-semibold text-muted-foreground">
                 {toolTitle}
               </CardTitle>
             </div>
           </div>
-
-          {!isStreaming && (
-            <Badge
-              variant="secondary"
-              className={
-                isSuccess
-                  ? "bg-gradient-to-b from-emerald-200 to-emerald-100 text-emerald-700 dark:from-emerald-800/50 dark:to-emerald-900/60 dark:text-emerald-300"
-                  : "bg-gradient-to-b from-rose-200 to-rose-100 text-rose-700 dark:from-rose-800/50 dark:to-rose-900/60 dark:text-rose-300"
-              }
-            >
-              {isSuccess ? (
-                <CheckCircle className="h-3.5 w-3.5" />
-              ) : (
-                <AlertTriangle className="h-3.5 w-3.5" />
-              )}
-              {isSuccess ? 'Tool executed successfully' : 'Tool execution failed'}
-            </Badge>
-          )}
         </div>
       </CardHeader>
 
@@ -209,68 +517,48 @@ export function GenericToolView({
             filePath={name}
             showProgress={true}
           />
-        ) : formattedAssistantContent || formattedToolContent ? (
+        ) : (formattedAssistantContent || formattedToolContent) ? (
           <ScrollArea className="h-full w-full">
-            <div className="p-4 space-y-4">
-              {formattedAssistantContent && (
-                <div className="space-y-2">
-                  <div className="text-sm font-medium text-zinc-700 dark:text-zinc-300 flex items-center justify-between">
-                    <div className="flex items-center">
-                      <Wrench className="h-4 w-4 mr-2 text-zinc-500 dark:text-zinc-400" />
-                      Input
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleCopyInput}
-                      disabled={isCopyingInput}
-                      className="h-6 w-6 p-0"
-                      title="Copy file content"
-                    >
-                      {isCopyingInput ? (
-                        <Check className="h-3 w-3" />
-                      ) : (
-                        <Copy className="h-3 w-3" />
-                      )}
-                    </Button>
-                  </div>
-                  <div className="border-muted bg-muted/20 rounded-lg overflow-hidden border">
-                    <div className="p-4">
-                      <pre className="text-xs text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap break-words font-mono">
-                        {formattedAssistantContent}
-                      </pre>
-                    </div>
-                  </div>
-                </div>
+            <div className="p-4 space-y-6">
+              {/* Tool Input/Arguments */}
+              {formattedAssistantContent?.arguments && Object.keys(formattedAssistantContent.arguments).length > 0 && (
+                <>
+                  {renderArguments(formattedAssistantContent.arguments)}
+                  <Separator />
+                </>
               )}
 
-              {formattedToolContent && (
-                <div className="space-y-2">
-                  <div className="text-sm font-medium text-zinc-700 dark:text-zinc-300 flex items-center justify-between">
-                    <div className="flex items-center">
-                      <Wrench className="h-4 w-4 mr-2 text-zinc-500 dark:text-zinc-400" />
-                      Output
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleCopyOutput}
-                      disabled={isCopyingOutput}
-                      className="h-6 w-6 p-0"
-                      title="Copy file content"
-                    >
-                      {isCopyingOutput ? (
-                        <Check className="h-3 w-3" />
-                      ) : (
-                        <Copy className="h-3 w-3" />
-                      )}
-                    </Button>
+              {/* Tool Output */}
+              {formattedToolContent?.output && (
+                (isSuccess && !(typeof formattedToolContent.output === 'string' && formattedToolContent.output.includes('Error'))) 
+                  ? renderOutput(formattedToolContent.output, 'Result')
+                  : renderErrorOutput(formattedToolContent.output)
+              )}
+
+              {/* Tool Summary */}
+              {formattedToolContent?.summary && (
+                <>
+                  {renderSummary(formattedToolContent.summary)}
+                  <Separator />
+                </>
+              )}
+
+              {/* Fallback for legacy content */}
+              {!formattedToolContent?.output && !formattedToolContent?.summary && formattedToolContent && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                    <FileText className="h-4 w-4 text-muted-foreground" />
+                    Content
                   </div>
-                  <div className="border-muted bg-muted/20 rounded-lg overflow-hidden border">
-                    <div className="p-4">
-                      <pre className="text-xs text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap break-words font-mono">
-                        {formattedToolContent}
-                      </pre>
+                  <div className="p-3 bg-muted/50 rounded-lg border border-border">
+                    <div className="text-sm text-muted-foreground whitespace-pre-wrap break-words">
+                      {/* Ensure we never try to render objects directly */}
+                      {typeof formattedToolContent === 'string' 
+                        ? formattedToolContent 
+                        : typeof formattedToolContent === 'object' 
+                          ? JSON.stringify(formattedToolContent, null, 2)
+                          : String(formattedToolContent)
+                      }
                     </div>
                   </div>
                 </div>
@@ -278,31 +566,31 @@ export function GenericToolView({
             </div>
           </ScrollArea>
         ) : (
-          <div className="flex flex-col items-center justify-center h-full py-12 px-6 bg-gradient-to-b from-white to-zinc-50 dark:from-zinc-950 dark:to-zinc-900">
-            <div className="w-20 h-20 rounded-full flex items-center justify-center mb-6 bg-gradient-to-b from-zinc-100 to-zinc-50 shadow-inner dark:from-zinc-800/40 dark:to-zinc-900/60">
-              <Wrench className="h-10 w-10 text-zinc-400 dark:text-zinc-600" />
+          <div className="flex flex-col items-center justify-center h-full py-12 px-6 bg-gradient-to-b from-background to-muted/50">
+            <div className="w-20 h-20 rounded-full flex items-center justify-center mb-6 bg-gradient-to-b from-muted to-muted/50 shadow-inner">
+              <Wrench className="h-10 w-10 text-muted-foreground" />
             </div>
-            <h3 className="text-xl font-semibold mb-2 text-zinc-900 dark:text-zinc-100">
+            <h3 className="text-xl font-semibold mb-2 text-foreground">
               No Content Available
             </h3>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 text-center max-w-md">
+            <p className="text-sm text-muted-foreground text-center max-w-md">
               This tool execution did not produce any input or output content to display.
             </p>
           </div>
         )}
       </CardContent>
 
-      <div className="px-4 py-2 h-10 bg-gradient-to-r from-zinc-50/90 to-zinc-100/90 dark:from-zinc-900/90 dark:to-zinc-800/90 backdrop-blur-sm border-t border-zinc-200 dark:border-zinc-800 flex justify-between items-center gap-4">
-        <div className="h-full flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
+      <div className="px-4 py-2 h-fit bg-card backdrop-blur-sm border-t border-border flex justify-between items-center gap-4 rounded-b-lg">
+        <div className="h-full flex items-center gap-2 text-sm text-muted-foreground">
           {!isStreaming && (formattedAssistantContent || formattedToolContent) && (
-            <Badge variant="outline" className="h-6 py-0.5 bg-zinc-50 dark:bg-zinc-900">
+            <Badge variant="outline" className="h-6 py-0.5 bg-muted">
               <Wrench className="h-3 w-3" />
               Tool
             </Badge>
           )}
         </div>
 
-        <div className="text-xs text-zinc-500 dark:text-zinc-400 flex items-center gap-2">
+        <div className="text-xs text-muted-foreground flex items-center gap-2">
           <Clock className="h-3.5 w-3.5" />
           {toolTimestamp && !isStreaming
             ? formatTimestamp(toolTimestamp)

@@ -1,14 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
-  CheckCircle,
-  AlertTriangle,
-  ExternalLink,
   Loader2,
-  Code,
-  Eye,
-  File,
-  Copy,
-  Check,
+  Globe,
 } from 'lucide-react';
 import {
   extractFilePath,
@@ -16,7 +9,6 @@ import {
   extractStreamingFileContent,
   formatTimestamp,
   getToolTitle,
-  normalizeContentToString,
   extractToolData,
 } from '../utils';
 import {
@@ -24,21 +16,15 @@ import {
   processUnicodeContent,
 } from '@/components/file-renderers/markdown-renderer';
 import { CsvRenderer } from '@/components/file-renderers/csv-renderer';
-import { XlsxRenderer } from '@/components/file-renderers/xlsx-renderer';
 import { cn } from '@/lib/utils';
 import { useTheme } from 'next-themes';
 import { CodeBlockCode } from '@/components/ui/code-block';
 import { constructHtmlPreviewUrl } from '@/lib/utils/url';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 import {
   getLanguageFromFileName,
@@ -57,7 +43,6 @@ import {
 import { ToolViewProps } from '../types';
 import { GenericToolView } from '../GenericToolView';
 import { LoadingState } from '../shared/LoadingState';
-import { toast } from 'sonner';
 
 export function FileOperationToolView({
   assistantContent,
@@ -68,36 +53,10 @@ export function FileOperationToolView({
   isStreaming = false,
   name,
   project,
+  isFirstFileOperation,
 }: ToolViewProps) {
   const { resolvedTheme } = useTheme();
   const isDarkTheme = resolvedTheme === 'dark';
-
-  // Add copy functionality state
-  const [isCopyingContent, setIsCopyingContent] = useState(false);
-
-  // Copy functions
-  const copyToClipboard = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      return true;
-    } catch (err) {
-      console.error('Failed to copy text: ', err);
-      return false;
-    }
-  };
-
-  const handleCopyContent = async () => {
-    if (!fileContent) return;
-
-    setIsCopyingContent(true);
-    const success = await copyToClipboard(fileContent);
-    if (success) {
-      toast.success('File content copied to clipboard');
-    } else {
-      toast.error('Failed to copy file content');
-    }
-    setTimeout(() => setIsCopyingContent(false), 500);
-  };
 
   const operation = getOperationType(name, assistantContent);
   const configs = getOperationConfigs();
@@ -125,13 +84,21 @@ export function FileOperationToolView({
   if (!fileContent && operation !== 'delete') {
     fileContent = isStreaming
       ? extractStreamingFileContent(
-        assistantContent,
-        operation === 'create' ? 'create-file' : operation === 'edit' ? 'edit-file' : 'full-file-rewrite',
-      ) || ''
+          assistantContent,
+          operation === 'create'
+            ? 'create-file'
+            : operation === 'edit'
+              ? 'edit-file'
+              : 'full-file-rewrite',
+        ) || ''
       : extractFileContent(
-        assistantContent,
-        operation === 'create' ? 'create-file' : operation === 'edit' ? 'edit-file' : 'full-file-rewrite',
-      );
+          assistantContent,
+          operation === 'create'
+            ? 'create-file'
+            : operation === 'edit'
+              ? 'edit-file'
+              : 'full-file-rewrite',
+        );
   }
 
   const toolTitle = getToolTitle(name || `file-${operation}`);
@@ -142,7 +109,10 @@ export function FileOperationToolView({
   const isMarkdown = isFileType.markdown(fileExtension);
   const isHtml = isFileType.html(fileExtension);
   const isCsv = isFileType.csv(fileExtension);
-  const isXlsx = isFileType.xlsx(fileExtension);
+  const isJs = fileExtension === 'js';
+  const isCss = fileExtension === 'css';
+
+  const showPreview = !isJs && !isCss && !(isHtml && isFirstFileOperation);
 
   const language = getLanguageFromFileName(fileName);
   const hasHighlighting = hasLanguageHighlighting(language);
@@ -175,7 +145,9 @@ export function FileOperationToolView({
         <div className="flex items-center justify-center h-full p-12">
           <div className="text-center">
             <FileIcon className="h-12 w-12 mx-auto mb-4 text-zinc-400" />
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">No content to preview</p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              No content to preview
+            </p>
           </div>
         </div>
       );
@@ -183,7 +155,7 @@ export function FileOperationToolView({
 
     if (isHtml && htmlPreviewUrl) {
       return (
-        <div className="flex flex-col h-[calc(100vh-16rem)]">
+        <div className="flex flex-col h-[calc(100vh-16rem)] pt-4">
           <iframe
             src={htmlPreviewUrl}
             title={`HTML Preview of ${fileName}`}
@@ -196,10 +168,8 @@ export function FileOperationToolView({
 
     if (isMarkdown) {
       return (
-        <div className="p-1 py-0 prose dark:prose-invert prose-zinc max-w-none">
-          <MarkdownRenderer
-            content={processUnicodeContent(fileContent)}
-          />
+        <div className="p-1 py-0 prose dark:prose-invert prose-zinc max-w-none chat-markdown">
+          <MarkdownRenderer content={processUnicodeContent(fileContent)} />
         </div>
       );
     }
@@ -214,24 +184,9 @@ export function FileOperationToolView({
       );
     }
 
-    if (isXlsx) {
-      return (
-        <div className="h-full w-full p-4">
-          <div className="h-[calc(100vh-17rem)] w-full bg-muted/20 border rounded-xl overflow-auto">
-            <XlsxRenderer 
-              content={fileContent}
-              filePath={processedFilePath}
-              fileName={fileName}
-              project={project}
-            />
-          </div>
-        </div>
-      );
-    }
-
     return (
-      <div className="p-4">
-        <div className='w-full h-full bg-muted/20 border rounded-xl px-4 py-2 pb-6'>
+      <div>
+        <div className="w-full h-full p-4">
           <pre className="text-sm font-mono text-zinc-800 dark:text-zinc-300 whitespace-pre-wrap break-words">
             {processUnicodeContent(fileContent)}
           </pre>
@@ -242,8 +197,13 @@ export function FileOperationToolView({
 
   const renderDeleteOperation = () => (
     <div className="flex flex-col items-center justify-center h-full py-12 px-6 bg-gradient-to-b from-white to-zinc-50 dark:from-zinc-950 dark:to-zinc-900">
-      <div className={cn("w-20 h-20 rounded-full flex items-center justify-center mb-6", config.bgColor)}>
-        <Icon className={cn("h-10 w-10", config.color)} />
+      <div
+        className={cn(
+          'w-20 h-20 rounded-full flex items-center justify-center mb-6',
+          config.bgColor,
+        )}
+      >
+        <Icon className={cn('h-10 w-10', config.color)} />
       </div>
       <h3 className="text-xl font-semibold mb-6 text-zinc-900 dark:text-zinc-100">
         File Deleted
@@ -265,7 +225,9 @@ export function FileOperationToolView({
         <div className="flex items-center justify-center h-full p-12">
           <div className="text-center">
             <FileIcon className="h-12 w-12 mx-auto mb-4 text-zinc-400" />
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">No source code to display</p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              No source code to display
+            </p>
           </div>
         </div>
       );
@@ -273,7 +235,7 @@ export function FileOperationToolView({
 
     if (hasHighlighting) {
       return (
-        <div className="relative">
+        <div className="relative py-2">
           <div className="absolute left-0 top-0 bottom-0 w-12 border-r border-zinc-200 dark:border-zinc-800 z-10 flex flex-col bg-zinc-50 dark:bg-zinc-900">
             {contentLines.map((_, idx) => (
               <div
@@ -288,7 +250,7 @@ export function FileOperationToolView({
             <CodeBlockCode
               code={processUnicodeContent(fileContent)}
               language={language}
-              className="text-xs"
+              className="text-sm"
             />
           </div>
         </div>
@@ -300,9 +262,9 @@ export function FileOperationToolView({
         {contentLines.map((line, idx) => (
           <div
             key={idx}
-            className={cn("table-row transition-colors", config.hoverColor)}
+            className={cn('table-row transition-colors', config.hoverColor)}
           >
-            <div className="table-cell text-right pr-3 pl-6 py-0.5 text-xs font-mono text-zinc-500 dark:text-zinc-500 select-none w-12 border-r border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900">
+            <div className="table-cell text-right pr-3 py-0.5 text-xs font-mono text-zinc-500 dark:text-zinc-500 select-none w-12 border-r border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900">
               {idx + 1}
             </div>
             <div className="table-cell pl-3 py-0.5 pr-4 text-xs font-mono whitespace-pre-wrap text-zinc-800 dark:text-zinc-300">
@@ -316,69 +278,62 @@ export function FileOperationToolView({
   };
 
   return (
-    <Card className="flex border shadow-none border-t border-b-0 border-x-0 p-0 rounded-none flex-col h-full overflow-hidden bg-card">
-      <Tabs defaultValue={isMarkdown || isHtml || isCsv || isXlsx ? 'preview' : 'code'} className="w-full h-full">
-        <CardHeader className="h-14 bg-zinc-50/80 dark:bg-zinc-900/80 backdrop-blur-sm border-b p-2 px-4 space-y-2 mb-0">
-          <div className="flex flex-row items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className={cn("relative p-2 rounded-lg border", config.gradientBg, config.borderColor)}>
-                <Icon className={cn("h-5 w-5", config.color)} />
-              </div>
-              <div>
-                <CardTitle className="text-base font-medium text-zinc-900 dark:text-zinc-100">
-                  {toolTitle}
-                </CardTitle>
-              </div>
-            </div>
-            <div className='flex items-center gap-2'>
-              {isHtml && htmlPreviewUrl && !isStreaming && (
-                <Button variant="outline" size="sm" className="h-8 text-xs bg-white dark:bg-muted/50 hover:bg-zinc-100 dark:hover:bg-zinc-800 shadow-none" asChild>
-                  <a href={htmlPreviewUrl} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
-                    Open in Browser
-                  </a>
-                </Button>
-              )}
-              {/* Copy button - only show when there's file content */}
-              {fileContent && !isStreaming && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleCopyContent}
-                  disabled={isCopyingContent}
-                  className="h-8 text-xs bg-white dark:bg-muted/50 hover:bg-zinc-100 dark:hover:bg-zinc-800 shadow-none"
-                  title="Copy file content"
-                >
-                  {isCopyingContent ? (
-                    <Check className="h-3.5 w-3.5 mr-1.5" />
-                  ) : (
-                    <Copy className="h-3.5 w-3.5 mr-1.5" />
-                  )}
-                  <span className="hidden sm:inline">Copy</span>
-                </Button>
-              )}
-              <TabsList className="h-8 bg-muted/50 border border-border/50 p-0.5 gap-1">
-                <TabsTrigger
-                  value="code"
-                  className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium transition-all [&[data-state=active]]:bg-white [&[data-state=active]]:dark:bg-primary/10 [&[data-state=active]]:text-foreground hover:bg-background/50 text-muted-foreground shadow-none"
-                >
-                  <Code className="h-3.5 w-3.5" />
-                  Source
-                </TabsTrigger>
-                <TabsTrigger
-                  value="preview"
-                  className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium transition-all [&[data-state=active]]:bg-white [&[data-state=active]]:dark:bg-primary/10 [&[data-state=active]]:text-foreground hover:bg-background/50 text-muted-foreground shadow-none"
-                >
-                  <Eye className="h-3.5 w-3.5" />
-                  Preview
-                </TabsTrigger>
-              </TabsList>
-            </div>
+    <Card className="flex border shadow-none p-0 rounded-lg flex-col h-full overflow-hidden bg-card">
+      <Tabs defaultValue={showPreview ? 'preview' : 'code'} className="w-full h-full">
+        <CardHeader className="h-9 flex flex-row items-center justify-between bg-gradient-to-t from-zinc-50/80 to-zinc-200/70 dark:from-zinc-900/90 dark:to-zinc-800/90 text-center backdrop-blur-lg border-b p-2 px-4 rounded-t-lg">
+          <div className="flex w-full justify-center items-center gap-1 mt-4">
+            <Icon className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-semibold text-muted-foreground">
+              {toolTitle}
+            </CardTitle>
           </div>
         </CardHeader>
 
         <CardContent className="p-0 -my-2 h-full flex-1 overflow-hidden relative">
-          <TabsContent value="code" className="flex-1 h-full mt-0 p-0 overflow-hidden">
+          {/* Open in Browser button positioned at top left of card content */}
+          {isHtml && htmlPreviewUrl && !isStreaming && (
+            <div className="absolute top-2 left-4 z-10">
+              <Button
+                variant="outline"
+                className="h-7 px-3 text-xs rounded-md bg-muted/50 backdrop-blur-3xl font-medium"
+                asChild
+              >
+                <a
+                  href={htmlPreviewUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Globe className="h-3 w-3" />
+                  Open in Browser
+                </a>
+              </Button>
+            </div>
+          )}
+
+          {/* Tab triggers positioned at top right of card content */}
+          <div className="absolute top-2 right-4 z-10">
+            <TabsList className="h-7 bg-muted/50 backdrop-blur-3xl p-0.5 gap-x-1 rounded-md flex items-center">
+              <TabsTrigger
+                value="code"
+                className="cursor-pointer flex items-center px-3 sm:py-1 text-xs font-medium rounded-sm transition-all [&[data-state=active]]:bg-white [&[data-state=active]]:text-black [&[data-state=inactive]]:bg-transparent [&[data-state=inactive]]:text-muted-foreground hover:bg-white/20 text-muted-foreground shadow-none"
+              >
+                Source
+              </TabsTrigger>
+              {showPreview && (
+                <TabsTrigger
+                  value="preview"
+                  className="cursor-pointer flex items-center px-3 sm:py-1 text-xs font-medium rounded-sm transition-all [&[data-state=active]]:bg-white [&[data-state=active]]:text-black [&[data-state=inactive]]:bg-transparent [&[data-state=inactive]]:text-muted-foreground hover:bg-white/20 text-muted-foreground shadow-none"
+                >
+                  Preview
+                </TabsTrigger>
+              )}
+            </TabsList>
+          </div>
+
+          <TabsContent
+            value="code"
+            className="flex-1 h-full mt-0 p-0 overflow-hidden"
+          >
             <ScrollArea className="h-screen w-full min-h-0">
               {isStreaming && !fileContent ? (
                 <LoadingState
@@ -392,8 +347,13 @@ export function FileOperationToolView({
                 />
               ) : operation === 'delete' ? (
                 <div className="flex flex-col items-center justify-center h-full py-12 px-6">
-                  <div className={cn("w-20 h-20 rounded-full flex items-center justify-center mb-6", config.bgColor)}>
-                    <Icon className={cn("h-10 w-10", config.color)} />
+                  <div
+                    className={cn(
+                      'w-20 h-20 rounded-full flex items-center justify-center mb-6',
+                      config.bgColor,
+                    )}
+                  >
+                    <Icon className={cn('h-10 w-10', config.color)} />
                   </div>
                   <h3 className="text-xl font-semibold mb-6 text-zinc-900 dark:text-zinc-100">
                     Delete Operation
@@ -410,7 +370,10 @@ export function FileOperationToolView({
             </ScrollArea>
           </TabsContent>
 
-          <TabsContent value="preview" className="w-full flex-1 h-full mt-0 p-0 overflow-hidden">
+          <TabsContent
+            value="preview"
+            className="w-full flex-1 h-full mt-0 p-0 overflow-hidden"
+          >
             <ScrollArea className="h-full w-full min-h-0">
               {isStreaming && !fileContent ? (
                 <LoadingState
@@ -439,11 +402,13 @@ export function FileOperationToolView({
           </TabsContent>
         </CardContent>
 
-        <div className="px-4 py-2 h-10 bg-gradient-to-r from-zinc-50/90 to-zinc-100/90 dark:from-zinc-900/90 dark:to-zinc-800/90 backdrop-blur-sm border-t border-zinc-200 dark:border-zinc-800 flex justify-between items-center gap-4">
+        <div className="px-4 py-2 h-fit bg-white dark:bg-zinc-900 backdrop-blur-sm border-t border-zinc-200 dark:border-zinc-800 flex justify-between items-center gap-4 rounded-b-lg">
           <div className="h-full flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
             <Badge variant="outline" className="py-0.5 h-6">
               <FileIcon className="h-3 w-3" />
-              {hasHighlighting ? language.toUpperCase() : fileExtension.toUpperCase() || 'TEXT'}
+              {hasHighlighting
+                ? language.toUpperCase()
+                : fileExtension.toUpperCase() || 'TEXT'}
             </Badge>
           </div>
 

@@ -13,13 +13,12 @@ import {
   Link2
 } from 'lucide-react';
 import { ToolViewProps } from '../types';
-import { formatTimestamp, getToolTitle } from '../utils';
+import { getToolTitle } from '../utils';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { LoadingState } from '../shared/LoadingState';
-import { Separator } from "@/components/ui/separator";
 import { extractGetCurrentAgentConfigData, AgentConfiguration, CustomMcp, AgentpressTool } from './_utils';
 
 export function GetCurrentAgentConfigToolView({
@@ -90,38 +89,36 @@ export function GetCurrentAgentConfigToolView({
   };
 
   return (
-    <Card className="gap-0 flex border shadow-none border-t border-b-0 border-x-0 p-0 rounded-none flex-col h-full overflow-hidden bg-card">
-      <CardHeader className="h-14 bg-zinc-50/80 dark:bg-zinc-900/80 backdrop-blur-sm border-b p-2 px-4 space-y-2">
+    <Card className="gap-0 flex border shadow-none p-0 rounded-lg flex-col h-full overflow-hidden bg-card">
+      <CardHeader className="h-9 bg-gradient-to-t from-zinc-50/80 to-zinc-200/70 dark:from-zinc-900/90 dark:to-zinc-800/90 text-center backdrop-blur-lg border-b p-2 px-4 space-y-2 rounded-t-lg">
         <div className="flex flex-row items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="relative p-2 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-600/10 border border-purple-500/20">
-              <Settings className="w-5 h-5 text-purple-500 dark:text-purple-400" />
-            </div>
+          <div className="flex w-full justify-center items-center gap-1">
+              <Settings className="w-4 h-4 text-muted-foreground" />
             <div>
-              <CardTitle className="text-base font-medium text-zinc-900 dark:text-zinc-100">
+              <CardTitle className="text-sm font-semibold text-muted-foreground">
                 {toolTitle}
               </CardTitle>
             </div>
           </div>
 
-          {!isStreaming && (
+          {/* {!isStreaming && (
             <Badge
-              variant="outline"
+              variant="secondary"
               className={cn(
                 "text-xs font-medium",
                 actualIsSuccess
-                  ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-800"
-                  : "bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800"
+                  ? "bg-gradient-to-b from-emerald-200 to-emerald-100 text-emerald-700 dark:from-emerald-800/50 dark:to-emerald-900/60 dark:text-emerald-300"
+                  : "bg-gradient-to-b from-rose-200 to-rose-100 text-rose-700 dark:from-rose-800/50 dark:to-emerald-900/60 dark:text-rose-300"
               )}
             >
               {actualIsSuccess ? (
-                <CheckCircle className="h-3 w-3" />
+                <CheckCircle className="h-3.5 w-3.5 mr-1" />
               ) : (
-                <AlertTriangle className="h-3 w-3" />
+                <AlertTriangle className="h-3.5 w-3.5 mr-1" />
               )}
               Configuration Loaded
             </Badge>
-          )}
+          )} */}
         </div>
       </CardHeader>
 
@@ -140,8 +137,8 @@ export function GetCurrentAgentConfigToolView({
               <div className="space-y-6">
                 <div className="border rounded-xl p-5 space-y-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-100 to-purple-50 dark:from-purple-900/40 dark:to-purple-800/20 border border-purple-200 dark:border-purple-800 flex items-center justify-center">
-                      <Bot className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-100 to-purple-50 dark:from-purple-900/40 dark:to-purple-800/20 border border-purple-200 dark:border-purple-800 flex items-center justify-center">
+                      <Bot className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                     </div>
                     <div>
                       <h3 className="font-semibold text-lg text-zinc-900 dark:text-zinc-100">
@@ -180,8 +177,8 @@ export function GetCurrentAgentConfigToolView({
                 <div className="border rounded-xl p-5 space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-900/40 dark:to-blue-800/20 border border-blue-200 dark:border-blue-800 flex items-center justify-center">
-                        <Wrench className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-900/40 dark:to-blue-800/20 border border-blue-200 dark:border-blue-800 flex items-center justify-center">
+                        <Wrench className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                       </div>
                       <div>
                         <h4 className="font-medium text-zinc-900 dark:text-zinc-100">
@@ -229,37 +226,37 @@ export function GetCurrentAgentConfigToolView({
 
                 {configuration.custom_mcps.length > 0 && (
                   <div className="border rounded-xl p-5 space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-100 to-orange-50 dark:from-orange-900/40 dark:to-orange-800/20 border border-orange-200 dark:border-orange-800 flex items-center justify-center">
-                          <Plug className="w-5 h-5 text-orange-600 dark:text-orange-400" />
-                        </div>
-                        <div>
-                          <h4 className="font-medium text-zinc-900 dark:text-zinc-100">
-                            Integrations
-                          </h4>
-                          <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                            External service connections
-                          </p>
-                        </div>
+                                      <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-100 to-orange-50 dark:from-orange-900/40 dark:to-orange-800/20 border border-orange-200 dark:border-orange-800 flex items-center justify-center">
+                        <Plug className="w-4 h-4 text-orange-600 dark:text-orange-400" />
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-xs">
-                          {configuration.custom_mcps.length} {configuration.custom_mcps.length === 1 ? 'integration' : 'integrations'}
-                        </Badge>
-                        <Badge variant="outline" className="text-xs">
-                          {getTotalMcpToolsCount(configuration.custom_mcps)} tools
-                        </Badge>
+                      <div>
+                        <h4 className="font-medium text-zinc-900 dark:text-zinc-100">
+                          Integrations
+                        </h4>
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                          External service connections
+                        </p>
                       </div>
                     </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="text-xs">
+                        {configuration.custom_mcps.length} {configuration.custom_mcps.length === 1 ? 'integration' : 'integrations'}
+                      </Badge>
+                      <Badge variant="outline" className="text-xs">
+                        {getTotalMcpToolsCount(configuration.custom_mcps)} tools
+                      </Badge>
+                    </div>
+                  </div>
 
                     <div className="space-y-3">
                       {configuration.custom_mcps.map((mcp, index) => (
                         <div key={index} className="border rounded-lg p-4 space-y-3">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-100 to-green-50 dark:from-green-900/40 dark:to-green-800/20 border border-green-200 dark:border-green-800 flex items-center justify-center">
-                                <Link2 className="w-4 h-4 text-green-600 dark:text-green-400" />
+                              <div className="w-6 h-6 rounded-md bg-gradient-to-br from-green-100 to-green-50 dark:from-green-900/40 dark:to-green-800/20 border border-green-200 dark:border-green-800 flex items-center justify-center">
+                                <Link2 className="w-3 h-3 text-green-600 dark:text-green-400" />
                               </div>
                               <div>
                                 <h5 className="font-medium text-zinc-900 dark:text-zinc-100">
@@ -309,6 +306,24 @@ export function GetCurrentAgentConfigToolView({
           </div>
         )}
       </CardContent>
+
+      {/* Footer */}
+      <div className="px-4 py-2 h-fit bg-white dark:bg-zinc-900 backdrop-blur-sm border-t border-zinc-200 dark:border-zinc-800 flex justify-between items-center gap-4 rounded-b-lg">
+        <div className="h-full flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
+          <Badge className="h-6 py-0.5" variant="outline">
+            <Settings className="h-3 w-3 mr-1" />
+            Agent Configuration
+          </Badge>
+        </div>
+
+        <div className="text-xs text-zinc-500 dark:text-zinc-400">
+          {actualToolTimestamp
+            ? formatConfigTime(actualToolTimestamp)
+            : actualAssistantTimestamp
+              ? formatConfigTime(actualAssistantTimestamp)
+              : ''}
+        </div>
+      </div>
     </Card>
   );
 } 

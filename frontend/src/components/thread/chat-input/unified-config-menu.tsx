@@ -30,6 +30,7 @@ import { PlaybookExecuteDialog } from '@/components/playbooks/playbook-execute-d
 import { AgentAvatar } from '@/components/thread/content/agent-avatar';
 import { AgentModelSelector } from '@/components/agents/config/model-selector';
 import { useRouter } from 'next/navigation';
+import { isProductionMode } from '@/lib/config';
 
 type UnifiedConfigMenuProps = {
     isLoggedIn?: boolean;
@@ -138,7 +139,7 @@ const LoggedInMenu: React.FC<UnifiedConfigMenuProps> = ({
 
 
     const renderAgentIcon = (agent: any) => {
-        return <AgentAvatar agentId={agent?.agent_id} size={16} className="h-4 w-4" fallbackName={agent?.name} />;
+        return <AgentAvatar agentId={agent?.agent_id} size={12} className="h-4 w-4" fallbackName={agent?.name} />;
     };
 
     const displayAgent = useMemo(() => {
@@ -168,7 +169,7 @@ const LoggedInMenu: React.FC<UnifiedConfigMenuProps> = ({
                                     {renderAgentIcon(displayAgent)}
                                 </div>
                                 <span className="truncate text-sm">
-                                    {displayAgent?.name || 'Suna'}
+                                    {displayAgent?.name || 'Helio'}
                                 </span>
                                 <ChevronDown size={12} className="opacity-60" />
                             </div>
@@ -240,18 +241,22 @@ const LoggedInMenu: React.FC<UnifiedConfigMenuProps> = ({
 
                     {onAgentSelect && <DropdownMenuSeparator className="!mt-0" />}
 
-                    {/* Models */}
-                    <div className="px-1.5">
-                        <div className="px-3 py-1 text-[11px] font-medium text-muted-foreground">Models</div>
-                        <AgentModelSelector
-                            value={selectedModel}
-                            onChange={onModelChange}
-                            disabled={false}
-                            variant="menu-item"
-                        />
-                    </div>
+                    {/* Models - Hidden in production */}
+                    {!isProductionMode() && (
+                      <>
+                        <div className="px-1.5">
+                            <div className="px-3 py-1 text-[11px] font-medium text-muted-foreground">Models</div>
+                            <AgentModelSelector
+                                value={selectedModel}
+                                onChange={onModelChange}
+                                disabled={false}
+                                variant="menu-item"
+                            />
+                        </div>
 
-                    <DropdownMenuSeparator />
+                        <DropdownMenuSeparator />
+                      </>
+                    )}
 
                     {/* Quick Actions */}
                     {onAgentSelect && (selectedAgentId || displayAgent?.agent_id) && (

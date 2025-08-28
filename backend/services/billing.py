@@ -122,26 +122,26 @@ def get_model_pricing(model: str) -> tuple[float, float] | None:
 
 
 SUBSCRIPTION_TIERS = {
-    config.STRIPE_FREE_TIER_ID: {'name': 'free', 'minutes': 60, 'cost': 5},
-    config.STRIPE_TIER_2_20_ID: {'name': 'tier_2_20', 'minutes': 120, 'cost': 20 + 5},  # 2 hours
-    config.STRIPE_TIER_6_50_ID: {'name': 'tier_6_50', 'minutes': 360, 'cost': 50 + 5},  # 6 hours
-    config.STRIPE_TIER_12_100_ID: {'name': 'tier_12_100', 'minutes': 720, 'cost': 100 + 5},  # 12 hours
-    config.STRIPE_TIER_25_200_ID: {'name': 'tier_25_200', 'minutes': 1500, 'cost': 200 + 5},  # 25 hours
-    config.STRIPE_TIER_50_400_ID: {'name': 'tier_50_400', 'minutes': 3000, 'cost': 400 + 5},  # 50 hours
-    config.STRIPE_TIER_125_800_ID: {'name': 'tier_125_800', 'minutes': 7500, 'cost': 800 + 5},  # 125 hours
-    config.STRIPE_TIER_200_1000_ID: {'name': 'tier_200_1000', 'minutes': 12000, 'cost': 1000 + 5},  # 200 hours
+    config.STRIPE_FREE_TIER_ID: {'name': 'free', 'minutes': 60, 'cost': 500},
+    config.STRIPE_TIER_2_20_ID: {'name': 'tier_2_20', 'minutes': 120, 'cost': 20 + 500},  # 2 hours
+    config.STRIPE_TIER_6_50_ID: {'name': 'tier_6_50', 'minutes': 360, 'cost': 50 + 500},  # 6 hours
+    config.STRIPE_TIER_12_100_ID: {'name': 'tier_12_100', 'minutes': 720, 'cost': 100 + 500},  # 12 hours
+    config.STRIPE_TIER_25_200_ID: {'name': 'tier_25_200', 'minutes': 1500, 'cost': 200 + 500},  # 25 hours
+    config.STRIPE_TIER_50_400_ID: {'name': 'tier_50_400', 'minutes': 3000, 'cost': 400 + 500},  # 50 hours
+    config.STRIPE_TIER_125_800_ID: {'name': 'tier_125_800', 'minutes': 7500, 'cost': 800 + 500},  # 125 hours
+    config.STRIPE_TIER_200_1000_ID: {'name': 'tier_200_1000', 'minutes': 12000, 'cost': 1000 + 500},  # 200 hours
     # Yearly tiers (same usage limits, different billing period)
-    config.STRIPE_TIER_2_20_YEARLY_ID: {'name': 'tier_2_20', 'minutes': 120, 'cost': 20 + 5},  # 2 hours/month, $204/year
-    config.STRIPE_TIER_6_50_YEARLY_ID: {'name': 'tier_6_50', 'minutes': 360, 'cost': 50 + 5},  # 6 hours/month, $510/year
-    config.STRIPE_TIER_12_100_YEARLY_ID: {'name': 'tier_12_100', 'minutes': 720, 'cost': 100 + 5},  # 12 hours/month, $1020/year
-    config.STRIPE_TIER_25_200_YEARLY_ID: {'name': 'tier_25_200', 'minutes': 1500, 'cost': 200 + 5},  # 25 hours/month, $2040/year
-    config.STRIPE_TIER_50_400_YEARLY_ID: {'name': 'tier_50_400', 'minutes': 3000, 'cost': 400 + 5},  # 50 hours/month, $4080/year
-    config.STRIPE_TIER_125_800_YEARLY_ID: {'name': 'tier_125_800', 'minutes': 7500, 'cost': 800 + 5},  # 125 hours/month, $8160/year
-    config.STRIPE_TIER_200_1000_YEARLY_ID: {'name': 'tier_200_1000', 'minutes': 12000, 'cost': 1000 + 5},  # 200 hours/month, $10200/year
+    config.STRIPE_TIER_2_20_YEARLY_ID: {'name': 'tier_2_20', 'minutes': 120, 'cost': 20 + 500},  # 2 hours/month, $204/year
+    config.STRIPE_TIER_6_50_YEARLY_ID: {'name': 'tier_6_50', 'minutes': 360, 'cost': 50 + 500},  # 6 hours/month, $510/year
+    config.STRIPE_TIER_12_100_YEARLY_ID: {'name': 'tier_12_100', 'minutes': 720, 'cost': 100 + 500},  # 12 hours/month, $1020/year
+    config.STRIPE_TIER_25_200_YEARLY_ID: {'name': 'tier_25_200', 'minutes': 1500, 'cost': 200 + 500},  # 25 hours/month, $2040/year
+    config.STRIPE_TIER_50_400_YEARLY_ID: {'name': 'tier_50_400', 'minutes': 3000, 'cost': 400 + 500},  # 50 hours/month, $4080/year
+    config.STRIPE_TIER_125_800_YEARLY_ID: {'name': 'tier_125_800', 'minutes': 7500, 'cost': 800 + 500},  # 125 hours/month, $8160/year
+    config.STRIPE_TIER_200_1000_YEARLY_ID: {'name': 'tier_200_1000', 'minutes': 12000, 'cost': 1000 + 500},  # 200 hours/month, $10200/year
     # Yearly commitment tiers (15% discount, monthly payments with 12-month commitment via schedules)
-    config.STRIPE_TIER_2_17_YEARLY_COMMITMENT_ID: {'name': 'tier_2_17_yearly_commitment', 'minutes': 120, 'cost': 20 + 5},  # 2 hours/month, $17/month (12-month commitment)
-    config.STRIPE_TIER_6_42_YEARLY_COMMITMENT_ID: {'name': 'tier_6_42_yearly_commitment', 'minutes': 360, 'cost': 50 + 5},  # 6 hours/month, $42.50/month (12-month commitment)
-    config.STRIPE_TIER_25_170_YEARLY_COMMITMENT_ID: {'name': 'tier_25_170_yearly_commitment', 'minutes': 1500, 'cost': 200 + 5},  # 25 hours/month, $170/month (12-month commitment)
+    config.STRIPE_TIER_2_17_YEARLY_COMMITMENT_ID: {'name': 'tier_2_17_yearly_commitment', 'minutes': 120, 'cost': 20 + 500},  # 2 hours/month, $17/month (12-month commitment)
+    config.STRIPE_TIER_6_42_YEARLY_COMMITMENT_ID: {'name': 'tier_6_42_yearly_commitment', 'minutes': 360, 'cost': 50 + 500},  # 6 hours/month, $42.50/month (12-month commitment)
+    config.STRIPE_TIER_25_170_YEARLY_COMMITMENT_ID: {'name': 'tier_25_170_yearly_commitment', 'minutes': 1500, 'cost': 200 + 500},  # 25 hours/month, $170/month (12-month commitment)
 }
 
 # Pydantic models for request/response validation
@@ -663,20 +663,13 @@ async def get_allowed_models_for_user(client, user_id: str):
 
 
 async def can_use_model(client, user_id: str, model_name: str):
-    if config.ENV_MODE == EnvMode.LOCAL:
-        logger.debug("Running in local development mode - billing checks are disabled")
-        return True, "Local development mode - billing disabled", {
-            "price_id": "local_dev",
-            "plan_name": "Local Development",
-            "minutes_limit": "no limit"
-        }
-
-    allowed_models = await get_allowed_models_for_user(client, user_id)
-    resolved_model = MODEL_NAME_ALIASES.get(model_name, model_name)
-    if resolved_model in allowed_models:
-        return True, "Model access allowed", allowed_models
-    
-    return False, f"Your current subscription plan does not include access to {model_name}. Please upgrade your subscription or choose from your available models: {', '.join(allowed_models)}", allowed_models
+    # Bypass all model access restrictions - allow all models for all users
+    logger.debug(f"Model access check bypassed for user {user_id} and model {model_name}")
+    return True, "Model access allowed - no restrictions", {
+        "price_id": "unrestricted",
+        "plan_name": "Unrestricted Access",
+        "minutes_limit": "no limit"
+    }
 
 async def get_subscription_tier(client, user_id: str) -> str:
     try:
@@ -1868,6 +1861,8 @@ async def get_available_models(
                         google_model_name = model.replace('gemini/', '')
                         models_to_try.append(google_model_name)
                     
+                    # Vertex AI handling removed
+                    
                     # Try each model name variation until we find one that works
                     input_cost_per_token = None
                     output_cost_per_token = None
@@ -2414,3 +2409,152 @@ async def can_purchase_credits(
     except Exception as e:
         logger.error(f"Error checking credit purchase eligibility: {str(e)}")
         raise HTTPException(status_code=500, detail="Error checking eligibility")
+
+@router.get("/thread-credit-usage/{thread_id}")
+async def get_thread_credit_usage(
+    thread_id: str,
+    current_user_id: str = Depends(get_current_user_id_from_jwt)
+):
+    """Get credit usage for a specific thread."""
+    try:
+        db = DBConnection()
+        client = await db.client
+        
+        # Verify thread access
+        thread_result = await client.table('threads').select('account_id').eq('thread_id', thread_id).execute()
+        if not thread_result.data:
+            raise HTTPException(status_code=404, detail="Thread not found")
+        
+        thread = thread_result.data[0]
+        if thread['account_id'] != current_user_id:
+            raise HTTPException(status_code=403, detail="Access denied to this thread")
+        
+        # Get credit usage for this thread
+        credit_usage_result = await client.table('credit_usage') \
+            .select('amount_dollars, created_at, description, message_id') \
+            .eq('user_id', current_user_id) \
+            .eq('thread_id', thread_id) \
+            .order('created_at', desc=True) \
+            .execute()
+        
+        if not credit_usage_result.data:
+            return {
+                "total_credits_used": 0.0,
+                "usage_count": 0,
+                "usage_details": []
+            }
+        
+        # Calculate total credits used
+        total_credits_used = sum(float(usage['amount_dollars']) for usage in credit_usage_result.data)
+        usage_count = len(credit_usage_result.data)
+        
+        # Format usage details
+        usage_details = [
+            {
+                "amount": float(usage['amount_dollars']),
+                "created_at": usage['created_at'],
+                "description": usage.get('description', ''),
+                "message_id": usage.get('message_id')
+            }
+            for usage in credit_usage_result.data
+        ]
+        
+        return {
+            "total_credits_used": total_credits_used,
+            "usage_count": usage_count,
+            "usage_details": usage_details
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting thread credit usage: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error retrieving thread credit usage")
+
+@router.get("/thread-token-usage/{thread_id}")
+async def get_thread_token_usage(
+    thread_id: str,
+    current_user_id: str = Depends(get_current_user_id_from_jwt)
+):
+    """Get token usage for a specific thread."""
+    try:
+        db = DBConnection()
+        client = await db.client
+        
+        # Check if we're in local development mode
+        if config.ENV_MODE == EnvMode.LOCAL:
+            logger.debug("Running in local development mode - thread token usage not available")
+            return {
+                "total_completion_tokens": 0,
+                "total_prompt_tokens": 0,
+                "total_tokens": 0,
+                "estimated_cost": 0.0,
+                "request_count": 0,
+                "models": [],
+                "message": "Thread token usage is not available in local development mode"
+            }
+        
+        # Verify thread access
+        thread_result = await client.table('threads').select('account_id').eq('thread_id', thread_id).execute()
+        if not thread_result.data:
+            raise HTTPException(status_code=404, detail="Thread not found")
+        
+        thread = thread_result.data[0]
+        if thread['account_id'] != current_user_id:
+            raise HTTPException(status_code=403, detail="Access denied to this thread")
+        
+        # Get usage logs for this specific thread
+        usage_result = await client.table('usage_logs') \
+            .select('content, total_tokens, estimated_cost, created_at') \
+            .eq('thread_id', thread_id) \
+            .eq('user_id', current_user_id) \
+            .order('created_at', desc=True) \
+            .execute()
+        
+        if not usage_result.data:
+            return {
+                "total_completion_tokens": 0,
+                "total_prompt_tokens": 0,
+                "total_tokens": 0,
+                "estimated_cost": 0.0,
+                "request_count": 0,
+                "models": []
+            }
+        
+        # Calculate totals
+        total_completion_tokens = 0
+        total_prompt_tokens = 0
+        total_tokens = 0
+        estimated_cost = 0.0
+        models = set()
+        
+        for log in usage_result.data:
+            content = log.get('content', {})
+            usage = content.get('usage', {})
+            
+            total_completion_tokens += usage.get('completion_tokens', 0)
+            total_prompt_tokens += usage.get('prompt_tokens', 0)
+            total_tokens += log.get('total_tokens', 0)
+            
+            cost = log.get('estimated_cost')
+            if isinstance(cost, (int, float)):
+                estimated_cost += cost
+            
+            model = content.get('model', '')
+            if model:
+                models.add(model)
+        
+        return {
+            "total_completion_tokens": total_completion_tokens,
+            "total_prompt_tokens": total_prompt_tokens,
+            "total_tokens": total_tokens,
+            "estimated_cost": estimated_cost,
+            "request_count": len(usage_result.data),
+            "models": list(models)
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting thread token usage: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error retrieving thread token usage")

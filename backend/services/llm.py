@@ -57,6 +57,19 @@ def setup_api_keys() -> None:
     else:
         logger.warning(f"Missing AWS credentials for Bedrock integration - access_key: {bool(aws_access_key)}, secret_key: {bool(aws_secret_key)}, region: {aws_region}")
 
+    # Vertex AI / Gemini via LiteLLM
+    # Prefer explicit VERTEXAI_*; fall back to GOOGLE_CLOUD_* if present
+    effective_vertex_project = config.VERTEXAI_PROJECT or config.GOOGLE_CLOUD_PROJECT_ID
+    effective_vertex_location = config.VERTEXAI_LOCATION or config.GOOGLE_CLOUD_LOCATION
+
+    if effective_vertex_project:
+        os.environ['VERTEXAI_PROJECT'] = effective_vertex_project
+    if effective_vertex_location:
+        os.environ['VERTEXAI_LOCATION'] = effective_vertex_location
+    if config.GOOGLE_APPLICATION_CREDENTIALS:
+        os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = config.GOOGLE_APPLICATION_CREDENTIALS
+
+
 def get_openrouter_fallback(model_name: str) -> Optional[str]:
     """Get OpenRouter fallback model for a given model name."""
     # Skip if already using OpenRouter
@@ -204,20 +217,30 @@ def _configure_kimi_k2(params: Dict[str, Any], model_name: str) -> None:
         "order": ["groq", "moonshotai"] #, "groq", "together/fp8", "novita/fp8", "baseten/fp8", 
     }
 
-def _configure_gemini(params: Dict[str, Any], model_name: str) -> None:
-    """Configure Gemini-specific parameters."""
-    if not model_name.startswith("gemini/"):
+def _configure_vertex_ai(params: Dict[str, Any], model_name: str) -> None:
+    """Configure Vertex AI-specific parameters for Gemini models via LiteLLM."""
+    is_vertex_route = model_name.startswith("vertex_ai/")
+    is_gemini_direct = model_name.startswith("gemini/")
+    if not (is_vertex_route or is_gemini_direct):
         return
-    
-    # Set the API key for Gemini models
-    if config.GEMINI_API_KEY:
-        params["api_key"] = config.GEMINI_API_KEY
-        logger.debug("Added Gemini API key to parameters")
-    
-    # Gemini models use different parameter names
+
+    # If calling Vertex route, pass dynamic params when available
+    if is_vertex_route:
+        # Credentials could be json string or path
+        if config.VERTEXAI_CREDENTIALS:
+            params["vertex_credentials"] = config.VERTEXAI_CREDENTIALS
+        if config.VERTEXAI_PROJECT:
+            params["vertex_project"] = config.VERTEXAI_PROJECT
+        if config.VERTEXAI_LOCATION:
+            params["vertex_location"] = config.VERTEXAI_LOCATION
+
+    # Support reasoning mapping for Gemini per LiteLLM docs using reasoning_effort
+    # (Handled centrally in _configure_thinking for other providers. For Vertex, we keep effort on params)
+
+    # Ensure token param compatibility
     if "max_tokens" in params:
+        # For Gemini unified or vertex routes, LiteLLM handles this but we align to max_output_tokens if needed
         params["max_output_tokens"] = params.pop("max_tokens")
-        logger.debug("Converted max_tokens to max_output_tokens for Gemini model")
 
 def _configure_thinking(params: Dict[str, Any], model_name: str, enable_thinking: Optional[bool], reasoning_effort: Optional[str]) -> None:
     """Configure reasoning/thinking parameters for supported models."""
@@ -228,6 +251,7 @@ def _configure_thinking(params: Dict[str, Any], model_name: str, enable_thinking
     effort_level = reasoning_effort or 'low'
     is_anthropic = "anthropic" in model_name.lower() or "claude" in model_name.lower()
     is_xai = "xai" in model_name.lower() or model_name.startswith("xai/")
+    is_vertex_gemini = model_name.startswith("vertex_ai/") or model_name.startswith("gemini/")
     
     if is_anthropic:
         params["reasoning_effort"] = effort_level
@@ -236,6 +260,10 @@ def _configure_thinking(params: Dict[str, Any], model_name: str, enable_thinking
     elif is_xai:
         params["reasoning_effort"] = effort_level
         logger.info(f"xAI thinking enabled with reasoning_effort='{effort_level}'")
+    elif is_vertex_gemini:
+        # LiteLLM maps OpenAI-style reasoning_effort to Gemini thinking budget
+        params["reasoning_effort"] = effort_level
+        logger.info(f"Vertex Gemini thinking enabled with reasoning_effort='{effort_level}'")
 
 def _add_fallback_model(params: Dict[str, Any], model_name: str, messages: List[Dict[str, Any]]) -> None:
     """Add fallback model to the parameters."""
@@ -308,8 +336,8 @@ def prepare_params(
     _configure_openai_gpt5(params, model_name)
     # Add Kimi K2-specific parameters
     _configure_kimi_k2(params, model_name)
-    # Add Gemini-specific parameters
-    _configure_gemini(params, model_name)
+    # Add Vertex/Gemini-specific parameters
+    _configure_vertex_ai(params, model_name)
     _configure_thinking(params, model_name, enable_thinking, reasoning_effort)
 
     return params
@@ -376,6 +404,7 @@ async def make_llm_api_call(
         reasoning_effort=reasoning_effort
     )
     try:
+        # Use LiteLLM for models
         response = await litellm.acompletion(**params)
         logger.debug(f"Successfully received API response from {model_name}")
         # logger.debug(f"Response: {response}")
@@ -384,6 +413,7 @@ async def make_llm_api_call(
     except Exception as e:
         logger.error(f"Unexpected error during API call: {str(e)}", exc_info=True)
         raise LLMError(f"API call failed: {str(e)}")
+
 
 # Initialize API keys on module import
 setup_api_keys()

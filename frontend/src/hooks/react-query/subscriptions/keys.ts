@@ -8,6 +8,7 @@ export const subscriptionKeys = createQueryKeys({
   all: subscriptionKeysBase,
   details: () => [...subscriptionKeysBase, 'details'] as const,
   commitment: (subscriptionId: string) => [...subscriptionKeysBase, 'commitment', subscriptionId] as const,
+  threadCreditUsage: (threadId: string) => [...subscriptionKeysBase, 'thread-credit-usage', threadId] as const,
 });
 
 export const modelKeys = createQueryKeys({

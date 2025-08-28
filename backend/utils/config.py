@@ -98,10 +98,41 @@ class Configuration:
     # Credit package price IDs - Staging  
     STRIPE_CREDITS_10_PRICE_ID_STAGING: str = 'price_1RxXOvG6l1KZGqIrMqsiYQvk'
     STRIPE_CREDITS_25_PRICE_ID_STAGING: str = 'price_1RxXPNG6l1KZGqIrQprPgDme'
-    STRIPE_CREDITS_50_PRICE_ID_STAGING: str = 'price_1RxmNhG6l1KZGqIrTq2zPtgi'
-    STRIPE_CREDITS_100_PRICE_ID_STAGING: str = 'price_1RxmNwG6l1KZGqIrnliwPDM6'
-    STRIPE_CREDITS_250_PRICE_ID_STAGING: str = 'price_1RxmO6G6l1KZGqIrBF8Kx87G'
-    STRIPE_CREDITS_500_PRICE_ID_STAGING: str = 'price_1RxmOFG6l1KZGqIrn4wgORnH'
+    STRIPE_CREDITS_50_PRICE_ID_STAGING: str = 'price_1RxXPYG6l1KZGqIrQprPgDme'
+    STRIPE_CREDITS_100_PRICE_ID_STAGING: str = 'price_1RxXPZG6l1KZGqIrQprPgDme'
+    STRIPE_CREDITS_250_PRICE_ID_STAGING: str = 'price_1RxXQ0G6l1KZGqIrQprPgDme'
+    STRIPE_CREDITS_500_PRICE_ID_STAGING: str = 'price_1RxXQ5G6l1KZGqIrQprPgDme'
+    
+    # Feature Flags - Environment Variable Configuration
+    # These flags can be controlled via environment variables (e.g., ENABLE_CUSTOM_AGENTS=true)
+    # If not set, they will fall back to Redis-based configuration
+    
+    # Custom agents feature flag
+    ENABLE_CUSTOM_AGENTS: bool = True
+    
+    # MCP module feature flag
+    ENABLE_MCP_MODULE: bool = True
+    
+    # Templates API feature flag
+    ENABLE_TEMPLATES_API: bool = True
+    
+    # Triggers API feature flag
+    ENABLE_TRIGGERS_API: bool = True
+    
+    # Workflows API feature flag
+    ENABLE_WORKFLOWS_API: bool = True
+    
+    # Knowledge base feature flag
+    ENABLE_KNOWLEDGE_BASE: bool = True
+    
+    # Pipedream integration feature flag
+    ENABLE_PIPEDREAM: bool = True
+    
+    # Credentials API feature flag
+    ENABLE_CREDENTIALS_API: bool = True
+    
+    # Suna default agent feature flag
+    ENABLE_SUNA_DEFAULT_AGENT: bool = True
     
     # Computed subscription tier IDs based on environment
     @property
@@ -236,8 +267,21 @@ class Configuration:
     MORPH_API_KEY: Optional[str] = None
     GEMINI_API_KEY: Optional[str] = None
     OPENROUTER_API_BASE: Optional[str] = "https://openrouter.ai/api/v1"
-    OR_SITE_URL: Optional[str] = "https://kortix.ai"
-    OR_APP_NAME: Optional[str] = "Kortix AI"    
+    
+    # Google Vertex AI / Gemini via LiteLLM
+    VERTEXAI_PROJECT: Optional[str] = None
+    VERTEXAI_LOCATION: Optional[str] = None
+    # Either a JSON string of the service account or a path to the json file
+    VERTEXAI_CREDENTIALS: Optional[str] = None
+    # Standard Google ADC file path; if set we propagate it as env for SDK auth
+    GOOGLE_APPLICATION_CREDENTIALS: Optional[str] = None
+    # Alternate env var names some users set
+    GOOGLE_CLOUD_PROJECT_ID: Optional[str] = None
+    GOOGLE_CLOUD_LOCATION: Optional[str] = None
+    
+    # OpenRouter site metadata
+    OR_SITE_URL: Optional[str] = "https://he2.ai"
+    OR_APP_NAME: Optional[str] = "Helium AI"    
     
     # AWS Bedrock credentials
     AWS_ACCESS_KEY_ID: Optional[str] = None

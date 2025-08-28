@@ -279,7 +279,7 @@ function LoginContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#EDEDED] relative dark:bg-[#2E2E2E]">
+    <div className="min-h-screen bg-[#EDEDED] relative dark:bg-background">
       <div className="flex min-h-screen items-center justify-center gap-15 px-2 xs:px-4 sm:px-6 lg:px-0">
         {/* Left Section - Image (No card background) */}
         <motion.div
@@ -316,10 +316,10 @@ function LoginContent() {
 
         {/* Right Section Container */}
         <div
-          className={`flex flex-col items-center w-full max-w-[500px] ${isSignUp ? 'mb-[2rem]' : 'mb-0'}`}
+          className={`flex flex-col items-center w-full max-w-[500px] ${isSignUp ? 'mb-0' : 'mb-0'}`}
         >
           {/* Back to home button - Above the card */}
-          <div className="hidden lg:flex w-full justify-center mb-4">
+          {/* <div className="hidden lg:flex w-full justify-center mb-4">
             <Link
               href="/"
               className="inline-flex items-center gap-2 text-sm text-muted-foreground  dark:text-white transition-colors"
@@ -327,7 +327,7 @@ function LoginContent() {
               <ArrowLeft className="h-4 w-4" />
               Back to home
             </Link>
-          </div>
+          </div> */}
           {/* Mobile Header - Only shows below 1024px */}
           <Link href="/">
             <div className="lg:hidden w-full mb-4 flex justify-center cursor-pointer">
@@ -360,18 +360,20 @@ function LoginContent() {
               ease: [0.4, 0, 0.2, 1],
               delay: 0.4,
             }}
-            className={`bg-white rounded-[24px] shadow-lg flex flex-col justify-center w-full lg:w-[500px] ${isSignUp ? 'min-h-[650px] lg:h-[650px]' : 'min-h-[600px] lg:h-[600px]'}`}
+            className={`bg-white rounded-[24px] shadow-lg flex flex-col justify-center w-full lg:w-[500px] ${isSignUp ? 'min-h-[654px] lg:h-[550px]' : 'min-h-[644px] lg:h-[540px]'}`}
             style={{
               paddingLeft: '16px',
               paddingRight: '16px',
             }}
           >
             <div className="w-full px-2 sm:px-4 lg:px-0">
-              <form className={`mb-4 ${isSignUp ? 'space-y-2' : 'space-y-3'}`}>
-                <div className="space-y-2">
+            <form
+  className={`${isSignUp ? 'space-y-3' : 'mb-[3rem] space-y-5'}`}
+>
+                <div className="space-y-3">
                   <label
                     htmlFor="email"
-                    className="text-sm font-normal text-black mb-2 block"
+                    className="text-sm font-normal text-black mb-1.5 block"
                   >
                     Email
                   </label>
@@ -380,7 +382,7 @@ function LoginContent() {
                     name="email"
                     type="email"
                     placeholder="Email address"
-                    className="h-12 xs:h-14 py-3 rounded-[50px] text-black placeholder:text-black/70 text-sm xs:text-base !bg-white dark:!bg-white !border-gray-200 dark:!border-gray-200 focus:!bg-white focus:!text-black autofill:!bg-white autofill:!text-black"
+                    className="h-13 xs:h-14 py-3 rounded-[50px] text-black placeholder:text-black/70 text-sm xs:text-base !bg-white dark:!bg-white !border-gray-200 dark:!border-gray-200 focus:!bg-white focus:!text-black autofill:!bg-white autofill:!text-black"
                     style={{
                       backgroundColor: 'white !important',
                       color: 'black !important',
@@ -388,9 +390,9 @@ function LoginContent() {
                     required
                   />
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <label
+                                        <label
                       htmlFor="password"
                       className="text-sm font-normal text-black"
                     >
@@ -411,7 +413,7 @@ function LoginContent() {
                     name="password"
                     type="password"
                     placeholder="Password"
-                    className="h-12 xs:h-14 py-3 rounded-[50px] text-black placeholder:text-black/70 text-sm xs:text-base !bg-white dark:!bg-white !border-gray-200 dark:!border-gray-200 focus:!bg-white focus:!text-black autofill:!bg-white autofill:!text-black"
+                    className="h-13 xs:h-14 py-3 rounded-[50px] text-black placeholder:text-black/70 text-sm xs:text-base !bg-white dark:!bg-white !border-gray-200 dark:!border-gray-200 focus:!bg-white focus:!text-black autofill:!bg-white autofill:!text-black"
                     style={{
                       backgroundColor: 'white !important',
                       color: 'black !important',
@@ -420,10 +422,10 @@ function LoginContent() {
                   />
                 </div>
                 {isSignUp && (
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <label
                       htmlFor="confirmPassword"
-                      className="text-sm font-medium text-black mb-2 block"
+                      className="text-sm font-medium text-black mb-1.5 block"
                     >
                       Confirm Password
                     </label>
@@ -432,7 +434,7 @@ function LoginContent() {
                       name="confirmPassword"
                       type="password"
                       placeholder="Confirm password"
-                      className="h-12 xs:h-14 py-3 rounded-[50px] text-black placeholder:text-black/70 text-sm xs:text-base !bg-white dark:!bg-white !border-gray-200 dark:!border-gray-200 focus:!bg-white focus:!text-black autofill:!bg-white autofill:!text-black"
+                      className="h-13 xs:h-14 py-3 rounded-[50px] text-black placeholder:text-black/70 text-sm xs:text-base !bg-white dark:!bg-white !border-gray-200 dark:!border-gray-200 focus:!bg-white focus:!text-black autofill:!bg-white autofill:!text-black"
                       style={{
                         backgroundColor: 'white !important',
                         color: 'black !important',
@@ -441,11 +443,11 @@ function LoginContent() {
                     />
                   </div>
                 )}
-                <div className="pt-2">
+                <div className="pt-1">
                   <div className="relative">
                     <SubmitButton
                       formAction={isSignUp ? handleSignUp : handleSignIn}
-                      className="w-full h-11 xs:h-12 sm:h-14 text-white rounded-[50px] text-sm xs:text-base auth-button py-3"
+                      className="w-full h-12 xs:h-12 sm:h-14 text-white rounded-[50px] text-sm xs:text-base auth-button py-3"
                       pendingText={
                         isSignUp ? 'Creating account...' : 'Initiating...'
                       }
@@ -484,18 +486,18 @@ function LoginContent() {
                   </Link>
                 </div>
               )}
-              {/* Social login section - only show if not in production */}
-              {!isProduction && (
+              {/* Social login section */}
+              {
                 <>
-                  <div className="relative my-4">
+                  <div className="relative my-3">
                     <div className="relative flex justify-center text-sm">
                       <span className="px-2 text-black font-medium">OR</span>
                     </div>
                   </div>
 
-                  <div className="space-y-3">
+                  <div className="space-y-2.5">
                     <GoogleSignIn returnUrl={returnUrl || undefined} />
-                    <button className="w-full h-10 xs:h-11 sm:h-12 border border-gray-200 bg-white text-black rounded-lg flex items-center justify-center gap-2 text-xs xs:text-sm sm:text-base hover:bg-gray-50 transition-colors">
+                    <button className="w-full h-10 xs:h-11 sm:h-12 border border-gray-200 bg-white text-black rounded-full flex items-center justify-center gap-2 text-xs xs:text-sm sm:text-base hover:bg-gray-50 transition-colors">
                       <Image
                         src="/auth/apple-login.svg"
                         width="18"
@@ -505,7 +507,7 @@ function LoginContent() {
                       />
                       <span className="truncate">Continue with Apple</span>
                     </button>
-                    <button className="w-full h-10 xs:h-11 sm:h-12 border border-gray-200 bg-white text-black rounded-lg flex items-center justify-center gap-2 text-xs xs:text-sm sm:text-base hover:bg-gray-50 transition-colors">
+                    <button className="w-full h-10 xs:h-11 sm:h-12 border border-gray-200 bg-white text-black rounded-full flex items-center justify-center gap-2 text-xs xs:text-sm sm:text-base hover:bg-gray-50 transition-colors">
                       <Image
                         src="/auth/microsoft-login.svg"
                         width="18"
@@ -519,7 +521,7 @@ function LoginContent() {
                     </button>
                   </div>
                 </>
-              )}
+              }
             </div>
           </motion.div>
         </div>

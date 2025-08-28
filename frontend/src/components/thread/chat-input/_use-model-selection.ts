@@ -2,29 +2,14 @@
 
 import { useSubscriptionData } from '@/contexts/SubscriptionContext';
 import { useState, useEffect, useMemo } from 'react';
-import { isLocalMode } from '@/lib/config';
+import { isLocalMode, isProductionMode } from '@/lib/config';
 import { useAvailableModels } from '@/hooks/react-query/subscriptions/use-model';
 
-export const STORAGE_KEY_MODEL = 'suna-preferred-model-v3';
+export const STORAGE_KEY_MODEL = 'suna-preferred-model-v5';
 export const STORAGE_KEY_CUSTOM_MODELS = 'customModels';
-export const DEFAULT_PREMIUM_MODEL_ID = 'claude-sonnet-4';
-export const DEFAULT_FREE_MODEL_ID = 'moonshotai/kimi-k2';
+export const DEFAULT_PREMIUM_MODEL_ID = 'vertex/gemini-2.5-pro';
+export const DEFAULT_FREE_MODEL_ID = 'vertex/gemini-2.5-pro';
 
-// Helper to test localStorage functionality
-export const testLocalStorage = (): boolean => {
-  if (typeof window === 'undefined') return false;
-  try {
-    const testKey = 'test-storage';
-    const testValue = 'test-value';
-    localStorage.setItem(testKey, testValue);
-    const retrieved = localStorage.getItem(testKey);
-    localStorage.removeItem(testKey);
-    return retrieved === testValue;
-  } catch (error) {
-    console.error('localStorage test failed:', error);
-    return false;
-  }
-};
 
 export type SubscriptionStatus = 'no_subscription' | 'active';
 
@@ -76,6 +61,7 @@ export const MODELS = {
     recommended: false,
     lowQuality: false
   },
+  // Vertex AI models removed
   'grok-4': { 
     tier: 'premium', 
     priority: 94,
@@ -217,13 +203,13 @@ export const useModelSelection = () => {
           models = [
             { 
               id: DEFAULT_FREE_MODEL_ID, 
-              label: 'KIMI K2', 
+              label: 'Gemini 2.5 Pro', 
               requiresSubscription: false,
               priority: MODELS[DEFAULT_FREE_MODEL_ID]?.priority || 100
             },
             { 
               id: DEFAULT_PREMIUM_MODEL_ID, 
-              label: 'Claude Sonnet 4', 
+              label: 'Gemini 2.5 Pro', 
               requiresSubscription: true, 
               priority: MODELS[DEFAULT_PREMIUM_MODEL_ID]?.priority || 100
             },
@@ -236,15 +222,23 @@ export const useModelSelection = () => {
         
         // Format the display label
         let cleanLabel = displayName;
-        if (cleanLabel.includes('/')) {
-          cleanLabel = cleanLabel.split('/').pop() || cleanLabel;
-        }
         
-        cleanLabel = cleanLabel
-          .replace(/-/g, ' ')
-          .split(' ')
-          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(' ');
+        if (cleanLabel.includes('/')) {
+          // For other models, use the existing logic
+          cleanLabel = cleanLabel.split('/').pop() || cleanLabel;
+          cleanLabel = cleanLabel
+            .replace(/-/g, ' ')
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+        } else {
+          // For models without slashes, format normally
+          cleanLabel = cleanLabel
+            .replace(/-/g, ' ')
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+        }
         
         // Get model data from our central MODELS constant
         const modelData = MODELS[shortName] || {};
@@ -314,8 +308,7 @@ export const useModelSelection = () => {
     
     console.log('🔧 useModelSelection: Initializing model selection...');
     console.log('🔧 useModelSelection: isLoadingModels:', isLoadingModels);
-    console.log('🔧 useModelSelection: subscriptionStatus:', subscriptionStatus);
-    console.log('🔧 useModelSelection: localStorage test passed:', testLocalStorage());
+    console.log('🔧 useModelSelection: subscriptionStatus:', subscriptionStatus);    
     
     try {
       const savedModel = localStorage.getItem(STORAGE_KEY_MODEL);
@@ -366,18 +359,22 @@ export const useModelSelection = () => {
       }
       
       // Fallback to default model
-      const defaultModel = subscriptionStatus === 'active' ? DEFAULT_PREMIUM_MODEL_ID : DEFAULT_FREE_MODEL_ID;
+      const defaultModel = isProductionMode() ? DEFAULT_PREMIUM_MODEL_ID : 
+        (subscriptionStatus === 'active' ? DEFAULT_PREMIUM_MODEL_ID : DEFAULT_FREE_MODEL_ID);
       console.log('🔧 useModelSelection: Using default model:', defaultModel);
-      console.log('🔧 useModelSelection: Subscription status:', subscriptionStatus, '-> Default:', subscriptionStatus === 'active' ? 'PREMIUM (Claude Sonnet 4)' : 'FREE (KIMi K2)');
+      console.log('🔧 useModelSelection: Environment:', isProductionMode() ? 'PRODUCTION (Claude Sonnet 4)' : 
+        `Subscription status: ${subscriptionStatus} -> Default: ${subscriptionStatus === 'active' ? 'PREMIUM (Claude Sonnet 4)' : 'FREE (KIMi K2)'}`);
       setSelectedModel(defaultModel);
       saveModelPreference(defaultModel);
       setHasInitialized(true);
       
     } catch (error) {
       console.warn('❌ useModelSelection: Failed to load preferences from localStorage:', error);
-      const defaultModel = subscriptionStatus === 'active' ? DEFAULT_PREMIUM_MODEL_ID : DEFAULT_FREE_MODEL_ID;
+      const defaultModel = isProductionMode() ? DEFAULT_PREMIUM_MODEL_ID : 
+        (subscriptionStatus === 'active' ? DEFAULT_PREMIUM_MODEL_ID : DEFAULT_FREE_MODEL_ID);
       console.log('🔧 useModelSelection: Using fallback default model:', defaultModel);
-      console.log('🔧 useModelSelection: Subscription status:', subscriptionStatus, '-> Fallback:', subscriptionStatus === 'active' ? 'PREMIUM (Claude Sonnet 4)' : 'FREE (KIMi K2)');
+      console.log('🔧 useModelSelection: Environment:', isProductionMode() ? 'PRODUCTION (Claude Sonnet 4)' : 
+        `Subscription status: ${subscriptionStatus} -> Fallback: ${subscriptionStatus === 'active' ? 'PREMIUM (Claude Sonnet 4)' : 'FREE (KIMi K2)'}`);
       setSelectedModel(defaultModel);
       saveModelPreference(defaultModel);
       setHasInitialized(true);
@@ -399,7 +396,8 @@ export const useModelSelection = () => {
     // If the saved model is now invalid, switch to default
     if (!modelOption && !isCustomModel) {
       console.warn('⚠️ useModelSelection: Saved model is invalid after loading, switching to default');
-      const defaultModel = subscriptionStatus === 'active' ? DEFAULT_PREMIUM_MODEL_ID : DEFAULT_FREE_MODEL_ID;
+      const defaultModel = isProductionMode() ? DEFAULT_PREMIUM_MODEL_ID : 
+        (subscriptionStatus === 'active' ? DEFAULT_PREMIUM_MODEL_ID : DEFAULT_FREE_MODEL_ID);
       setSelectedModel(defaultModel);
       saveModelPreference(defaultModel);
     } else if (modelOption && !isLocalMode()) {
@@ -407,7 +405,8 @@ export const useModelSelection = () => {
       const isAccessible = canAccessModel(subscriptionStatus, modelOption.requiresSubscription);
       if (!isAccessible) {
         console.warn('⚠️ useModelSelection: Saved model not accessible after subscription check, switching to default');
-        const defaultModel = subscriptionStatus === 'active' ? DEFAULT_PREMIUM_MODEL_ID : DEFAULT_FREE_MODEL_ID;
+        const defaultModel = isProductionMode() ? DEFAULT_PREMIUM_MODEL_ID : 
+          (subscriptionStatus === 'active' ? DEFAULT_PREMIUM_MODEL_ID : DEFAULT_FREE_MODEL_ID);
         setSelectedModel(defaultModel);
         saveModelPreference(defaultModel);
       }
@@ -434,8 +433,10 @@ export const useModelSelection = () => {
       
       if (!isAccessible) {
         console.warn('⚠️ useModelSelection: Current model no longer accessible, switching to default');
-        const defaultModel = subscriptionStatus === 'active' ? DEFAULT_PREMIUM_MODEL_ID : DEFAULT_FREE_MODEL_ID;
-        console.log('🔧 useModelSelection: Subscription-based default switch:', subscriptionStatus === 'active' ? 'PREMIUM (Claude Sonnet 4)' : 'FREE (KIMi K2)');
+        const defaultModel = isProductionMode() ? DEFAULT_PREMIUM_MODEL_ID : 
+          (subscriptionStatus === 'active' ? DEFAULT_PREMIUM_MODEL_ID : DEFAULT_FREE_MODEL_ID);
+        console.log('🔧 useModelSelection: Subscription-based default switch:', isProductionMode() ? 'PRODUCTION (Claude Sonnet 4)' : 
+          `${subscriptionStatus === 'active' ? 'PREMIUM (Claude Sonnet 4)' : 'FREE (KIMi K2)'}`);
         setSelectedModel(defaultModel);
         saveModelPreference(defaultModel);
       } else {
@@ -468,7 +469,8 @@ export const useModelSelection = () => {
       console.warn('🔧 useModelSelection: Model not found in options:', modelId, MODEL_OPTIONS, isCustomModel, customModels);
       
       // Reset to default model when the selected model is not found
-      const defaultModel = isLocalMode() ? DEFAULT_PREMIUM_MODEL_ID : DEFAULT_FREE_MODEL_ID;
+      const defaultModel = isProductionMode() ? DEFAULT_PREMIUM_MODEL_ID : 
+        (isLocalMode() ? DEFAULT_PREMIUM_MODEL_ID : DEFAULT_FREE_MODEL_ID);
       console.log('🔧 useModelSelection: Resetting to default model:', defaultModel);
       setSelectedModel(defaultModel);
       saveModelPreference(defaultModel);
@@ -521,11 +523,9 @@ export const useModelSelection = () => {
       console.log('  subscriptionStatus:', subscriptionStatus);
       console.log('  isLoadingModels:', isLoadingModels);
       console.log('  localStorage value:', localStorage.getItem(STORAGE_KEY_MODEL));
-      console.log('  localStorage test passes:', testLocalStorage());
-      console.log('  defaultModel would be:', subscriptionStatus === 'active' ? `${DEFAULT_PREMIUM_MODEL_ID} (Claude Sonnet 4)` : `${DEFAULT_FREE_MODEL_ID} (KIMi K2)`);
-      console.log('  availableModels:', availableModels.map(m => ({ id: m.id, requiresSubscription: m.requiresSubscription })));
+      console.log('🔧 useModelSelection: defaultModel would be:', isProductionMode() ? `${DEFAULT_PREMIUM_MODEL_ID} (Gemini 2.5 Pro)` : 
+        `${subscriptionStatus === 'active' ? `${DEFAULT_PREMIUM_MODEL_ID} (Claude Sonnet 4)` : `${DEFAULT_FREE_MODEL_ID} (Gemini 2.5 pro)`}`);
+      console.log('🔧 useModelSelection: availableModels:', availableModels.map(m => ({ id: m.id, requiresSubscription: m.requiresSubscription })));
     }
   };
 };
-
-// Export the hook but not any sorting logic - sorting is handled internally

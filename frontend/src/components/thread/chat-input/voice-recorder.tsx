@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Mic, Square, Loader2 } from 'lucide-react';
+import { Square, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -8,6 +8,8 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { useTranscription } from '@/hooks/react-query/transcription/use-transcription';
+import Image from 'next/image';
+// Custom Mic Icon component using the mic.svg
 
 interface VoiceRecorderProps {
     onTranscription: (text: string) => void;
@@ -156,7 +158,25 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
             case 'processing':
                 return <Loader2 className="h-4 w-4 animate-spin" />;
             default:
-                return <Mic className="h-4 w-4" />;
+                return (
+                    <>
+                    <Image
+                      src="/icons/mic-light.svg"
+                      alt="mic Light Logo"
+                      width={20}
+                      height={20}
+                      className="block dark:hidden mb-0"
+                    />
+                    {/* Dark logo */}
+                    <Image
+                      src="/icons/mic-dark.svg"
+                      alt="mic Dark Logo"
+                      width={20}
+                      height={20}
+                      className="hidden dark:block mb-0"
+                    />
+                  </>
+                )
         }
     };
 
