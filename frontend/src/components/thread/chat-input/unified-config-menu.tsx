@@ -7,26 +7,17 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
     DropdownMenuSeparator,
-    DropdownMenuSub,
-    DropdownMenuSubContent,
-    DropdownMenuSubTrigger,
-    DropdownMenuPortal,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { Cpu, Search, Check, ChevronDown, Plus, ExternalLink } from 'lucide-react';
+import { Cpu, Search, Check, ChevronDown, Plus} from 'lucide-react';
 import { useAgents } from '@/hooks/react-query/agents/use-agents';
 import { HeliumLogo } from '@/components/sidebar/helium-logo';
 import type { ModelOption, SubscriptionStatus } from './_use-model-selection';
-import { MODELS } from './_use-model-selection';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { IntegrationsRegistry } from '@/components/agents/integrations-registry';
-import { useComposioToolkitIcon } from '@/hooks/react-query/composio/use-composio';
-import { Skeleton } from '@/components/ui/skeleton';
 import { NewAgentDialog } from '@/components/agents/new-agent-dialog';
 import { useAgentWorkflows } from '@/hooks/react-query/agents/use-agent-workflows';
-import { PlaybookExecuteDialog } from '@/components/playbooks/playbook-execute-dialog';
 import { AgentAvatar } from '@/components/thread/content/agent-avatar';
 import { AgentModelSelector } from '@/components/agents/config/model-selector';
 import { useRouter } from 'next/navigation';
@@ -54,11 +45,7 @@ const LoggedInMenu: React.FC<UnifiedConfigMenuProps> = ({
     selectedAgentId,
     onAgentSelect,
     selectedModel,
-    onModelChange,
-    modelOptions,
-    canAccessModel,
-    subscriptionStatus,
-    onUpgradeRequest,
+    onModelChange,    
 }) => {
     const router = useRouter();
     const [isOpen, setIsOpen] = useState(false);
@@ -66,19 +53,10 @@ const LoggedInMenu: React.FC<UnifiedConfigMenuProps> = ({
     const searchContainerRef = useRef<HTMLDivElement>(null);
     const [integrationsOpen, setIntegrationsOpen] = useState(false);
     const [showNewAgentDialog, setShowNewAgentDialog] = useState(false);
-    const searchInputRef = useRef<HTMLInputElement>(null);
-    const [execDialog, setExecDialog] = useState<{ open: boolean; playbook: any | null; agentId: string | null }>({ open: false, playbook: null, agentId: null });
+    const searchInputRef = useRef<HTMLInputElement>(null);    
 
     const { data: agentsResponse } = useAgents({}, { enabled: isLoggedIn });
-    const agents: any[] = agentsResponse?.agents || [];
-
-
-
-    // Only fetch integration icons when authenticated AND the menu is open
-    const iconsEnabled = isLoggedIn && isOpen;
-    const { data: googleDriveIcon } = useComposioToolkitIcon('googledrive', { enabled: iconsEnabled });
-    const { data: slackIcon } = useComposioToolkitIcon('slack', { enabled: iconsEnabled });
-    const { data: notionIcon } = useComposioToolkitIcon('notion', { enabled: iconsEnabled });
+    const agents: any[] = agentsResponse?.agents || [];    
 
     useEffect(() => {
         if (isOpen) {
@@ -118,25 +96,10 @@ const LoggedInMenu: React.FC<UnifiedConfigMenuProps> = ({
     // Top 3 slice
     const topAgents = useMemo(() => filteredAgents.slice(0, 3), [filteredAgents]);
 
-
-
-
-
     const handleAgentClick = (agentId: string | undefined) => {
         onAgentSelect?.(agentId);
         setIsOpen(false);
     };
-
-    const handleQuickAction = (action: 'instructions' | 'knowledge' | 'triggers') => {
-        if (!selectedAgentId && !displayAgent?.agent_id) {
-            return;
-        }
-        const agentId = selectedAgentId || displayAgent?.agent_id;
-        router.push(`/agents/config/${agentId}?tab=configuration&accordion=${action}`);
-        setIsOpen(false);
-    };
-
-
 
     const renderAgentIcon = (agent: any) => {
         return <AgentAvatar agentId={agent?.agent_id} size={12} className="h-4 w-4" fallbackName={agent?.name} />;
@@ -146,11 +109,7 @@ const LoggedInMenu: React.FC<UnifiedConfigMenuProps> = ({
         const found = agents.find(a => a.agent_id === selectedAgentId) || agents[0];
         return found;
     }, [agents, selectedAgentId]);
-
-    const currentAgentIdForPlaybooks = isLoggedIn ? displayAgent?.agent_id || '' : '';
-    const { data: playbooks = [], isLoading: playbooksLoading } = useAgentWorkflows(currentAgentIdForPlaybooks);
-    const [playbooksExpanded, setPlaybooksExpanded] = useState(true);
-
+    
     return (
         <>
             {/* Reusable list of workflows to avoid re-fetch storms; each instance fetches scoped to agentId */}
@@ -201,25 +160,25 @@ const LoggedInMenu: React.FC<UnifiedConfigMenuProps> = ({
                     {/* Agents */}
                     {onAgentSelect && (
                         <div className="px-1.5">
-                            <div className="px-3 py-1 text-[11px] font-medium text-muted-foreground flex items-center justify-between">
+                            <div className="px-2 py-1 text-sm font-medium text-muted-foreground flex items-center justify-between">
                                 <span>Agents</span>
                                 <Button
                                     size="sm"
                                     variant="ghost"
-                                    className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                                    className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground rounded-full"
                                     onClick={() => { setIsOpen(false); setShowNewAgentDialog(true); }}
                                 >
                                     <Plus className="h-3.5 w-3.5" />
                                 </Button>
                             </div>
                             {topAgents.length === 0 ? (
-                                <div className="px-3 py-2 text-xs text-muted-foreground">No agents</div>
+                                <div className="px-3 py-2 text-xs rounded-full text-muted-foreground">No agents</div>
                             ) : (
-                                <div className="max-h-[132px] overflow-y-auto">
+                                <div className="max-h-[132px] mb-1 overflow-y-auto">
                                     {filteredAgents.map((agent) => (
                                         <DropdownMenuItem
                                             key={agent.agent_id}
-                                            className="text-sm px-3 py-2 mx-0 my-0.5 flex items-center justify-between cursor-pointer rounded-lg"
+                                            className="text-sm px-3 py-2 mx-0 my-0.5 flex items-center justify-between cursor-pointer rounded-full"
                                             onClick={() => handleAgentClick(agent.agent_id)}
                                         >
                                             <div className="flex items-center gap-2 min-w-0">
@@ -233,9 +192,7 @@ const LoggedInMenu: React.FC<UnifiedConfigMenuProps> = ({
                                     ))}
                                 </div>
                             )}
-
-                            {/* Agents "see all" removed; scroll container shows all */}
-                            {/* Playbooks moved below (as hover submenu) */}
+                            
                         </div>
                     )}
 
@@ -253,92 +210,10 @@ const LoggedInMenu: React.FC<UnifiedConfigMenuProps> = ({
                                 variant="menu-item"
                             />
                         </div>
-
-                        <DropdownMenuSeparator />
+                        
                       </>
                     )}
-
-                    {/* Quick Actions */}
-                    {onAgentSelect && (selectedAgentId || displayAgent?.agent_id) && (
-                        <div className="px-1.5">
-                            <DropdownMenuItem
-                                className="text-sm px-3 py-2 mx-0 my-0.5 flex items-center gap-2 cursor-pointer rounded-lg"
-                                onClick={() => handleQuickAction('instructions')}
-                            >
-                                <span className="font-medium">Instructions</span>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                className="text-sm px-3 py-2 mx-0 my-0.5 flex items-center gap-2 cursor-pointer rounded-lg"
-                                onClick={() => handleQuickAction('knowledge')}
-                            >
-                                <span className="font-medium">Knowledge</span>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                className="text-sm px-3 py-2 mx-0 my-0.5 flex items-center gap-2 cursor-pointer rounded-lg"
-                                onClick={() => handleQuickAction('triggers')}
-                            >
-                                <span className="font-medium">Triggers</span>
-                            </DropdownMenuItem>
-                            <DropdownMenuSub>
-                                <DropdownMenuSubTrigger className="flex items-center rounded-lg gap-2 px-3 py-2 mx-0 my-0.5">
-                                    <span className="font-medium">Playbooks</span>
-                                </DropdownMenuSubTrigger>
-                                <DropdownMenuPortal>
-                                    <DropdownMenuSubContent className="w-72 rounded-xl max-h-80 overflow-y-auto">
-                                        {playbooksLoading ? (
-                                            <div className="px-3 py-2 text-xs text-muted-foreground">Loading…</div>
-                                        ) : playbooks && playbooks.length > 0 ? (
-                                            playbooks.map((wf: any) => (
-                                                <DropdownMenuItem
-                                                    key={`pb-${wf.id}`}
-                                                    className="text-sm px-3 py-2 mx-0 my-0.5 flex items-center justify-between cursor-pointer rounded-lg"
-                                                    onClick={(e) => { e.stopPropagation(); setExecDialog({ open: true, playbook: wf, agentId: currentAgentIdForPlaybooks }); setIsOpen(false); }}
-                                                >
-                                                    <span className="truncate">{wf.name}</span>
-                                                </DropdownMenuItem>
-                                            ))
-                                        ) : (
-                                            <div className="px-3 py-2 text-xs text-muted-foreground">No playbooks</div>
-                                        )}
-                                    </DropdownMenuSubContent>
-                                </DropdownMenuPortal>
-                            </DropdownMenuSub>
-                            <TooltipProvider>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <DropdownMenuItem
-                                            className="text-sm px-3 py-2 mx-0 my-0.5 flex items-center justify-between cursor-pointer rounded-lg"
-                                            onClick={() => setIntegrationsOpen(true)}
-                                        >
-                                            <span className="font-medium">Integrations</span>
-                                            <div className="flex items-center gap-1.5">
-                                                {googleDriveIcon?.icon_url && slackIcon?.icon_url && notionIcon?.icon_url ? (
-                                                    <>
-                                                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                        <img src={googleDriveIcon.icon_url} className="w-4 h-4" alt="Google Drive" />
-                                                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                        <img src={slackIcon.icon_url} className="w-3.5 h-3.5" alt="Slack" />
-                                                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                        <img src={notionIcon.icon_url} className="w-3.5 h-3.5" alt="Notion" />
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <Skeleton className="w-4 h-4 rounded" />
-                                                        <Skeleton className="w-3.5 h-3.5 rounded" />
-                                                        <Skeleton className="w-3.5 h-3.5 rounded" />
-                                                    </>
-                                                )}
-                                                <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
-                                            </div>
-                                        </DropdownMenuItem>
-                                    </TooltipTrigger>
-                                    <TooltipContent side="left" className="text-xs max-w-xs">
-                                        <p>Open integrations</p>
-                                    </TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
-                        </div>
-                    )}
+                    
                 </DropdownMenuContent>
             </DropdownMenu>
 
@@ -358,15 +233,7 @@ const LoggedInMenu: React.FC<UnifiedConfigMenuProps> = ({
             </Dialog>
 
             {/* Create Agent */}
-            <NewAgentDialog open={showNewAgentDialog} onOpenChange={setShowNewAgentDialog} />
-
-            {/* Execute Playbook */}
-            <PlaybookExecuteDialog
-                open={execDialog.open}
-                onOpenChange={(open) => setExecDialog((s) => ({ ...s, open }))}
-                playbook={execDialog.playbook as any}
-                agentId={execDialog.agentId || ''}
-            />
+            <NewAgentDialog open={showNewAgentDialog} onOpenChange={setShowNewAgentDialog} />            
 
 
         </>

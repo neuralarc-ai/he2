@@ -113,6 +113,7 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
   ) => {
     const [billingModalOpen, setBillingModalOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const { enabled: customAgentsEnabled, loading: flagsLoading } =
       useFeatureFlag('custom_agents');
     const { resolvedTheme } = useTheme();
@@ -259,13 +260,18 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
           <div className="flex items-center gap-3">
             {!hideAttachments && (
               <>
-                <DropdownMenu>
+                <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
                   <DropdownMenuTrigger asChild>
                     <Button
                       type="button"
                       size="icon"
-                      variant="ghost"
-                      className="w-8 h-8 flex-shrink-0 rounded-full hover:bg-muted/50"
+                      variant="outline"
+                      className={cn(
+                        "w-8 h-8 flex-shrink-0 dark:border-muted-foreground/30 shadow-none rounded-full transition-all duration-200",
+                        isDropdownOpen 
+                          ? "bg-background/50" 
+                          : "bg-white dark:bg-sidebar-accent hover:bg-background/50"
+                      )}
                       disabled={
                         !isLoggedIn ||
                         loading ||
@@ -273,12 +279,17 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
                         isUploading
                       }
                     >
-                      <Plus className="h-4 w-4" />
+                      <Plus 
+                        className={cn(
+                          "h-4 w-4 text-muted-foreground transition-transform duration-200",
+                          isDropdownOpen && "rotate-45"
+                        )} 
+                      />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
                     align="start"
-                    className="p-2 space-y-1 rounded-2xl -translate-x-2.5 dark:bg-background"
+                    className="p-2 space-y-1 rounded-2xl dark:bg-background"
                   >
                     <DropdownMenuItem
                       onClick={handleFileUpload}
@@ -291,8 +302,8 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
                             : '/icons/Vector-light.svg'
                         }
                         alt="Paperclip"
-                        width={resolvedTheme === 'dark' ? 20 : 16}
-                        height={resolvedTheme === 'dark' ? 20 : 16}
+                        width={16}
+                        height={16}
                         className="mr-1"
                       />
                       Attach files
@@ -309,8 +320,8 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
                               : '/icons/integrations.svg'
                           }
                           alt="Integrations"
-                          width={19}
-                          height={19}
+                          width={16}
+                          height={16}
                           className="mr-1"
                         />
                         Integrations
@@ -388,7 +399,7 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
               {loading ? (
                 <Loader2 className="h-5 w-5 animate-spin" />
               ) : isAgentRunning ? (
-                <div className="min-h-[14px] min-w-[14px] w-[14px] h-[14px] rounded-sm bg-current" />
+                <div className="min-h-[12px] min-w-[12px] w-[12px] h-[12px] rounded-xs bg-current" />
               ) : (
                 <div
                   className={
