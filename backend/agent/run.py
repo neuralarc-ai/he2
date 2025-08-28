@@ -258,7 +258,7 @@ class PromptManager:
                 sample_response = file.read()
             default_system_content = default_system_content + "\n\n <sample_assistant_response>" + sample_response + "</sample_assistant_response>"
         
-        # Check if agent has builder tools enabled - use agent builder prompt
+        # Check if agent has builder tools enabled - use agent builder prompt only when needed
         if agent_config:
             agentpress_tools = agent_config.get('agentpress_tools', {})
             has_builder_tools = any(
@@ -266,12 +266,27 @@ class PromptManager:
                 for tool in ['agent_config_tool', 'mcp_search_tool', 'credential_profile_tool', 'workflow_tool', 'trigger_tool']
             )
             
-            if has_builder_tools:
-                system_content = get_agent_builder_prompt()
-            elif agent_config.get('system_prompt'):
+            # Start with regular system prompt for normal conversation
+            if agent_config.get('system_prompt'):
                 system_content = agent_config['system_prompt'].strip()
             else:
                 system_content = default_system_content
+            
+            # Add builder tool instructions only when builder tools are available
+            if has_builder_tools:
+                builder_instructions = """
+
+=== AGENT BUILDER TOOLS AVAILABLE ===
+You have access to agent configuration and building tools. When users want to:
+- Configure their agent settings
+- Add new integrations or tools
+- Create workflows or triggers
+- Manage credentials or profiles
+
+You can switch to builder mode by using the appropriate tools. For normal conversation, continue using your regular capabilities.
+=== END BUILDER TOOLS INFO ===
+"""
+                system_content += builder_instructions
         else:
             system_content = default_system_content
         
@@ -382,23 +397,18 @@ class MessageManager:
         """Build temporary message based on configuration and context."""
         system_message = None
         
-        # Add agent builder system prompt if agent has builder tools enabled
-        if self.agent_config:
-            agentpress_tools = self.agent_config.get('agentpress_tools', {})
-            has_builder_tools = any(
-                agentpress_tools.get(tool, False) 
-                for tool in ['agent_config_tool', 'mcp_search_tool', 'credential_profile_tool', 'workflow_tool', 'trigger_tool']
-            )
-            
-            if has_builder_tools:
-                from agent.agent_builder_prompt import AGENT_BUILDER_SYSTEM_PROMPT
-                system_message = AGENT_BUILDER_SYSTEM_PROMPT
-        
-        # Add agent config system prompt
-        if not system_message and self.agent_config and 'system_prompt' in self.agent_config:
+        # Start with agent config system prompt (not builder prompt)
+        if self.agent_config and 'system_prompt' in self.agent_config:
             system_prompt = self.agent_config['system_prompt']
             if system_prompt:
                 system_message = system_prompt
+        
+        # Only use agent builder prompt when explicitly needed for configuration
+        # For normal conversation, use the regular system prompt
+        if not system_message:
+            # Fall back to default system prompt if no custom prompt configured
+            from agent.prompt import get_system_prompt
+            system_message = get_system_prompt()
         
         # Build and return the temporary message if we have content
         if system_message:

@@ -23,7 +23,7 @@ export const generateThreadName = async (message: string): Promise<string> => {
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'openrouter/openai/gpt-oss-20b:free',
+        model: 'vertex_ai/gemini-2.0-flash',
         messages: [
           {
             role: 'system',
