@@ -6,7 +6,7 @@ interface Agent {
   name: string;
   avatar?: string;
   metadata?: {
-    is_suna_default?: boolean;
+    is_helium_default?: boolean;
   };
 }
 
@@ -20,7 +20,7 @@ interface AgentSelectionState {
   clearSelection: () => void;
   
   getCurrentAgent: (agents: Agent[]) => Agent | null;
-  isSunaAgent: (agents: Agent[]) => boolean;
+      isHeliumAgent: (agents: Agent[]) => boolean;
 }
 
 export const useAgentSelectionStore = create<AgentSelectionState>()(
@@ -56,8 +56,8 @@ export const useAgentSelectionStore = create<AgentSelectionState>()(
           if (current && agents.some(a => a.agent_id === current)) {
             selectedId = current;
           } else if (agents.length > 0) {
-            const defaultSunaAgent = agents.find(agent => agent.metadata?.is_suna_default);
-            selectedId = defaultSunaAgent ? defaultSunaAgent.agent_id : agents[0].agent_id;
+            const defaultHeliumAgent = agents.find(agent => agent.metadata?.is_helium_default);
+            selectedId = defaultHeliumAgent ? defaultHeliumAgent.agent_id : agents[0].agent_id;
           }
         }
 
@@ -76,8 +76,8 @@ export const useAgentSelectionStore = create<AgentSelectionState>()(
         if (agents.length === 0 || currentSelectedAgentId) {
           return;
         }
-        const defaultSunaAgent = agents.find(agent => agent.metadata?.is_suna_default);
-        const agentToSelect = defaultSunaAgent || agents[0];
+        const defaultHeliumAgent = agents.find(agent => agent.metadata?.is_helium_default);
+        const agentToSelect = defaultHeliumAgent || agents[0];
         
         if (agentToSelect) {
           if (onAgentSelect) {
@@ -99,12 +99,12 @@ export const useAgentSelectionStore = create<AgentSelectionState>()(
           : null;
       },
 
-      isSunaAgent: (agents: Agent[]) => {
+      isHeliumAgent: (agents: Agent[]) => {
         const { selectedAgentId } = get();
         const currentAgent = selectedAgentId 
           ? agents.find(agent => agent.agent_id === selectedAgentId)
           : null;
-        return currentAgent?.metadata?.is_suna_default || selectedAgentId === undefined;
+        return currentAgent?.metadata?.is_helium_default || selectedAgentId === undefined;
       },
     }),
     {
@@ -127,6 +127,6 @@ export const useAgentSelection = () => {
     autoSelectAgent: store.autoSelectAgent,
     clearSelection: store.clearSelection,
     getCurrentAgent: store.getCurrentAgent,
-    isSunaAgent: store.isSunaAgent,
+          isHeliumAgent: store.isHeliumAgent,
   };
 }; 

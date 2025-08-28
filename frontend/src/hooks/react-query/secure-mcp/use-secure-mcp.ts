@@ -46,7 +46,7 @@ export interface AgentTemplate {
   avatar?: string;
   avatar_color?: string;
   profile_image_url?: string;
-  is_kortix_team?: boolean;
+  is_he2_team?: boolean;
   metadata?: {
     source_agent_id?: string;
     source_version_id?: string;
@@ -201,7 +201,7 @@ export function useMarketplaceTemplates(params?: {
   offset?: number;
   search?: string;
   tags?: string;
-  is_kortix_team?: boolean;
+  is_he2_team?: boolean;
 }) {
   return useQuery({
     queryKey: ['secure-mcp', 'marketplace-templates', params],
@@ -218,7 +218,7 @@ export function useMarketplaceTemplates(params?: {
       if (params?.offset) searchParams.set('offset', params.offset.toString());
       if (params?.search) searchParams.set('search', params.search);
       if (params?.tags) searchParams.set('tags', params.tags);
-      if (params?.is_kortix_team !== undefined) searchParams.set('is_kortix_team', params.is_kortix_team.toString());
+      if (params?.is_he2_team !== undefined) searchParams.set('is_he2_team', params.is_he2_team.toString());
 
       const response = await fetch(`${API_URL}/templates/marketplace?${searchParams}`, {
         headers: {
@@ -428,9 +428,9 @@ export function useDeleteTemplate() {
   });
 }
 
-export function useKortixTeamTemplates() {
+export function useHe2TeamTemplates() {
   return useMarketplaceTemplates({
-    is_kortix_team: true,
+            is_he2_team: true,
     limit: 10
   });
 }

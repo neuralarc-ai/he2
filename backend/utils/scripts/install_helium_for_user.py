@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
 """
-Suna Agent Installation Script for Individual Users
+Helium Agent Installation Script for Individual Users
 
-Simple script to install Suna agents for users by email address.
+Simple script to install Helium agents for users by email address.
 
 Usage:
-    # Install Suna for a user
-    python install_suna_for_user.py user@example.com
+    # Install Helium for a user
+    python install_helium_for_user.py user@example.com
     
     # Install with replacement (if agent already exists)
-    python install_suna_for_user.py user@example.com --replace
+    python install_helium_for_user.py user@example.com --replace
 
 Examples:
-    python install_suna_for_user.py john.doe@company.com
-    python install_suna_for_user.py admin@example.org --replace
+    python install_helium_for_user.py john.doe@company.com
+    python install_helium_for_user.py admin@example.org --replace
 """
 
 import asyncio
@@ -25,15 +25,15 @@ from typing import Optional, Dict, Any
 backend_dir = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(backend_dir))
 
-from utils.suna_default_agent_service import SunaDefaultAgentService
+from utils.helium_default_agent_service import HeliumDefaultAgentService
 from services.supabase import DBConnection
 from utils.logger import logger
 
 
-class SunaUserInstaller:
+class HeliumUserInstaller:
     def __init__(self):
         self.db = DBConnection()
-        self.service = SunaDefaultAgentService(self.db)
+        self.service = HeliumDefaultAgentService(self.db)
     
     async def initialize(self):
         await self.db.initialize()
@@ -100,36 +100,36 @@ class SunaUserInstaller:
         account_id = account['id']
         print(f"✅ Found account: {account['name']} ({account_id})")
         
-        print(f"🚀 Installing Suna agent...")
-        agent_id = await self.service.install_suna_agent_for_user(
+        print(f"🚀 Installing Helium agent...")
+        agent_id = await self.service.install_helium_agent_for_user(
             account_id, 
             replace_existing=replace
         )
         
         if agent_id:
-            print(f"✅ Successfully installed Suna agent!")
+            print(f"✅ Successfully installed Helium agent!")
             print(f"   🤖 Agent ID: {agent_id}")
             print(f"   👤 User: {email}")
             print(f"   📦 Account: {account_id}")
         else:
-            print(f"❌ Failed to install Suna agent for {email}")
+            print(f"❌ Failed to install Helium agent for {email}")
 
 
 
 async def main():
     parser = argparse.ArgumentParser(
-        description="Install Suna agent for a user by email",
+        description="Install Helium agent for a user by email",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__
     )
     
     parser.add_argument('email', help='Email address of the user')
     parser.add_argument('--replace', action='store_true', 
-                       help='Replace existing Suna agent if present')
+                       help='Replace existing Helium agent if present')
     
     args = parser.parse_args()
     
-    installer = SunaUserInstaller()
+    installer = HeliumUserInstaller()
     
     try:
         await installer.initialize()
@@ -144,4 +144,4 @@ async def main():
 
 
 if __name__ == "__main__":
-    asyncio.run(main()) 
+    asyncio.run(main())

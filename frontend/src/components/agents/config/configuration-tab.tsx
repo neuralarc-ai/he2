@@ -38,7 +38,7 @@ interface ConfigurationTabProps {
   onToolsSave?: (tools: Record<string, boolean | { enabled: boolean; description: string }>) => void;
   initialAccordion?: string;
   agentMetadata?: {
-    is_suna_default?: boolean;
+    is_helium_default?: boolean;
     centrally_managed?: boolean;
     restrictions?: {
       system_prompt_editable?: boolean;
@@ -65,18 +65,18 @@ export function ConfigurationTab({
   agentMetadata,
   isLoading = false,
 }: ConfigurationTabProps) {
-  const isSunaAgent = agentMetadata?.is_suna_default || false;
+  const isHeliumAgent = agentMetadata?.is_helium_default || false;
 
   const mapAccordion = (val?: string) => {
-    if (val === 'instructions') return isSunaAgent ? 'integrations' : 'system';
+          if (val === 'instructions') return isHeliumAgent ? 'integrations' : 'system';
     if (val === 'workflows') return 'playbooks';
-    if (isSunaAgent && (val === 'system' || val === 'tools')) {
+          if (isHeliumAgent && (val === 'system' || val === 'tools')) {
       return 'integrations';
     }
     if (['system', 'tools', 'integrations', 'knowledge', 'playbooks', 'triggers'].includes(val || '')) {
       return val!;
     }
-    return isSunaAgent ? 'integrations' : 'system';
+          return isHeliumAgent ? 'integrations' : 'system';
   };
 
   const [openAccordion, setOpenAccordion] = React.useState<string>(mapAccordion(initialAccordion));
@@ -91,9 +91,9 @@ export function ConfigurationTab({
   const areToolsEditable = !isViewingOldVersion && (restrictions.tools_editable !== false);
 
   const handleSystemPromptChange = (value: string) => {
-    if (!isSystemPromptEditable && isSunaAgent) {
+    if (!isSystemPromptEditable && isHeliumAgent) {
       toast.error("System prompt cannot be edited", {
-        description: "Suna's system prompt is managed centrally and cannot be changed.",
+        description: "Helium's system prompt is managed centrally and cannot be changed.",
       });
       return;
     }
@@ -105,9 +105,9 @@ export function ConfigurationTab({
   };
 
   const handleToolsChange = (tools: Record<string, boolean | { enabled: boolean; description: string }>) => {
-    if (!areToolsEditable && isSunaAgent) {
+    if (!areToolsEditable && isHeliumAgent) {
       toast.error("Tools cannot be modified", {
-        description: "Suna's default tools are managed centrally and cannot be changed.",
+        description: "Helium's default tools are managed centrally and cannot be changed.",
       });
       return;
     }
@@ -123,23 +123,23 @@ export function ConfigurationTab({
     <div className="h-full flex flex-col">
       <div className="flex-1 overflow-y-auto">
         <div className="px-8 py-0 space-y-3">
-          {isSunaAgent && (
+          {isHeliumAgent && (
             <div className="p-4 bg-primary/10 border border-primary-200 rounded-xl">
               <div className="flex items-center gap-3 mb-2">
                 <div className="text-primary-600">
                   <HeliumLogo size={20} />
                 </div>
-                <span className="font-semibold text-primary-800">Suna Default Agent</span>
+                <span className="font-semibold text-primary-800">Helium Default Agent</span>
               </div>
               <p className="text-sm text-primary-700">
-                This is Suna's default agent with centrally managed system prompt and tools.
+                This is Helium's default agent with centrally managed system prompt and tools.
                 You can customize integrations, knowledge base, playbooks, and triggers to personalize your experience.
               </p>
             </div>
           )}
 
           <div className="space-y-3">
-            {!isSunaAgent && (
+            {!isHeliumAgent && (
               <div className="group overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:border-primary/10">
                 <button
                   className="w-full p-4 text-left group-hover:bg-muted/30 transition-all duration-300"
@@ -180,7 +180,7 @@ export function ConfigurationTab({
               </div>
             )}
             
-            {!isSunaAgent && (
+            {!isHeliumAgent && (
               <div className="group overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:border-primary/10">
                 <button
                   className="w-full p-4 text-left group-hover:bg-muted/30 transition-all duration-300"
@@ -225,7 +225,7 @@ export function ConfigurationTab({
               </div>
             )}
             
-            {!isSunaAgent && (
+            {!isHeliumAgent && (
               <div className="group overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:border-primary/10">
                 <button
                   className="w-full p-4 text-left group-hover:bg-muted/30 transition-all duration-300"
@@ -234,9 +234,9 @@ export function ConfigurationTab({
                 >
                   <div className="flex items-center gap-4 w-full">
                     <div className="relative flex-shrink-0">
-                      <div className="bg-muted rounded-xl h-10 w-10 flex items-center justify-center transition-all duration-300 group-hover:scale-105">
-                        <Wrench className="h-5 w-5 text-muted-foreground" />
-                      </div>
+                                              <div className="bg-muted rounded-xl h-10 w-10 flex items-center justify-center transition-all duration-300 group-hover:scale-105">
+                          <Wrench className="h-5 w-5 text-muted-foreground" />
+                        </div>
                     </div>
                     <div className="text-left flex-1 min-w-0">
                       <h4 className="text-sm font-semibold text-foreground mb-1 group-hover:text-primary transition-colors duration-300">Default Tools</h4>
@@ -257,7 +257,7 @@ export function ConfigurationTab({
                         tools={displayData.agentpress_tools}
                         onToolsChange={areToolsEditable ? handleToolsChange : () => { }}
                         disabled={!areToolsEditable}
-                        isSunaAgent={isSunaAgent}
+                        isHeliumAgent={isHeliumAgent}
                         isLoading={isLoading}
                       />
                     </div>

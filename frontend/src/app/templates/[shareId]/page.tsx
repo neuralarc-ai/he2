@@ -50,7 +50,7 @@ interface MarketplaceTemplate {
   agentpress_tools: Record<string, any>;
   tags: string[];
   is_public: boolean;
-  is_kortix_team: boolean;
+      is_he2_team: boolean;
   marketplace_published_at: string | null;
   download_count: number;
   created_at: string;
@@ -469,7 +469,7 @@ export default function TemplateSharePage() {
               <div className="space-y-4">
                 <div>
                   <h1 className="text-3xl font-bold tracking-tight">{template.name}</h1>
-                  {template.is_kortix_team && (
+                  {template.is_he2_team && (
                     <Badge variant="secondary" className="mt-2 bg-primary/10 text-primary">
                       <Sparkles className="w-3 h-3 mr-1" />
                       Official Template

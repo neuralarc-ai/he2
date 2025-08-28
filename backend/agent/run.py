@@ -470,8 +470,8 @@ class AgentRunner:
             # If not a dict, assume all tools are enabled
             return disabled_tools
         
-        # Special case: Suna default agents with empty tool config enable all tools
-        if self.config.agent_config.get('is_suna_default', False) and not raw_tools:
+        # Special case: Helium default agents with empty tool config enable all tools
+        if self.config.agent_config.get('is_helium_default', False) and not raw_tools:
             return disabled_tools
         
         def is_tool_enabled(tool_name: str) -> bool:

@@ -5,7 +5,7 @@ from .template_service import (
     TemplateCreationRequest,
     TemplateNotFoundError,
     TemplateAccessDeniedError,
-    SunaDefaultAgentTemplateError,
+    HeliumDefaultAgentTemplateError,
     get_template_service
 )
 
@@ -25,7 +25,7 @@ from .utils import (
     build_mcp_config,
     create_mcp_requirement_from_dict,
     extract_custom_type_from_name,
-    is_suna_default_agent,
+    is_helium_default_agent,
     format_template_for_response,
     format_mcp_requirements_for_response,
     filter_templates_by_tags,
@@ -43,13 +43,13 @@ __all__ = [
     "TemplateInstallationResult",
     
     "TemplateNotFoundError", "TemplateAccessDeniedError",
-    "SunaDefaultAgentTemplateError", "TemplateInstallationError", 
+    "HeliumDefaultAgentTemplateError", "TemplateInstallationError", 
     "InvalidCredentialError",
     
     "validate_template_ownership", "validate_template_access",
     "validate_installation_requirements", "build_unified_config",
     "build_mcp_config", "create_mcp_requirement_from_dict",
-    "extract_custom_type_from_name", "is_suna_default_agent",
+    "extract_custom_type_from_name", "is_helium_default_agent",
     "format_template_for_response", "format_mcp_requirements_for_response",
     "filter_templates_by_tags", "search_templates_by_name",
     

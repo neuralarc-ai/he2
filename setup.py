@@ -34,12 +34,12 @@ def print_banner():
     print(
         f"""
 {Colors.BLUE}{Colors.BOLD}
-   ███████╗██╗   ██╗███╗   ██╗ █████╗ 
-   ██╔════╝██║   ██║████╗  ██║██╔══██╗
-   ███████╗██║   ██║██╔██╗ ██║███████║
-   ╚════██║██║   ██║██║╚██╗██║██╔══██║
-   ███████║╚██████╔╝██║ ╚████║██║  ██║
-   ╚══════╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═╝
+   ██╗  ██╗███████╗██╗     ██╗██╗██╗███╗   ███╗
+   ██║  ██║██╔════╝██║     ██║██║██║████╗ ████║
+   ███████║█████╗  ██║     ██║██║██║██╔████╔██║
+   ██╔══██║██╔══╝  ██║     ██║██║██║██║╚██╔╝██║
+   ██║  ██║███████╗███████╗██║██║██║██║ ╚═╝ ██║
+   ╚═╝  ╚═╝╚══════╝╚══════╝╚═╝╚═╝╚═╝╚═╝     ╚═╝
                                       
    Installation Wizard
 {Colors.ENDC}
@@ -388,7 +388,7 @@ class SetupWizard:
         """Runs the setup wizard."""
         print_banner()
         print(
-            "This wizard will guide you through setting up Suna, an open-source generalist AI Worker.\n"
+            "This wizard will guide you through setting up Helium, an open-source generalist AI Worker.\n"
         )
 
         # Show current configuration status
@@ -413,7 +413,7 @@ class SetupWizard:
             self.run_step(14, self.configure_env_files)
             self.run_step(15, self.setup_supabase_database)
             self.run_step(16, self.install_dependencies)
-            self.run_step(17, self.start_suna)
+            self.run_step(17, self.start_helium)
 
             self.final_instructions()
 
@@ -446,9 +446,9 @@ class SetupWizard:
             return
 
         print_info(
-            "You can start Suna using either Docker Compose or by manually starting the services."
+            "You can start Helium using either Docker Compose or by manually starting the services."
         )
-        print(f"\n{Colors.CYAN}How would you like to set up Suna?{Colors.ENDC}")
+        print(f"\n{Colors.CYAN}How would you like to set up Helium?{Colors.ENDC}")
         print(
             f"{Colors.CYAN}[1] {Colors.GREEN}Docker Compose{Colors.ENDC} {Colors.CYAN}(recommended, starts all services automatically){Colors.ENDC}"
         )
@@ -547,18 +547,18 @@ class SetupWizard:
         for directory in required_dirs:
             if not os.path.isdir(directory):
                 print_error(
-                    f"'{directory}' directory not found. Make sure you're in the Suna repository root."
+                    f"'{directory}' directory not found. Make sure you're in the Helium repository root."
                 )
                 sys.exit(1)
 
         for file in required_files:
             if not os.path.isfile(file):
                 print_error(
-                    f"'{file}' not found. Make sure you're in the Suna repository root."
+                    f"'{file}' not found. Make sure you're in the Helium repository root."
                 )
                 sys.exit(1)
 
-        print_success("Suna repository detected.")
+        print_success("Helium repository detected.")
         return True
 
     def _get_input(
@@ -640,7 +640,7 @@ class SetupWizard:
             )
         else:
             print_info(
-                "Suna uses Daytona for sandboxing. Visit https://app.daytona.io/ to create an account."
+                "Helium uses Daytona for sandboxing. Visit https://app.daytona.io/ to create an account."
             )
             print_info("Then, generate an API key from the 'Keys' menu.")
             input("Press Enter to continue once you have your API key...")
@@ -663,7 +663,7 @@ class SetupWizard:
         print_success("Daytona information saved.")
 
         print_warning(
-            "IMPORTANT: You must create a Suna snapshot in Daytona for it to work properly."
+            "IMPORTANT: You must create a Helium snapshot in Daytona for it to work properly."
         )
         print_info(
             f"Visit {Colors.GREEN}https://app.daytona.io/dashboard/snapshots{Colors.ENDC}{Colors.CYAN} to create a snapshot."
@@ -696,7 +696,7 @@ class SetupWizard:
             )
         else:
             print_info(
-                "Suna requires at least one LLM provider. Supported: OpenAI, Anthropic, Google Gemini, OpenRouter."
+                "Helium requires at least one LLM provider. Supported: OpenAI, Anthropic, Google Gemini, OpenRouter."
             )
 
         # Don't clear existing keys if we're updating
@@ -1268,11 +1268,11 @@ class SetupWizard:
             print_info("Please install dependencies manually and run the script again.")
             sys.exit(1)
 
-    def start_suna(self):
-        """Starts Suna using Docker Compose or shows instructions for manual startup."""
-        print_step(17, self.total_steps, "Starting Suna")
+    def start_helium(self):
+        """Starts Helium using Docker Compose or shows instructions for manual startup."""
+        print_step(17, self.total_steps, "Starting Helium")
         if self.env_vars["setup_method"] == "docker":
-            print_info("Starting Suna with Docker Compose...")
+            print_info("Starting Helium with Docker Compose...")
             try:
                 subprocess.run(
                     ["docker", "compose", "up", "-d", "--build"],
@@ -1295,7 +1295,7 @@ class SetupWizard:
                         "Some services might not be running. Check 'docker compose ps' for details."
                     )
             except subprocess.SubprocessError as e:
-                print_error(f"Failed to start Suna with Docker Compose: {e}")
+                print_error(f"Failed to start Helium with Docker Compose: {e}")
                 print_info(
                     "Try running 'docker compose up --build' manually to diagnose the issue."
                 )

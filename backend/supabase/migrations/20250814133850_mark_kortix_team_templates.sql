@@ -6,7 +6,7 @@ BEGIN;
 -- Update templates to mark as Helium team based on specific criteria
 -- You can adjust the WHERE clause based on your actual Helium team account IDs or template names
 
--- Option 1: Mark templates by specific names that are known Kortix team templates
+-- Option 1: Mark templates by specific names that are known he2 team templates
 UPDATE agent_templates
 SET is_he2_team = true
 WHERE name IN (
@@ -32,7 +32,7 @@ WHERE name IN (
 -- Option 3: Mark templates that have specific metadata indicating they're official
 UPDATE agent_templates
 SET is_he2_team = true
-WHERE metadata->>'is_suna_default' = 'true'
+WHERE metadata->>'is_helium_default' = 'true'
    OR metadata->>'is_official' = 'true';
 
 -- Log the update

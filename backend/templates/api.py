@@ -11,7 +11,7 @@ from .template_service import (
     AgentTemplate,
     TemplateNotFoundError,
     TemplateAccessDeniedError,
-    SunaDefaultAgentTemplateError
+    HeliumDefaultAgentTemplateError
 )
 from .installation_service import (
     get_installation_service,
@@ -55,7 +55,7 @@ class TemplateResponse(BaseModel):
     agentpress_tools: Dict[str, Any]
     tags: List[str]
     is_public: bool
-    is_kortix_team: Optional[bool] = False
+    is_he2_team: Optional[bool] = False
     marketplace_published_at: Optional[str] = None
     download_count: int
     created_at: str
@@ -176,7 +176,7 @@ async def create_template_from_agent(
     
     Requires:
     - User must own the agent
-    - Agent cannot be a Suna default agent
+            - Agent cannot be a Helium default agent
     """
     try:
         # Validate agent ownership first
@@ -205,8 +205,8 @@ async def create_template_from_agent(
     except TemplateAccessDeniedError as e:
         logger.warning(f"Template creation failed - access denied: {e}")
         raise HTTPException(status_code=403, detail=str(e))
-    except SunaDefaultAgentTemplateError as e:
-        logger.warning(f"Template creation failed - Suna default agent: {e}")
+    except HeliumDefaultAgentTemplateError as e:
+        logger.warning(f"Template creation failed - Helium default agent: {e}")
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         logger.error(f"Error creating template from agent {request.agent_id}: {e}", exc_info=True)
@@ -388,13 +388,13 @@ async def get_marketplace_templates(
     offset: Optional[int] = Query(0, description="Number of templates to skip"),
     search: Optional[str] = Query(None, description="Search term for name and description"),
     tags: Optional[str] = Query(None, description="Comma-separated list of tags to filter by"),
-    is_kortix_team: Optional[bool] = Query(None, description="Filter for Kortix team templates")
+            is_he2_team: Optional[bool] = Query(None, description="Filter for he2 team templates")
 ):
     try:
         logger.debug(
             f"Fetching marketplace templates with filters - "
             f"limit: {limit}, offset: {offset}, search: {search}, "
-            f"tags: {tags}, is_kortix_team: {is_kortix_team}"
+            f"tags: {tags}, is_he2_team: {is_he2_team}"
         )
         
         template_service = get_template_service(db)
@@ -404,7 +404,7 @@ async def get_marketplace_templates(
             tag_list = [tag.strip() for tag in tags.split(',') if tag.strip()]
         
         templates = await template_service.get_public_templates(
-            is_kortix_team=is_kortix_team,
+            is_he2_team=is_he2_team,
             limit=limit,
             offset=offset,
             search=search,

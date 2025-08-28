@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Ripple } from '../ui/ripple';
-import { useKortixTeamTemplates, useInstallTemplate } from '@/hooks/react-query/secure-mcp/use-secure-mcp';
+import { useHe2TeamTemplates, useInstallTemplate } from '@/hooks/react-query/secure-mcp/use-secure-mcp';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useRouter } from 'next/navigation';
 import { MarketplaceAgentPreviewDialog } from '@/components/agents/marketplace-agent-preview-dialog';
@@ -32,7 +32,7 @@ const TitleSection = () => (
 
 export function CustomAgentsSection({ onAgentSelect }: CustomAgentsSectionProps) {
   const router = useRouter();
-  const { data: templates, isLoading, error } = useKortixTeamTemplates();
+  const { data: templates, isLoading, error } = useHe2TeamTemplates();
   const installTemplate = useInstallTemplate();
   
   const [selectedTemplate, setSelectedTemplate] = React.useState<MarketplaceTemplate | null>(null);
@@ -52,7 +52,7 @@ export function CustomAgentsSection({ onAgentSelect }: CustomAgentsSectionProps)
       description: template.description,
       tags: template.tags || [],
       download_count: template.download_count || 0,
-      is_kortix_team: template.is_kortix_team || false,
+              is_he2_team: template.is_he2_team || false,
       creator_name: template.creator_name,
       created_at: template.created_at,
       profile_image_url: template.profile_image_url,
