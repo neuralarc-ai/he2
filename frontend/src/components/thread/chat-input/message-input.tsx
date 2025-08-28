@@ -58,6 +58,8 @@ interface MessageInputProps {
   enableAdvancedConfig?: boolean;
   hideAgentSelection?: boolean;
   isSunaAgent?: boolean;
+  selectedMode: 'normal' | 'agent' | 'sandbox';
+  onModeChange: (mode: 'normal' | 'agent' | 'sandbox') => void;
   // New props for integrations
   onOpenIntegrations?: () => void;
   onOpenInstructions?: () => void;
@@ -103,6 +105,8 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
       enableAdvancedConfig = false,
       hideAgentSelection = false,
       isSunaAgent,
+      selectedMode,
+      onModeChange,
       onOpenIntegrations,
       onOpenInstructions,
       onOpenKnowledge,
@@ -257,6 +261,41 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
 
         <div className="flex items-center justify-between mt-0 mb-1 px-2">
           <div className="flex items-center gap-3">
+            {/* Mode Selection */}
+            <div className="flex items-center gap-2">
+              <label htmlFor="mode-select" className="text-xs text-muted-foreground font-medium">
+                Mode:
+              </label>
+              <select
+                id="mode-select"
+                value={selectedMode}
+                onChange={(e) => onModeChange(e.target.value as 'normal' | 'agent' | 'sandbox')}
+                className={cn(
+                  "text-xs bg-background border rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer transition-colors",
+                  uploadedFiles.length > 0 && selectedMode !== 'sandbox' 
+                    ? "border-orange-500 bg-orange-50 dark:bg-orange-950/20" 
+                    : "border-border hover:border-border/60"
+                )}
+                disabled={loading || (disabled && !isAgentRunning)}
+                title={
+                  uploadedFiles.length > 0 && selectedMode !== 'sandbox'
+                    ? '⚠️ Sandbox mode required for file processing' :
+                    selectedMode === 'normal' ? 'Basic chat without advanced features' :
+                    selectedMode === 'agent' ? 'Enhanced AI agent with context management' :
+                    'Full AI agent with sandbox environment for file processing and code execution'
+                }
+              >
+                <option value="normal" disabled={uploadedFiles.length > 0}>💬 Normal Chat</option>
+                <option value="agent" disabled={uploadedFiles.length > 0}>🤖 Agent Mode</option>
+                <option value="sandbox">🖥️ Agent + Sandbox</option>
+              </select>
+              {uploadedFiles.length > 0 && selectedMode !== 'sandbox' && (
+                <span className="text-xs text-orange-600 dark:text-orange-400 font-medium">
+                  Files require sandbox
+                </span>
+              )}
+            </div>
+
             {!hideAttachments && (
               <>
                 <DropdownMenu>

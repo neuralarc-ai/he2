@@ -180,6 +180,7 @@ export function DashboardContent() {
       reasoning_effort?: string;
       stream?: boolean;
       enable_context_manager?: boolean;
+      mode?: 'normal' | 'agent' | 'sandbox';
     },
   ) => {
     if (
@@ -207,11 +208,20 @@ export function DashboardContent() {
         formData.append('files', file, normalizedName);
       });
 
-      if (options?.model_name) formData.append('model_name', options.model_name);
-      formData.append('enable_thinking', String(options?.enable_thinking ?? false));
-      formData.append('reasoning_effort', options?.reasoning_effort ?? 'low');
-      formData.append('stream', String(options?.stream ?? true));
-      formData.append('enable_context_manager', String(options?.enable_context_manager ?? false));
+      // Handle mode-based configuration
+      if (options?.mode) {
+        const modeConfig = getModeConfiguration(options.mode, options.enable_thinking);
+        formData.append('enable_thinking', String(options.enable_thinking ?? false));
+        formData.append('reasoning_effort', modeConfig.reasoning_effort);
+        formData.append('enable_context_manager', String(modeConfig.enable_context_manager));
+      } else {
+        // Fallback to direct options
+        if (options?.model_name) formData.append('model_name', options.model_name);
+        formData.append('enable_thinking', String(options?.enable_thinking ?? false));
+        formData.append('reasoning_effort', options?.reasoning_effort ?? 'low');
+        formData.append('stream', String(options?.stream ?? true));
+        formData.append('enable_context_manager', String(options?.enable_context_manager ?? false));
+      }
 
       const result = await initiateAgentMutation.mutateAsync(formData);
 
@@ -238,6 +248,32 @@ export function DashboardContent() {
       }
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  // Helper function to get mode-based configuration
+  const getModeConfiguration = (mode: string, thinkingEnabled: boolean) => {
+    switch(mode) {
+      case 'normal':
+        return {
+          enable_context_manager: false,
+          reasoning_effort: 'low'
+        };
+      case 'agent':
+        return {
+          enable_context_manager: true,
+          reasoning_effort: thinkingEnabled ? 'medium' : 'low'
+        };
+      case 'sandbox':
+        return {
+          enable_context_manager: true,
+          reasoning_effort: thinkingEnabled ? 'high' : 'medium'
+        };
+      default:
+        return {
+          enable_context_manager: false,
+          reasoning_effort: 'low'
+        };
     }
   };
 
