@@ -57,7 +57,7 @@ interface MessageInputProps {
   onAgentSelect?: (agentId: string | undefined) => void;
   enableAdvancedConfig?: boolean;
   hideAgentSelection?: boolean;
-  isSunaAgent?: boolean;
+  isHeliumAgent?: boolean;
   // New props for integrations
   onOpenIntegrations?: () => void;
   onOpenInstructions?: () => void;
@@ -102,7 +102,7 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
       onAgentSelect,
       enableAdvancedConfig = false,
       hideAgentSelection = false,
-      isSunaAgent,
+      isHeliumAgent,
       onOpenIntegrations,
       onOpenInstructions,
       onOpenKnowledge,
@@ -337,7 +337,7 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
                   <p role='button' className='text-sm text-amber-500 hidden sm:block cursor-pointer' onClick={() => setBillingModalOpen(true)}>Upgrade for more usage</p>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>The free tier is severely limited by the amount of usage. Upgrade to experience the full power of Suna.</p>
+                  <p>The free tier is severely limited by the amount of usage. Upgrade to experience the full power of Helium.</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>

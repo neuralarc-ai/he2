@@ -72,6 +72,175 @@ interface ToolCallSnapshot {
 const FLOATING_LAYOUT_ID = 'tool-panel-float';
 const CONTENT_LAYOUT_ID = 'tool-panel-content';
 
+interface ViewToggleProps {
+  currentView: 'tools' | 'browser';
+  onViewChange: (view: 'tools' | 'browser') => void;
+}
+
+const ViewToggle: React.FC<ViewToggleProps> = ({ currentView, onViewChange }) => {
+  return (
+    <div className="relative flex items-center gap-1 bg-muted rounded-3xl px-1 py-1">
+      {/* Sliding background */}
+      <motion.div
+        className="absolute h-7 w-7 bg-white rounded-xl shadow-sm"
+        initial={false}
+        animate={{
+          x: currentView === 'tools' ? 0 : 32, // 28px button width + 4px gap
+        }}
+        transition={{
+          type: "spring",
+          stiffness: 300,
+          damping: 30
+        }}
+      />
+      
+      {/* Buttons */}
+      <Button
+        size="sm"
+        onClick={() => onViewChange('tools')}
+        className={`relative z-10 h-7 w-7 p-0 rounded-xl bg-transparent hover:bg-transparent shadow-none ${
+          currentView === 'tools'
+            ? 'text-black'
+            : 'text-gray-500 dark:text-gray-400'
+        }`}
+        title="Switch to Tool View"
+      >
+        <Wrench className="h-3.5 w-3.5" />
+      </Button>
+
+      <Button
+        size="sm"
+        onClick={() => onViewChange('browser')}
+        className={`relative z-10 h-7 w-7 p-0 rounded-xl bg-transparent hover:bg-transparent shadow-none ${
+          currentView === 'browser'
+            ? 'text-black'
+            : 'text-gray-500 dark:text-gray-400'
+        }`}
+        title="Switch to Browser View"
+      >
+        <Globe className="h-3.5 w-3.5" />
+      </Button>
+    </div>
+  );
+};
+
+// Helper function to generate the computer title
+const getComputerTitle = (agentName?: string): string => {
+          return agentName ? `${agentName}'s Computer` : "Helium's Computer";
+};
+
+// Reusable header component for the tool panel
+interface PanelHeaderProps {
+  agentName?: string;
+  onClose: () => void;
+  isStreaming?: boolean;
+  variant?: 'drawer' | 'desktop' | 'motion';
+  showMinimize?: boolean;
+  hasToolResult?: boolean;
+  layoutId?: string;
+}
+
+const PanelHeader: React.FC<PanelHeaderProps> = ({
+  agentName,
+  onClose,
+  isStreaming = false,
+  variant = 'desktop',
+  showMinimize = false,
+  hasToolResult = false,
+  layoutId,
+}) => {
+  const title = getComputerTitle(agentName);
+  
+  if (variant === 'drawer') {
+    return (
+      <DrawerHeader className="pb-2">
+        <div className="flex items-center justify-between">
+          <DrawerTitle className="text-lg font-medium">
+            {title}
+          </DrawerTitle>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+            className="h-8 w-8"
+            title="Minimize to floating preview"
+          >
+            <Minimize2 className="h-4 w-4" />
+          </Button>
+        </div>
+      </DrawerHeader>
+    );
+  }
+
+  if (variant === 'motion') {
+    return (
+      <motion.div
+        layoutId={layoutId}
+        className="p-3"
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <motion.div layoutId="tool-icon" className="ml-2">
+              <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-100">
+                {title}
+              </h2>
+            </motion.div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {isStreaming && (
+              <div className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400 flex items-center gap-1.5">
+                <CircleDashed className="h-3 w-3 animate-spin" />
+                <span>Running</span>
+              </div>
+            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onClose}
+              className="h-8 w-8"
+              title="Minimize to floating preview"
+            >
+              <Minimize2 className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
+
+  return (
+    <div className="pt-4 pl-4 pr-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="ml-2">
+            <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-100">
+              {title}
+            </h2>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          {isStreaming && (
+            <Badge variant="outline" className="gap-1.5 p-2 rounded-3xl">
+              <CircleDashed className="h-3 w-3 animate-spin" />
+              <span>Running</span>
+            </Badge>
+          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+            className="h-8 w-8"
+            title={showMinimize ? "Minimize to floating preview" : "Close"}
+          >
+            {showMinimize ? <Minimize2 className="h-4 w-4" /> : <X className="h-4 w-4" />}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export function ToolCallSidePanel({
   isOpen,
   onClose,

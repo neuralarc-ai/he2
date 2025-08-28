@@ -31,7 +31,7 @@ interface Agent {
 interface AgentPreviewProps {
   agent: Agent;
   agentMetadata?: {
-    is_suna_default?: boolean;
+    is_helium_default?: boolean;
   };
 }
 
@@ -44,7 +44,7 @@ export const AgentPreview = ({ agent, agentMetadata }: AgentPreviewProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasStartedConversation, setHasStartedConversation] = useState(false);
 
-  const isSunaAgent = agentMetadata?.is_suna_default || false;
+  const isHeliumAgent = agentMetadata?.is_helium_default || false;
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatInputRef = useRef<ChatInputHandles>(null);
@@ -59,7 +59,7 @@ export const AgentPreview = ({ agent, agentMetadata }: AgentPreviewProps) => {
   const { avatar, color } = getAgentStyling();
 
   const agentAvatarComponent = React.useMemo(() => {
-    if (isSunaAgent) {
+    if (isHeliumAgent) {
       return <HeliumLogo size={16} />;
     }
     if (agent.profile_image_url) {
@@ -75,7 +75,7 @@ export const AgentPreview = ({ agent, agentMetadata }: AgentPreviewProps) => {
       return <div className="text-base leading-none">{avatar}</div>;
     }
     return <HeliumLogo size={16} />;
-  }, [agent.profile_image_url, agent.name, avatar, isSunaAgent]);
+  }, [agent.profile_image_url, agent.name, avatar, isHeliumAgent]);
 
   const initiateAgentMutation = useInitiateAgentWithInvalidation();
   const addUserMessageMutation = useAddUserMessageMutation();
@@ -349,7 +349,7 @@ export const AgentPreview = ({ agent, agentMetadata }: AgentPreviewProps) => {
             emptyStateComponent={
               <div className="flex flex-col items-center text-center text-muted-foreground/80">
                 <div className="flex w-20 aspect-square items-center justify-center rounded-2xl bg-muted-foreground/10 p-4 mb-4">
-                  {isSunaAgent ? (
+                  {isHeliumAgent ? (
                     <HeliumLogo size={36} />
                   ) : agent.profile_image_url ? (
                     <img 

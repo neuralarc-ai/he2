@@ -680,8 +680,8 @@ if config.ENV_MODE != EnvMode.PRODUCTION:
             if not composio_trigger_id:
                 return self.fail_response("Failed to get Composio trigger id from response")
 
-            # Build Suna trigger and save
-            suna_config: Dict[str, Any] = {
+            # Build Helium trigger and save
+            helium_config: Dict[str, Any] = {
                 "composio_trigger_id": composio_trigger_id,
                 "trigger_slug": slug,
                 "execution_type": route,
@@ -689,18 +689,18 @@ if config.ENV_MODE != EnvMode.PRODUCTION:
             }
             if route == "agent":
                 if agent_prompt:
-                    suna_config["agent_prompt"] = agent_prompt
+                    helium_config["agent_prompt"] = agent_prompt
             else:
-                suna_config["workflow_id"] = workflow_id
+                helium_config["workflow_id"] = workflow_id
                 if workflow_input:
-                    suna_config["workflow_input"] = workflow_input
+                    helium_config["workflow_input"] = workflow_input
 
             trigger_svc = get_trigger_service(self.db)
             trigger = await trigger_svc.create_trigger(
                 agent_id=self.agent_id,
                 provider_id="composio",
                 name=name or slug,
-                config=suna_config,
+                config=helium_config,
                 description=f"Composio event: {slug}"
             )
 

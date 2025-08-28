@@ -16,7 +16,7 @@ interface MarketplaceTabProps {
   setMarketplaceFilter: (value: 'all' | 'helium' | 'community' | 'mine') => void;
   marketplaceLoading: boolean;
   allMarketplaceItems: MarketplaceTemplate[];
-  kortixTeamItems: MarketplaceTemplate[];
+  he2TeamItems: MarketplaceTemplate[];
   communityItems: MarketplaceTemplate[];
   mineItems: MarketplaceTemplate[];
   installingItemId: string | null;
@@ -34,7 +34,7 @@ export const MarketplaceTab = ({
   setMarketplaceFilter,
   marketplaceLoading,
   allMarketplaceItems,
-  kortixTeamItems,
+  he2TeamItems,
   communityItems,
   mineItems,
   installingItemId,
@@ -102,14 +102,14 @@ export const MarketplaceTab = ({
           <div className="space-y-12">
             {marketplaceFilter === 'all' ? (
               <>
-                {kortixTeamItems.length > 0 && (
+                {he2TeamItems.length > 0 && (
                   <div className="space-y-6">
                     <MarketplaceSectionHeader
                       title="By team Helium"
                       subtitle="Official agents, maintained and supported"
                     />
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                      {kortixTeamItems.map((item) => (
+                      {he2TeamItems.map((item) => (
                         <AgentCard
                           key={item.id}
                           mode="marketplace"

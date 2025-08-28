@@ -36,7 +36,7 @@ interface BaseAgentData {
 
 interface MarketplaceData extends BaseAgentData {
   creator_id: string;
-  is_kortix_team?: boolean;
+      is_he2_team?: boolean;
   download_count: number;
   creator_name?: string;
   marketplace_published_at?: string;
@@ -60,7 +60,7 @@ interface AgentData extends BaseAgentData {
     version_number: number;
   };
   metadata?: {
-    is_suna_default?: boolean;
+    is_helium_default?: boolean;
     centrally_managed?: boolean;
     restrictions?: {
       system_prompt_editable?: boolean;
@@ -91,15 +91,15 @@ interface AgentCardProps {
 }
 
 const MarketplaceBadge: React.FC<{ 
-  isKortixTeam?: boolean; 
+  isHe2Team?: boolean; 
   isOwner?: boolean;
-}> = ({ isKortixTeam, isOwner }) => {
+  }> = ({ isHe2Team, isOwner }) => {
   return (
     <div className="flex gap-1 flex-wrap">
-      {isKortixTeam && (
+              {isHe2Team && (
         <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-0 dark:bg-blue-950 dark:text-blue-300">
           <CheckCircle className="h-3 w-3 mr-1" />
-          Kortix
+          Neural Arc
         </Badge>
       )}
       {isOwner && (
@@ -128,15 +128,15 @@ const TemplateBadge: React.FC<{ isPublic?: boolean }> = ({ isPublic }) => {
   );
 };
 
-const AgentBadges: React.FC<{ agent: AgentData, isSunaAgent: boolean }> = ({ agent, isSunaAgent }) => (
+const AgentBadges: React.FC<{ agent: AgentData, isHeliumAgent: boolean }> = ({ agent, isHeliumAgent }) => (
   <div className="flex gap-1">
-    {!isSunaAgent && agent.current_version && (
+          {!isHeliumAgent && agent.current_version && (
       <Badge variant="outline" className="text-xs">
         <GitBranch className="h-3 w-3 mr-1" />
         {agent.current_version.version_name}
       </Badge>
     )}
-    {!isSunaAgent && agent.is_public && (
+          {!isHeliumAgent && agent.is_public && (
       <Badge variant="default" className="bg-green-100 text-green-700 border-0 dark:bg-green-950 dark:text-green-300 text-xs">
         <Globe className="h-3 w-3 mr-1" />
         Published
@@ -338,8 +338,8 @@ const TemplateActions: React.FC<{
   </div>
 );
 
-const CardAvatar: React.FC<{ isSunaAgent?: boolean; profileImageUrl?: string; agentName?: string }> = ({ isSunaAgent = false, profileImageUrl, agentName }) => {
-  if (isSunaAgent) {
+const CardAvatar: React.FC<{ isHeliumAgent?: boolean; profileImageUrl?: string; agentName?: string }> = ({ isHeliumAgent = false, profileImageUrl, agentName }) => {
+  if (isHeliumAgent) {
     return (
       <div className="h-14 w-14 bg-muted border flex items-center justify-center rounded-2xl">
         <HeliumLogo size={28} />
@@ -391,7 +391,7 @@ export const AgentCard: React.FC<AgentCardProps> = ({
   currentUserId
 }) => {
   
-  const isSunaAgent = mode === 'agent' && (data as AgentData).metadata?.is_suna_default === true;
+  const isHeliumAgent = mode === 'agent' && (data as AgentData).metadata?.is_helium_default === true;
   const isOwner = currentUserId && mode === 'marketplace' && (data as MarketplaceData).creator_id === currentUserId;
   
   const cardClassName = `group relative bg-accent/50 rounded-4xl overflow-hidden transition-all duration-300 cursor-pointer flex flex-col min-h-[280px] max-h-[320px] hover:bg-accent/70`;
@@ -400,13 +400,13 @@ export const AgentCard: React.FC<AgentCardProps> = ({
     switch (mode) {
       case 'marketplace':
         return <MarketplaceBadge 
-          isKortixTeam={(data as MarketplaceData).is_kortix_team} 
+          isHe2Team={(data as MarketplaceData).is_he2_team} 
           isOwner={isOwner}
         />;
       case 'template':
         return <TemplateBadge isPublic={(data as TemplateData).is_public} />;
       case 'agent':
-        return <AgentBadges agent={data as AgentData} isSunaAgent={isSunaAgent} />;
+        return <AgentBadges agent={data as AgentData} isHeliumAgent={isHeliumAgent} />;
       default:
         return null;
     }
@@ -454,7 +454,7 @@ export const AgentCard: React.FC<AgentCardProps> = ({
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
       <div className="relative p-6 flex flex-col flex-1">
         <div className="flex items-start justify-between mb-4">
-          <CardAvatar isSunaAgent={isSunaAgent} profileImageUrl={(data as any)?.profile_image_url} agentName={data.name} />
+          <CardAvatar isHeliumAgent={isHeliumAgent} profileImageUrl={(data as any)?.profile_image_url} agentName={data.name} />
           <div className="flex items-center gap-2">
             {renderBadge()}
           </div>

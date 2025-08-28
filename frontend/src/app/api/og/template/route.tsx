@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
               textAlign: 'center',
             }}
           >
-            {template.is_kortix_team && (
+            {template.is_he2_team && (
               <div
                 style={{
                   display: 'flex',
