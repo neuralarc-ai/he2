@@ -95,7 +95,7 @@ export const AgentSelector: React.FC<AgentSelectorProps> = ({
       const isSelectedAgentHelium = selectedAgent.metadata?.is_helium_default || false;
       return {
         name: selectedAgent.name,
-        icon: isSelectedAgentHelium ? <HeliumLogo size={16} /> : selectedAgent.icon
+        icon: isSelectedAgentHelium ? <HeliumLogo size={12} /> : selectedAgent.icon
       };
     }
     
@@ -106,7 +106,7 @@ export const AgentSelector: React.FC<AgentSelectorProps> = ({
     const isDefaultAgentHelium = defaultAgent?.metadata?.is_helium_default || false;
     return {
               name: defaultAgent?.name || 'Helium',
-              icon: isDefaultAgentHelium ? <HeliumLogo size={16} /> : (defaultAgent?.icon || <HeliumLogo size={16} />)
+              icon: isDefaultAgentHelium ? <HeliumLogo size={12} /> : (defaultAgent?.icon || <HeliumLogo size={12} />)
     };
   };
 
@@ -172,7 +172,7 @@ export const AgentSelector: React.FC<AgentSelectorProps> = ({
             >
               <div className="flex-shrink-0">
                 {isThisAgentHelium ? (
-                  <HeliumLogo size={16} />
+                  <HeliumLogo size={12} />
                 ) : (
                   agent.icon
                 )}

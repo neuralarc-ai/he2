@@ -548,122 +548,34 @@ export function ToolCallSidePanel({
   const fetchDatabaseRuntime = React.useCallback(async () => {
     if (!threadId) return;
     
-    try {
-      setIsLoadingRuntime(true);
-      const response = await fetch(`/api/runtime/thread/${threadId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setDatabaseRuntime(data.total_runtime_ms || 0);
-      }
-    } catch (error) {
-      console.error('Failed to fetch runtime from database:', error);
-    } finally {
-      setIsLoadingRuntime(false);
-    }
+    // TODO: Implement runtime tracking API endpoint
+    // For now, this is a no-op to prevent 404 errors
+    console.log('Runtime tracking: Fetching database runtime (not yet implemented)', { threadId });
+    setDatabaseRuntime(0); // Set to 0 since we can't fetch from non-existent endpoint
   }, [threadId]);
 
   const createAgentRun = React.useCallback(async (runId: string, threadId: string) => {
-    try {
-      console.log('API: Creating agent run:', { runId, threadId });
-      const response = await fetch(`/api/runtime/agent-run/${runId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ thread_id: threadId }),
-      });
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Failed to create agent run:', response.status, response.statusText, errorText);
-      } else {
-        const result = await response.json();
-        console.log('Successfully created agent run:', result);
-      }
-    } catch (error) {
-      console.error('Error creating agent run:', error);
-    }
+    // TODO: Implement runtime tracking API endpoint
+    // For now, this is a no-op to prevent 404 errors
+    console.log('Runtime tracking: Agent run created (not yet implemented)', { runId, threadId });
   }, []);
 
   const completeAgentRun = React.useCallback(async (runId: string, totalRuntime: number) => {
-    try {
-      console.log('API: Completing agent run:', { runId, totalRuntime });
-      const response = await fetch(`/api/runtime/agent-run/${runId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          status: 'completed',
-          total_runtime_ms: totalRuntime 
-        }),
-      });
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Failed to complete agent run:', response.status, response.statusText, errorText);
-      } else {
-        const result = await response.json();
-        console.log('Successfully completed agent run:', result);
-        // Refresh runtime from database after completion
-        if (threadId) {
-          fetchDatabaseRuntime();
-        }
-      }
-    } catch (error) {
-      console.error('Error completing agent run:', error);
+    // TODO: Implement runtime tracking API endpoint
+    // For now, this is a no-op to prevent 404 errors
+    console.log('Runtime tracking: Agent run completed (not yet implemented)', { runId, totalRuntime });
+    
+    // Refresh runtime from database after completion if needed
+    if (threadId) {
+      fetchDatabaseRuntime();
     }
   }, [threadId, fetchDatabaseRuntime]);
 
   const updateHeartbeat = React.useCallback(async (runId: string) => {
-    try {
-      // Calculate runtime safely
-      let totalRuntime = 0;
-      if (agentStartTime && agentStartTime > 0) {
-        const runtime = Date.now() - agentStartTime;
-        // Ensure runtime is not negative and reasonable
-        totalRuntime = Math.max(0, Math.min(runtime, 24 * 60 * 60 * 1000)); // Max 24 hours
-      }
-
-      console.log('Sending heartbeat update:', { runId, totalRuntime, agentStartTime });
-
-      const response = await fetch(`/api/runtime/agent-run/${runId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          status: 'running',
-          total_runtime_ms: totalRuntime
-        }),
-      });
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Failed to update heartbeat:', {
-          status: response.status,
-          statusText: response.statusText,
-          errorText,
-          runId,
-          totalRuntime
-        });
-        
-        // If it's an authentication error, log it specifically
-        if (response.status === 401) {
-          console.error('Authentication failed for heartbeat update');
-        }
-      } else {
-        console.log('Heartbeat update successful for runId:', runId);
-      }
-    } catch (error) {
-      console.error('Error updating heartbeat:', {
-        error,
-        message: error instanceof Error ? error.message : 'Unknown error',
-        runId,
-        agentStartTime
-      });
-    }
-  }, [agentStartTime]);
+    // TODO: Implement runtime tracking API endpoint
+    // For now, this is a no-op to prevent 404 errors
+    console.log('Runtime tracking: Heartbeat update (not yet implemented)', { runId });
+  }, []);
 
   const renderStatusButton = React.useCallback(() => {
     const baseClasses = "flex items-center justify-center gap-1.5 px-2 py-0.5 rounded-full w-[116px]";
@@ -700,11 +612,11 @@ export function ToolCallSidePanel({
       } else {
         return (
           <div
-            className={`${baseClasses} bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors cursor-pointer`}
+            className={`${baseClasses} bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors cursor-pointer`}
             onClick={jumpToLatest}
           >
-            <div className={`${dotClasses} bg-helium-blue`} />
-            <span className={`${textClasses} text-helium-blue`}>Jump to Latest</span>
+            <div className={`${dotClasses} bg-green-500`} />
+            <span className={`${textClasses} text-green-600`}>Jump to Latest</span>
           </div>
         );
       }
@@ -887,7 +799,7 @@ export function ToolCallSidePanel({
                 <div className="pt-4 pl-4 pr-4">
                   <div className="flex items-center justify-between">
                     <div className="ml-2 flex items-center gap-2">
-                      <h2 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 prose prose-sm dark:prose-inver">
+                      <h2 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 prose prose-sm dark:prose-invert">
                         {/* {agentName ? `${agentName}'s Computer` : 'Suna\'s Computer'} */}
                         Helium's Core
                       </h2>
@@ -985,20 +897,20 @@ export function ToolCallSidePanel({
           </div>
           <div className="flex flex-col items-center justify-center flex-1 p-8">
             <div className="flex flex-col items-center justify-center w-full h-full">
-              <div className="relative w-[30%] h-[30%] flex items-center justify-center">
+              <div className="relative w-[20%] h-[20%] flex items-center justify-center">
                 <Image 
                   src="/helium-brain.png" 
                   alt="Helium Core Initiating" 
-                  width={400}
-                  height={400}
+                  width={240}
+                  height={240}
                   className="w-full h-full object-contain dark:hidden"
                   priority
                 />
                 <Image 
                   src="/helium-brain(dark).png" 
                   alt="Helium Core Initiating" 
-                  width={400}
-                  height={400}
+                  width={240}
+                  height={240}
                   className="w-full h-full object-contain hidden dark:block"
                   priority
                 />
@@ -1191,7 +1103,8 @@ export function ToolCallSidePanel({
                   className="h-8 w-8 ml-1"
                   title="Minimize to floating preview"
                 >
-                  <Minimize2 className="h-4 w-4" />
+                  <Image src="/icons/minimize2-light.svg" alt="expand" width={18} height={18} className="block dark:hidden mb-0" />  
+                  <Image src="/icons/minimize2-dark.svg" alt="expand" width={18} height={18} className="hidden dark:block mb-0" />
                 </Button>
               </div>
             )}
@@ -1311,7 +1224,8 @@ export function ToolCallSidePanel({
                       disabled={displayIndex <= 0}
                       className="h-7 w-7 text-zinc-500 cursor-pointer hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
                     >
-                      <SkipBack className="h-4 w-4" />
+                     <Image src="/icons/skip-back.svg" alt="expand" width={18} height={18} className="block dark:hidden mb-0" />
+                     <Image src="/icons/skip-back-dark.svg" alt="expand" width={18} height={18} className="hidden dark:block mb-0" />
                     </Button>
                     <span className="text-xs text-zinc-600 dark:text-zinc-400 font-medium tabular-nums px-1 min-w-[44px] text-center">
                       {displayIndex + 1}/{displayTotalCalls}
@@ -1323,7 +1237,8 @@ export function ToolCallSidePanel({
                       disabled={displayIndex >= displayTotalCalls - 1}
                       className="h-7 w-7 text-zinc-500 cursor-pointer hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
                     >
-                      <SkipForward className="h-4 w-4" />
+                     <Image src="/icons/skip-forward.svg" alt="expand" width={18} height={18} className="block dark:hidden mb-0" />
+                     <Image src="/icons/skip-forward-dark.svg" alt="expand" width={18} height={18} className="hidden dark:block mb-0" />
                     </Button>
                   </div>
 

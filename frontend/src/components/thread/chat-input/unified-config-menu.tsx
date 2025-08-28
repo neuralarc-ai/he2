@@ -139,7 +139,7 @@ const LoggedInMenu: React.FC<UnifiedConfigMenuProps> = ({
 
 
     const renderAgentIcon = (agent: any) => {
-        return <AgentAvatar agentId={agent?.agent_id} size={16} className="h-4 w-4" fallbackName={agent?.name} />;
+        return <AgentAvatar agentId={agent?.agent_id} size={12} className="h-4 w-4" fallbackName={agent?.name} />;
     };
 
     const displayAgent = useMemo(() => {

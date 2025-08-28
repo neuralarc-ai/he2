@@ -19,7 +19,7 @@ import {
   Sun,
   Moon,
   KeyRound,
-  EllipsisIcon
+  EllipsisIcon,
 } from 'lucide-react';
 import { useAccounts } from '@/hooks/use-accounts';
 import NewTeamForm from '@/components/basejump/new-team-form';
@@ -56,26 +56,56 @@ import { useFeatureFlag } from '@/lib/feature-flags';
 
 // Custom Logout Icon component using the logout.svg
 const LogoutIcon = ({ className }: { className?: string }) => (
-  <svg 
-    width="16" 
-    height="16" 
-    viewBox="0 0 43 42" 
-    fill="none" 
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 43 42"
+    fill="none"
     xmlns="http://www.w3.org/2000/svg"
     className={className}
   >
-    <path 
-      d="M2 21L1.21913 20.3753L0.719375 21L1.21913 21.6247L2 21ZM20 22C20.5523 22 21 21.5523 21 21C21 20.4477 20.5523 20 20 20V21V22ZM10 11L9.21913 10.3753L1.21913 20.3753L2 21L2.78087 21.6247L10.7809 11.6247L10 11ZM2 21L1.21913 21.6247L9.21913 31.6247L10 31L10.7809 30.3753L2.78087 20.3753L2 21ZM2 21V22H20V21V20H2V21Z" 
+    <path
+      d="M2 21L1.21913 20.3753L0.719375 21L1.21913 21.6247L2 21ZM20 22C20.5523 22 21 21.5523 21 21C21 20.4477 20.5523 20 20 20V21V22ZM10 11L9.21913 10.3753L1.21913 20.3753L2 21L2.78087 21.6247L10.7809 11.6247L10 11ZM2 21L1.21913 21.6247L9.21913 31.6247L10 31L10.7809 30.3753L2.78087 20.3753L2 21ZM2 21V22H20V21V20H2V21Z"
       fill="currentColor"
     />
-    <path 
-      d="M18 13.2639V8.38851C18 6.77017 18 5.961 18.474 5.4015C18.9479 4.84201 19.7461 4.70899 21.3424 4.44293L35.0136 2.1644C38.2567 1.62388 39.8782 1.35363 40.9391 2.25232C42 3.15102 42 4.79493 42 8.08276V33.9172C42 37.2051 42 38.849 40.9391 39.7477C39.8782 40.6464 38.2567 40.3761 35.0136 39.8356L21.3424 37.5571C19.7461 37.291 18.9479 37.158 18.474 36.5985C18 36.039 18 35.2298 18 33.6115V29.1319" 
-      stroke="currentColor" 
-      strokeLinecap="round" 
+    <path
+      d="M18 13.2639V8.38851C18 6.77017 18 5.961 18.474 5.4015C18.9479 4.84201 19.7461 4.70899 21.3424 4.44293L35.0136 2.1644C38.2567 1.62388 39.8782 1.35363 40.9391 2.25232C42 3.15102 42 4.79493 42 8.08276V33.9172C42 37.2051 42 38.849 40.9391 39.7477C39.8782 40.6464 38.2567 40.3761 35.0136 39.8356L21.3424 37.5571C19.7461 37.291 18.9479 37.158 18.474 36.5985C18 36.039 18 35.2298 18 33.6115V29.1319"
+      stroke="currentColor"
+      strokeLinecap="round"
       strokeLinejoin="round"
     />
   </svg>
 );
+
+// Dynamic icon component that changes path based on theme
+const DynamicIcon = ({
+  lightPath,
+  darkPath,
+  alt,
+  width,
+  height,
+  className,
+}: {
+  lightPath: string;
+  darkPath: string;
+  alt: string;
+  width: number;
+  height: number;
+  className?: string;
+}) => {
+  const { theme } = useTheme();
+  const iconPath = theme === 'dark' ? darkPath : lightPath;
+
+  return (
+    <Image
+      src={iconPath}
+      alt={alt}
+      width={width}
+      height={height}
+      className={className}
+    />
+  );
+};
 
 export function NavUserWithTeams({
   user,
@@ -91,7 +121,8 @@ export function NavUserWithTeams({
   const { data: accounts } = useAccounts();
   const [showNewTeamDialog, setShowNewTeamDialog] = React.useState(false);
   const { theme, setTheme } = useTheme();
-  const { enabled: customAgentsEnabled, loading: flagLoading } = useFeatureFlag("custom_agents");
+  const { enabled: customAgentsEnabled, loading: flagLoading } =
+    useFeatureFlag('custom_agents');
 
   // Prepare personal account and team accounts
   const personalAccount = React.useMemo(
@@ -197,20 +228,23 @@ export function NavUserWithTeams({
                 size="lg"
                 className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
               >
-                {/* <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-lg">
-                    {getInitials(user.name)}
-                  </AvatarFallback>
-                </Avatar> */}
                 <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:text-center group-data-[collapsible=icon]:ml-0 ml-2">
-                  <span className="truncate font-medium group-data-[collapsible=icon]:hidden">Settings</span>
+                  <span className="truncate font-medium group-data-[collapsible=icon]:hidden">
+                    Settings
+                  </span>
                 </div>
-                <EllipsisIcon className="ml-auto size-4 group-data-[collapsible=icon]:mr-2" />
+                <DynamicIcon
+                  lightPath="/icons/more-horizontal-light.svg"
+                  darkPath="/icons/more-horizontal-dark.svg"
+                  alt="menu"
+                  width={16}
+                  height={16}
+                  className="ml-auto size-4 group-data-[collapsible=icon]:mr-2"
+                />
               </SidebarMenuButton>
             </DropdownMenuTrigger>
             <DropdownMenuContent
-              className="w-(--radix-dropdown-menu-trigger-width) min-w-56"
+              className="w-(--radix-dropdown-menu-trigger-width) min-w-56 bg-background rounded-3xl p-2"
               side={isMobile ? 'bottom' : 'top'}
               align="start"
               sideOffset={4}
@@ -249,24 +283,22 @@ export function NavUserWithTeams({
                         personal_account: true,
                       })
                     }
-                    className="gap-1 px-2"
+                    className="gap-1 rounded-full cursor-pointer"
                   >
-                    <div className="flex size-8 items-center justify-center">
-                      <Image 
-                        src="/icons/user.svg" 
-                        alt="User" 
-                        width={28} 
-                        height={28}
-                        className="text-foreground"
+                      <DynamicIcon
+                        lightPath="/icons/user.svg"
+                        darkPath="/icons/user-dark.svg"
+                        alt="user"
+                        width={20}
+                        height={20}
+                        className="mb-0 mr-1"
                       />
-                    </div>
-                    {personalAccount.name}
-                    <DropdownMenuShortcut>⌘1</DropdownMenuShortcut>
+                    {personalAccount.name}                    
                   </DropdownMenuItem>
                 </>
               )}
 
-              {teamAccounts?.length > 0 && (
+              {/* {teamAccounts?.length > 0 && (
                 <>
                   <DropdownMenuLabel className="text-muted-foreground text-xs mt-2">
                     Teams
@@ -284,13 +316,19 @@ export function NavUserWithTeams({
                           personal_account: false,
                         })
                       }
-                      className="gap-1 p-2"
+                      className="gap-1 p-2 py-1.5 rounded-full cursor-pointer"
                     >
-                      <div className="flex size-6 items-center justify-center rounded-xs border">
-                        <AudioWaveform className="size-4 shrink-0" />
+                      <div className="flex size-6 items-center justify-center rounded-xs border p-1">
+                        <DynamicIcon
+                          lightPath="/icons/team.svg"
+                          darkPath="/icons/team-dark.svg"
+                          alt="team"
+                          width={17}
+                          height={17}
+                          className="shrink-0"
+                        />
                       </div>
-                      {team.name}
-                      <DropdownMenuShortcut>⌘{index + 2}</DropdownMenuShortcut>
+                      {team.name}                      
                     </DropdownMenuItem>
                   ))}
                 </>
@@ -298,69 +336,42 @@ export function NavUserWithTeams({
 
               <DropdownMenuSeparator />
               <DialogTrigger asChild>
-                <DropdownMenuItem 
-                  className="gap-2 p-2"
+                <DropdownMenuItem
+                  className="gap-2 p-2 py-1.5 rounded-full cursor-pointer"
                   onClick={() => {
-                    setShowNewTeamDialog(true)
+                    setShowNewTeamDialog(true);
                   }}
                 >
-                  <div className="flex size-8 items-center justify-center">
-                    <Image 
-                      src="/icons/team.svg" 
-                      alt="Team" 
-                      width={32} 
-                      height={32}
-                      className="text-foreground"
-                    />
+                  <div className="flex items-center justify-center">
+                    <Plus className="size-4" />
                   </div>
-                  <div className="text-muted-foreground font-medium">Add team</div>
+                  <div className="text-muted-foreground font-medium">
+                    Add team
+                  </div>
                 </DropdownMenuItem>
-              </DialogTrigger>
+              </DialogTrigger> */}
               <DropdownMenuSeparator />
-              
 
               {/* User Settings Section */}
-              <DropdownMenuGroup>
-                {/* <DropdownMenuItem asChild>
-                  <Link href="/settings/billing">
-                  <CreditCard className="h-4 w-4" />
-                    Billing
-                  </Link>
-                </DropdownMenuItem> */}
+              <DropdownMenuGroup>                
                 {!flagLoading && customAgentsEnabled && (
-                  <DropdownMenuItem asChild>
+                  <DropdownMenuItem asChild className="rounded-full cursor-pointer">
                     <Link href="/settings/credentials">
-                      <Image 
-                        src="/icons/integrations.svg" 
-                        alt="Integrations" 
-                        width={20} 
-                        height={20}
-                        className="h-5 w-5 text-black dark:text-white"
+                      <DynamicIcon
+                        lightPath="/icons/integrations.svg"
+                        darkPath="/icons/integration-dark.svg"
+                        alt="integration"
+                        width={17}
+                        height={17}
+                        className="mb-0"
                       />
                       Integrations
                     </Link>
                   </DropdownMenuItem>
                 )}
-                {/* {!flagLoading && customAgentsEnabled && (
-                  <DropdownMenuItem asChild>
-                    <Link href="/settings/api-keys">
-                      API Keys (Admin)
-                    </Link>
-                  </DropdownMenuItem>
-                )}
-                {isLocalMode() && <DropdownMenuItem asChild>
-                  <Link href="/settings/env-manager">
-                    Local .Env Manager
-                  </Link>
-                </DropdownMenuItem>} */}
-                {/* <DropdownMenuItem asChild>
-                  <Link href="/settings">
-                    <Settings className="mr-2 h-4 w-4" />
-                    Settings
-                  </Link>
-                </DropdownMenuItem> */}
                 <DropdownMenuItem
                   onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+                  className="rounded-full cursor-pointer"
                 >
                   <div className="flex items-center gap-2">
                     <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
@@ -370,7 +381,10 @@ export function NavUserWithTeams({
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className='text-destructive focus:text-destructive focus:bg-destructive/10' onClick={handleLogout}>
+              <DropdownMenuItem
+                className="text-destructive focus:text-destructive focus:bg-destructive/10 rounded-full cursor-pointer"
+                onClick={handleLogout}
+              >
                 <LogoutIcon className="h-4 w-4 text-destructive" />
                 Log out
               </DropdownMenuItem>

@@ -8,43 +8,8 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { useTranscription } from '@/hooks/react-query/transcription/use-transcription';
-
+import Image from 'next/image';
 // Custom Mic Icon component using the mic.svg
-const MicIcon = ({ className }: { className?: string }) => (
-  <svg 
-    width="16" 
-    height="16" 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    xmlns="http://www.w3.org/2000/svg"
-    className={className}
-  >
-    <path 
-      d="M15 6C15 4.34315 13.6569 3 12 3C10.3431 3 9 4.34315 9 6V10C9 11.6569 10.3431 13 12 13C13.6569 13 15 11.6569 15 10V6Z" 
-      stroke="currentColor" 
-      strokeLinecap="round" 
-      strokeLinejoin="round"
-    />
-    <path 
-      d="M5 12C5 13.8565 5.7375 15.637 7.05025 16.9497C8.36301 18.2625 10.1435 19 12 19C13.8565 19 15.637 18.2625 16.9497 16.9497C18.2625 15.637 19 13.8565 19 12" 
-      stroke="currentColor" 
-      strokeLinecap="round" 
-      strokeLinejoin="round"
-    />
-    <path 
-      d="M12 19V22" 
-      stroke="currentColor" 
-      strokeLinecap="round" 
-      strokeLinejoin="round"
-    />
-    <path 
-      d="M8 22H16" 
-      stroke="currentColor" 
-      strokeLinecap="round" 
-      strokeLinejoin="round"
-    />
-  </svg>
-);
 
 interface VoiceRecorderProps {
     onTranscription: (text: string) => void;
@@ -193,7 +158,25 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
             case 'processing':
                 return <Loader2 className="h-4 w-4 animate-spin" />;
             default:
-                return <MicIcon className="h-4 w-4" />;
+                return (
+                    <>
+                    <Image
+                      src="/icons/mic-light.svg"
+                      alt="mic Light Logo"
+                      width={20}
+                      height={20}
+                      className="block dark:hidden mb-0"
+                    />
+                    {/* Dark logo */}
+                    <Image
+                      src="/icons/mic-dark.svg"
+                      alt="mic Dark Logo"
+                      width={20}
+                      height={20}
+                      className="hidden dark:block mb-0"
+                    />
+                  </>
+                )
         }
     };
 

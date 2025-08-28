@@ -663,20 +663,13 @@ async def get_allowed_models_for_user(client, user_id: str):
 
 
 async def can_use_model(client, user_id: str, model_name: str):
-    if config.ENV_MODE == EnvMode.LOCAL:
-        logger.debug("Running in local development mode - billing checks are disabled")
-        return True, "Local development mode - billing disabled", {
-            "price_id": "local_dev",
-            "plan_name": "Local Development",
-            "minutes_limit": "no limit"
-        }
-
-    allowed_models = await get_allowed_models_for_user(client, user_id)
-    resolved_model = MODEL_NAME_ALIASES.get(model_name, model_name)
-    if resolved_model in allowed_models:
-        return True, "Model access allowed", allowed_models
-    
-    return False, f"Your current subscription plan does not include access to {model_name}. Please upgrade your subscription or choose from your available models: {', '.join(allowed_models)}", allowed_models
+    # Bypass all model access restrictions - allow all models for all users
+    logger.debug(f"Model access check bypassed for user {user_id} and model {model_name}")
+    return True, "Model access allowed - no restrictions", {
+        "price_id": "unrestricted",
+        "plan_name": "Unrestricted Access",
+        "minutes_limit": "no limit"
+    }
 
 async def get_subscription_tier(client, user_id: str) -> str:
     try:
@@ -1817,11 +1810,7 @@ async def get_available_models(
         # Create model info with display names for ALL models
         model_info = []
         for model in all_models:
-            # For Vertex AI models, preserve the full model ID as display name
-            if model.startswith('vertexai/'):
-                display_name = model
-            else:
-                display_name = model_aliases.get(model, model.split('/')[-1] if '/' in model else model)
+            display_name = model_aliases.get(model, model.split('/')[-1] if '/' in model else model)
             
             # Check if model requires subscription (not in free tier)
             requires_sub = model not in free_tier_models
@@ -1872,10 +1861,7 @@ async def get_available_models(
                         google_model_name = model.replace('gemini/', '')
                         models_to_try.append(google_model_name)
                     
-                    # Special handling for Vertex AI models
-                    if model.startswith('vertexai/'):
-                        vertex_model_name = model.replace('vertexai/', '')
-                        models_to_try.append(vertex_model_name)
+                    # Vertex AI handling removed
                     
                     # Try each model name variation until we find one that works
                     input_cost_per_token = None
@@ -2423,3 +2409,152 @@ async def can_purchase_credits(
     except Exception as e:
         logger.error(f"Error checking credit purchase eligibility: {str(e)}")
         raise HTTPException(status_code=500, detail="Error checking eligibility")
+
+@router.get("/thread-credit-usage/{thread_id}")
+async def get_thread_credit_usage(
+    thread_id: str,
+    current_user_id: str = Depends(get_current_user_id_from_jwt)
+):
+    """Get credit usage for a specific thread."""
+    try:
+        db = DBConnection()
+        client = await db.client
+        
+        # Verify thread access
+        thread_result = await client.table('threads').select('account_id').eq('thread_id', thread_id).execute()
+        if not thread_result.data:
+            raise HTTPException(status_code=404, detail="Thread not found")
+        
+        thread = thread_result.data[0]
+        if thread['account_id'] != current_user_id:
+            raise HTTPException(status_code=403, detail="Access denied to this thread")
+        
+        # Get credit usage for this thread
+        credit_usage_result = await client.table('credit_usage') \
+            .select('amount_dollars, created_at, description, message_id') \
+            .eq('user_id', current_user_id) \
+            .eq('thread_id', thread_id) \
+            .order('created_at', desc=True) \
+            .execute()
+        
+        if not credit_usage_result.data:
+            return {
+                "total_credits_used": 0.0,
+                "usage_count": 0,
+                "usage_details": []
+            }
+        
+        # Calculate total credits used
+        total_credits_used = sum(float(usage['amount_dollars']) for usage in credit_usage_result.data)
+        usage_count = len(credit_usage_result.data)
+        
+        # Format usage details
+        usage_details = [
+            {
+                "amount": float(usage['amount_dollars']),
+                "created_at": usage['created_at'],
+                "description": usage.get('description', ''),
+                "message_id": usage.get('message_id')
+            }
+            for usage in credit_usage_result.data
+        ]
+        
+        return {
+            "total_credits_used": total_credits_used,
+            "usage_count": usage_count,
+            "usage_details": usage_details
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting thread credit usage: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error retrieving thread credit usage")
+
+@router.get("/thread-token-usage/{thread_id}")
+async def get_thread_token_usage(
+    thread_id: str,
+    current_user_id: str = Depends(get_current_user_id_from_jwt)
+):
+    """Get token usage for a specific thread."""
+    try:
+        db = DBConnection()
+        client = await db.client
+        
+        # Check if we're in local development mode
+        if config.ENV_MODE == EnvMode.LOCAL:
+            logger.debug("Running in local development mode - thread token usage not available")
+            return {
+                "total_completion_tokens": 0,
+                "total_prompt_tokens": 0,
+                "total_tokens": 0,
+                "estimated_cost": 0.0,
+                "request_count": 0,
+                "models": [],
+                "message": "Thread token usage is not available in local development mode"
+            }
+        
+        # Verify thread access
+        thread_result = await client.table('threads').select('account_id').eq('thread_id', thread_id).execute()
+        if not thread_result.data:
+            raise HTTPException(status_code=404, detail="Thread not found")
+        
+        thread = thread_result.data[0]
+        if thread['account_id'] != current_user_id:
+            raise HTTPException(status_code=403, detail="Access denied to this thread")
+        
+        # Get usage logs for this specific thread
+        usage_result = await client.table('usage_logs') \
+            .select('content, total_tokens, estimated_cost, created_at') \
+            .eq('thread_id', thread_id) \
+            .eq('user_id', current_user_id) \
+            .order('created_at', desc=True) \
+            .execute()
+        
+        if not usage_result.data:
+            return {
+                "total_completion_tokens": 0,
+                "total_prompt_tokens": 0,
+                "total_tokens": 0,
+                "estimated_cost": 0.0,
+                "request_count": 0,
+                "models": []
+            }
+        
+        # Calculate totals
+        total_completion_tokens = 0
+        total_prompt_tokens = 0
+        total_tokens = 0
+        estimated_cost = 0.0
+        models = set()
+        
+        for log in usage_result.data:
+            content = log.get('content', {})
+            usage = content.get('usage', {})
+            
+            total_completion_tokens += usage.get('completion_tokens', 0)
+            total_prompt_tokens += usage.get('prompt_tokens', 0)
+            total_tokens += log.get('total_tokens', 0)
+            
+            cost = log.get('estimated_cost')
+            if isinstance(cost, (int, float)):
+                estimated_cost += cost
+            
+            model = content.get('model', '')
+            if model:
+                models.add(model)
+        
+        return {
+            "total_completion_tokens": total_completion_tokens,
+            "total_prompt_tokens": total_prompt_tokens,
+            "total_tokens": total_tokens,
+            "estimated_cost": estimated_cost,
+            "request_count": len(usage_result.data),
+            "models": list(models)
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting thread token usage: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error retrieving thread token usage")

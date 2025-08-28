@@ -1,5 +1,4 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react';
-import { createHighlighter } from 'shiki';
+import React, { useEffect, useRef, useState } from 'react';
 import { CircleDashed } from 'lucide-react';
 import { extractToolNameFromStream } from '@/components/thread/tool-views/xml-parser';
 import {
@@ -7,9 +6,6 @@ import {
   getUserFriendlyToolName,
   extractPrimaryParam,
 } from '@/components/thread/utils';
-import { CodeBlockCode } from '@/components/ui/code-block';
-import { getLanguageFromFileName } from '../tool-views/file-operation/_utils';
-import { useTheme } from 'next-themes';
 
 // Only show streaming for file operation tools
 const FILE_OPERATION_TOOLS = new Set([
@@ -34,46 +30,10 @@ export const ShowToolStream: React.FC<ShowToolStreamProps> = ({
   startTime,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [highlighter, setHighlighter] = useState<any>(null);
-  const [isHighlighting, setIsHighlighting] = useState<boolean>(false);
-  const [highlightedContent, setHighlightedContent] = useState<string>('');
-
   const [shouldShowContent, setShouldShowContent] = useState(false);
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
   // Use ref to store stable start time - only set once!
   const stableStartTimeRef = useRef<number | null>(null);
-  const { theme } = useTheme();
-  useEffect(() => {
-    const initHighlighter = async () => {
-      const shikiHighlighter = await createHighlighter({
-        themes: ['dark-plus', 'light-plus'],
-        langs: [
-          'javascript',
-          'typescript',
-          'python',
-          'jsx',
-          'tsx',
-          'html',
-          'css',
-          'json',
-          'yaml',
-          'md',
-          'bash',
-          'shell',
-          'java',
-          'c',
-          'cpp',
-          'csharp',
-          'go',
-          'rust',
-          'ruby',
-          'php',
-        ],
-      });
-      setHighlighter(shikiHighlighter);
-    };
-    initHighlighter();
-  }, []);
 
   // Set stable start time only once
   if (showExpanded && !stableStartTimeRef.current) {
@@ -82,7 +42,6 @@ export const ShowToolStream: React.FC<ShowToolStreamProps> = ({
 
   const rawToolName = extractToolNameFromStream(content);
   const toolName = getUserFriendlyToolName(rawToolName || '');
-  const isFileOperationTool = FILE_OPERATION_TOOLS.has(toolName || '');
   const isEditFile = toolName === 'AI File Edit';
   const isCreateFile = toolName === 'Creating File';
   const isFullFileRewrite = toolName === 'Rewriting File';
@@ -141,124 +100,12 @@ export const ShowToolStream: React.FC<ShowToolStreamProps> = ({
     return () => container.removeEventListener('scroll', handleScroll);
   }, [shouldShowContent]);
 
-  // Syntax highlighting effect
-  useEffect(() => {
-    if (!highlighter || !isFileOperationTool) return;
-
-    const highlightCode = async () => {
-      setIsHighlighting(true);
-      try {
-        let contentToHighlight = streamingFileContent;
-        if (!contentToHighlight) {
-          setHighlightedContent('');
-          setIsHighlighting(false);
-          return;
-        }
-
-        // Detect language from filename parameter
-        const paramDisplayForLang = extractPrimaryParam(
-          rawToolName || '',
-          content,
-        );
-        let language =
-          getLanguageFromFileName(paramDisplayForLang || '') || 'plaintext';
-
-        // Force CSS language for testing if content looks like CSS
-        if (
-          contentToHighlight.includes('background-color') ||
-          contentToHighlight.includes('font-family')
-        ) {
-          language = 'css';
-        }
-        // Force JavaScript if content has JS patterns
-        else if (
-          contentToHighlight.includes('function') ||
-          contentToHighlight.includes('const ') ||
-          contentToHighlight.includes('let ')
-        ) {
-          language = 'javascript';
-        }
-        // Force HTML if content has HTML tags
-        else if (
-          contentToHighlight.includes('<div') ||
-          contentToHighlight.includes('<html')
-        ) {
-          language = 'html';
-        }
-        // Force TypeScript if content has TS patterns
-        else if (
-          contentToHighlight.includes(': string') ||
-          contentToHighlight.includes(': number') ||
-          contentToHighlight.includes('interface ') ||
-          contentToHighlight.includes('type ')
-        ) {
-          language = 'typescript';
-        }
-        // Force React (TSX) if content has React patterns
-        else if (
-          contentToHighlight.includes('React.FC') ||
-          contentToHighlight.includes('useState') ||
-          /<[A-Z]/.test(contentToHighlight)
-        ) {
-          language = 'tsx';
-        }
-        // Force Python if content has Python patterns
-        else if (
-          contentToHighlight.includes('def ') ||
-          (contentToHighlight.includes('import ') &&
-            !contentToHighlight.includes('import {'))
-        ) {
-          language = 'python';
-        }
-        // Force Java if content has Java patterns
-        else if (
-          contentToHighlight.includes('public class') ||
-          contentToHighlight.includes('System.out.println')
-        ) {
-          language = 'java';
-        }
-        // Force C if content has C patterns
-        else if (
-          contentToHighlight.includes('#include') ||
-          contentToHighlight.includes('printf(')
-        ) {
-          language = 'c';
-        }
-
-        // Ensure language is loaded
-        if (!highlighter.getLoadedLanguages().includes(language)) {
-          await highlighter
-            .loadLanguage(language as any)
-            .catch((e: any) =>
-              console.error(`Failed to load language ${language}`, e),
-            );
-        }
-
-        const html = highlighter.codeToHtml(contentToHighlight, {
-          lang: language,
-          theme: theme === 'dark' ? 'dark-plus' : 'light-plus',
-          defaultColor: false, // ⬅ prevents hardcoded background
-        });
-
-        setHighlightedContent(html);
-      } catch (error) {
-        console.error('Error highlighting code:', error);
-        setHighlightedContent(
-          `<pre><code>${streamingFileContent}</code></pre>`,
-        );
-      } finally {
-        setIsHighlighting(false);
-      }
-    };
-
-    highlightCode();
-  }, [streamingFileContent, rawToolName, isFileOperationTool, highlighter]);
-
   if (!toolName) {
     return null;
   }
 
   // Check if this is a file operation tool
+  const isFileOperationTool = FILE_OPERATION_TOOLS.has(toolName);
 
   const IconComponent = getToolIcon(rawToolName || '');
   const displayName = toolName;
@@ -267,7 +114,7 @@ export const ShowToolStream: React.FC<ShowToolStreamProps> = ({
   // Always show tool button, conditionally show content below for file operations only
   if (showExpanded && (isFileOperationTool || isEditFile)) {
     return (
-      <div className="">
+      <div className="my-1">
         {shouldShowContent ? (
           // Expanded view with content - show after 1500ms for file operations
           <div
@@ -283,7 +130,7 @@ export const ShowToolStream: React.FC<ShowToolStreamProps> = ({
               <div className=" flex items-center justify-center p-1 rounded-sm">
                 <CircleDashed className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0 animate-spin animation-duration-2000" />
               </div>
-              <span className="font-mono text-xs text-foreground/80">
+              <span className="font-mono text-xs text-foreground">
                 {displayName}
               </span>
               {paramDisplay && (
@@ -300,7 +147,7 @@ export const ShowToolStream: React.FC<ShowToolStreamProps> = ({
             <div className="relative border-t border-neutral-200 dark:border-neutral-700/50">
               <div
                 ref={containerRef}
-                className="max-h-[300px] overflow-y-auto scrollbar-none text-xs font-mono whitespace-pre-wrap text-foreground transition-all duration-500 ease-in-out "
+                className="max-h-[300px] overflow-y-auto scrollbar-none text-xs font-mono whitespace-pre-wrap p-3 text-foreground transition-all duration-500 ease-in-out"
                 style={{
                   maskImage:
                     'linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%)',
@@ -308,16 +155,9 @@ export const ShowToolStream: React.FC<ShowToolStreamProps> = ({
                     'linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%)',
                 }}
               >
-                <div className="rounded-lg overflow-x-auto bg-white dark:bg-neutral-900">
-                  <div
-                    className="p-4 rounded-lg"
-                    dangerouslySetInnerHTML={{
-                      __html:
-                        highlightedContent ||
-                        `<pre><code>${streamingFileContent}</code></pre>`,
-                    }}
-                  />
-                </div>
+                {isEditFile || isCreateFile || isFullFileRewrite
+                  ? streamingFileContent
+                  : content}
               </div>
               {/* Top gradient */}
               <div
@@ -346,7 +186,7 @@ export const ShowToolStream: React.FC<ShowToolStreamProps> = ({
             <div className="border-2 bg-gradient-to-br from-neutral-200 to-neutral-300 dark:from-neutral-700 dark:to-neutral-800 flex items-center justify-center p-0.5 rounded-sm border-neutral-400/20 dark:border-neutral-600">
               <CircleDashed className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0 animate-spin animation-duration-2000" />
             </div>
-            <span className="font-mono text-xs text-foreground/80">
+            <span className="font-mono text-xs text-foreground">
               {displayName}
             </span>
             {paramDisplay && (
@@ -365,17 +205,15 @@ export const ShowToolStream: React.FC<ShowToolStreamProps> = ({
 
   // Show normal tool button (non-file-operation tools or non-expanded case)
   return (
-    <div className="">
+    <div className="my-1">
       <button
         onClick={() => onToolClick?.(messageId, toolName)}
         className="animate-shimmer inline-flex items-center gap-1.5 py-1 px-1 pr-1.5 text-xs text-muted-foreground bg-muted hover:bg-muted/80 rounded-lg transition-colors cursor-pointer border border-neutral-200 dark:border-neutral-700/50"
       >
         <div className="border-2 bg-gradient-to-br from-neutral-200 to-neutral-300 dark:from-neutral-700 dark:to-neutral-800 flex items-center justify-center p-0.5 rounded-sm border-neutral-400/20 dark:border-neutral-600">
-          <IconComponent className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+          <CircleDashed className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0 animate-spin animation-duration-2000" />
         </div>
-        <span className="font-mono text-xs text-foreground/80">
-          {displayName}
-        </span>
+        <span className="font-mono text-xs text-foreground">{displayName}</span>
         {paramDisplay && (
           <span
             className="ml-1 text-muted-foreground truncate max-w-[200px]"

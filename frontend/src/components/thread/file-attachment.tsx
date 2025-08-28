@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/dialog';
 import { useState } from 'react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-
+import Image from 'next/image'
 // Define basic file types
 export type FileType =
     | 'image' | 'code' | 'text' | 'pdf'
@@ -494,7 +494,20 @@ export function FileAttachment({
                             onClick={handleClick}
                             className="cursor-pointer p-1 rounded-full hover:bg-accent/50"
                         >
-                            <ExternalLink size={14} />
+                           <Image
+                            src="/icons/external-link-light.svg"
+                            alt="External Link"
+                            width={20}
+                            height={20}
+                            className="block dark:hidden mb-0"
+                        />
+                        <Image
+                            src="/icons/external-link-dark.svg"
+                            alt="External Link"
+                            width={20}
+                            height={20}
+                            className="hidden dark:block mb-0"
+                        />
                         </button>
                     )}
                 </div>
