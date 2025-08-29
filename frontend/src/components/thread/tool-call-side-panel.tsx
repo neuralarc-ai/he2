@@ -6,7 +6,7 @@ import React from 'react';
 import { Slider } from '@/components/ui/slider';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ApiMessageType } from '@/components/thread/types';
-import { CircleDashed, X, Minimize2, SkipForward, SkipBack } from 'lucide-react';
+import { CircleDashed, X, Minimize2, SkipForward, SkipBack, Wrench, Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { useMediumScreen } from '@/hooks/react-query/use-medium-screen';
 import { useCustomBreakpoint } from '@/hooks/use-custom-breakpoints';
+import { DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
+import { Badge } from '@/components/ui/badge';
 
 export interface ToolCallInput {
   assistantCall: {

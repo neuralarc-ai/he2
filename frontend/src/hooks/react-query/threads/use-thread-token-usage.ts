@@ -34,28 +34,28 @@ export function useThreadTokenUsage(threadId: string) {
         
         // Calculate totals
         const totalCompletionTokens = threadLogs.reduce((sum, log) => 
-          sum + log.content.usage.completion_tokens, 0
+          sum + log.total_completion_tokens, 0
         );
         
         const totalPromptTokens = threadLogs.reduce((sum, log) => 
-          sum + log.content.usage.prompt_tokens, 0
+          sum + log.total_prompt_tokens, 0
         );
         
         const totalTokens = threadLogs.reduce((sum, log) => 
           sum + log.total_tokens, 0
         );
         
-        const estimatedCost = threadLogs.reduce((sum, log) => 
-          sum + (typeof log.estimated_cost === 'number' ? log.estimated_cost : 0), 0
+        const totalCost = threadLogs.reduce((sum, log) => 
+          sum + (log.total_credits / 100), 0 // Convert credits back to dollars
         );
         
-        const models = [...new Set(threadLogs.map(log => log.content.model))];
+        const models = [...new Set(threadLogs.map(log => log.primary_model))];
         
         const fallbackResult = {
           total_completion_tokens: totalCompletionTokens,
           total_prompt_tokens: totalPromptTokens,
           total_tokens: totalTokens,
-          estimated_cost: estimatedCost,
+          estimated_cost: totalCost, // Assuming estimated_cost is now total_cost
           request_count: threadLogs.length,
           models,
         };

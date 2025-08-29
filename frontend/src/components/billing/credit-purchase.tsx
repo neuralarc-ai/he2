@@ -26,18 +26,19 @@ interface CreditPurchaseProps {
 }
 
 interface CreditPackage {
-    amount: number;
+    credits: number;
     price: number;
     popular?: boolean;
+    creditsPerDollar?: number;
 }
 
 const CREDIT_PACKAGES: CreditPackage[] = [
-    { amount: 10, price: 10 },
-    { amount: 25, price: 25 },
-    { amount: 50, price: 50 },
-    { amount: 100, price: 100, popular: true },
-    { amount: 250, price: 250 },
-    { amount: 500, price: 500 },
+    { credits: 100, price: 10, creditsPerDollar: 10 },
+    { credits: 250, price: 20, creditsPerDollar: 12.5 },
+    { credits: 500, price: 35, creditsPerDollar: 14.3 },
+    { credits: 1000, price: 60, popular: true, creditsPerDollar: 16.7 },
+    { credits: 2500, price: 125, creditsPerDollar: 20 },
+    { credits: 5000, price: 200, creditsPerDollar: 25 },
 ];
 
 export function CreditPurchaseModal({ 
@@ -97,7 +98,7 @@ export function CreditPurchaseModal({
     };
 
     const handleConfirmPurchase = () => {
-        const amount = selectedPackage ? selectedPackage.amount : parseFloat(customAmount);
+        const amount = selectedPackage ? selectedPackage.price : parseFloat(customAmount);
         if (!isNaN(amount)) {
             handlePurchase(amount);
         } else {
@@ -159,9 +160,9 @@ export function CreditPurchaseModal({
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                             {CREDIT_PACKAGES.map((pkg) => (
                                 <Card
-                                    key={pkg.amount}
+                                    key={pkg.credits}
                                     className={`cursor-pointer transition-all ${
-                                        selectedPackage?.amount === pkg.amount
+                                        selectedPackage?.credits === pkg.credits
                                             ? 'ring-2 ring-primary'
                                             : 'hover:shadow-md'
                                     }`}
@@ -173,8 +174,12 @@ export function CreditPurchaseModal({
                                                 Popular
                                             </Badge>
                                         )}
-                                        <div className="text-2xl font-bold">${pkg.amount}</div>
+                                        <div className="text-2xl font-bold">{pkg.credits.toLocaleString()}</div>
                                         <div className="text-sm text-muted-foreground">credits</div>
+                                        <div className="text-lg font-semibold text-primary mt-1">${pkg.price}</div>
+                                        <div className="text-xs text-muted-foreground">
+                                            {pkg.creditsPerDollar?.toFixed(1)} credits/$
+                                        </div>
                                     </CardContent>
                                 </Card>
                             ))}
@@ -243,7 +248,7 @@ export function CreditBalanceDisplay({ balance, canPurchase, onPurchaseClick }: 
             </CardHeader>
             <CardContent>
                 <div className="text-2xl font-bold">
-                    ${balance.toFixed(2)}
+                    {balance.toLocaleString()} credits
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
                     {canPurchase 

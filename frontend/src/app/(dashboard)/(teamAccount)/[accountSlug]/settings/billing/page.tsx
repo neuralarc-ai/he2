@@ -9,6 +9,7 @@ import { useAccountBySlug } from '@/hooks/react-query';
 import { useSharedSubscription } from '@/contexts/SubscriptionContext';
 import { isLocalMode } from '@/lib/config';
 import Link from 'next/link';
+import { CreditBalanceDisplay, CreditPurchaseModal } from '@/components/billing/credit-purchase';
 
 const returnUrl = process.env.NEXT_PUBLIC_URL as string;
 
@@ -24,6 +25,7 @@ export default function TeamBillingPage({
   const unwrappedParams = React.use(params);
   const { accountSlug } = unwrappedParams;
   const [showBillingModal, setShowBillingModal] = useState(false);
+  const [showCreditPurchaseModal, setShowCreditPurchaseModal] = useState(false);
 
   const { 
     data: teamAccount, 
@@ -95,6 +97,16 @@ export default function TeamBillingPage({
         onOpenChange={setShowBillingModal}
         returnUrl={`${returnUrl}/${accountSlug}/settings/billing`}
       />
+      <CreditPurchaseModal
+        open={showCreditPurchaseModal}
+        onOpenChange={setShowCreditPurchaseModal}
+        currentBalance={subscriptionData?.credit_balance_credits || Math.round((subscriptionData?.credit_balance || 0) * 100)}
+        canPurchase={subscriptionData?.can_purchase_credits || false}
+        onPurchaseComplete={() => {
+          // Optionally refresh subscription data here
+          window.location.reload();
+        }}
+      />
       
       <div>
         <h3 className="text-lg font-medium text-card-title">Team Billing</h3>
@@ -137,8 +149,8 @@ export default function TeamBillingPage({
                       Agent Usage This Month
                     </span>
                     <span className="text-sm font-medium">
-                      ${subscriptionData.current_usage?.toFixed(2) || '0'} /{' '}
-                      ${subscriptionData.cost_limit || '0'}
+                      {Math.round((subscriptionData.current_usage || 0) * 100)} credits /{' '}
+                      {Math.round((subscriptionData.cost_limit || 0) * 100)} credits
                     </span>
                     <Button variant='outline' asChild className='text-sm'>
                       <Link href="/settings/usage-logs">
@@ -147,6 +159,17 @@ export default function TeamBillingPage({
                     </Button>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* Credit Balance Display - Only show for users who can purchase credits */}
+            {subscriptionData?.can_purchase_credits && (
+              <div className="mb-6">
+                <CreditBalanceDisplay 
+                  balance={subscriptionData.credit_balance_credits || Math.round((subscriptionData.credit_balance || 0) * 100)}
+                  canPurchase={subscriptionData.can_purchase_credits}
+                  onPurchaseClick={() => setShowCreditPurchaseModal(true)}
+                />
               </div>
             )}
 
