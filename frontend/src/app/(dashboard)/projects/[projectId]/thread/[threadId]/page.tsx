@@ -783,12 +783,12 @@ export default function ThreadPage({
           agentAvatar={undefined}
           agentMetadata={agent?.metadata}
           agentData={agent}
-          //onSubmit={handleSubmitMessage}
+          onSubmit={handleSubmitMessage}
         />
 
         <div
           className={cn(
-            'fixed bottom-0 z-20 bg-gradient-to-t from-background via-background/90 to-transparent pt-16',
+            'fixed bottom-0 z-20 bg-gradient-to-t from-background via-background/90 to-transparent pt-6',
             'transition-[left,right] duration-200 ease-in-out will-change-[left,right]',
             leftSidebarState === 'expanded'
               ? 'left-[72px] md:left-[256px]'

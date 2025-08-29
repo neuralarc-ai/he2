@@ -1,10 +1,11 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
-import { CircleDashed, CheckCircle, AlertTriangle } from 'lucide-react';
+import { CircleDashed, CheckCircle, AlertTriangle, Copy, ThumbsUp, ThumbsDown, RotateCcw, Check, Pencil, X } from 'lucide-react';
 import {
   UnifiedMessage,
   ParsedContent,
   ParsedMetadata,
 } from '@/components/thread/types';
+import { toast } from 'sonner';
 import { FileAttachmentGrid } from '@/components/thread/file-attachment';
 import { useFilePreloader } from '@/hooks/react-query/files';
 import { useAuth } from '@/components/AuthProvider';
@@ -18,6 +19,13 @@ import {
 import { HeliumLogo } from '@/components/sidebar/helium-logo';
 import { AgentLoader } from './loader';
 import { AgentAvatar, AgentName } from './agent-avatar';
+import { Button } from '@/components/ui/button';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import {
   parseXmlToolCalls,
   isNewXmlFormat,
@@ -463,7 +471,213 @@ export interface ThreadContentProps {
   scrollContainerRef?: React.RefObject<HTMLDivElement>; // Add scroll container ref prop
   agentMetadata?: any; // Add agent metadata prop
   agentData?: any; // Add full agent data prop
+  onSubmit?: (message: string, options?: { model_name?: string; enable_thinking?: boolean }) => void;
+  setInputValue?: (value: string) => void;
+  scrollToBottom?: (behavior?: ScrollBehavior) => void;
+  finalGroupedMessages?: any[];
 }
+
+// Component for action buttons that appear on assistant messages
+type ContentType = string | { text?: string; content?: string; [key: string]: any };
+
+const ActionButtons: React.FC<{
+  content: ContentType;
+  onRetry?: () => void;
+  groupIndex?: number;
+  onSubmit?: (message: string) => void;
+  setInputValue?: (value: string) => void;
+  finalGroupedMessages?: any[];
+  scrollToBottom?: (behavior?: ScrollBehavior) => void;
+}> = ({ content, onRetry, groupIndex = 0, onSubmit, setInputValue, finalGroupedMessages = [], scrollToBottom = () => {} }) => {
+  const [isCopied, setIsCopied] = React.useState<number | null>(null);
+  const [feedback, setFeedback] = React.useState<'good' | 'bad' | null>(null);
+  const [showFeedback, setShowFeedback] = React.useState(false);
+  
+  // Ensure content is a string before copying
+  const getCleanContent = () => {
+    if (typeof content === 'string') return content;
+    if (content?.text) return content.text;
+    if (content?.content) return content.content;
+    return JSON.stringify(content);
+  };
+
+  const handleGoodFeedback = () => {
+    if (feedback === 'good') {
+      setFeedback(null);
+      setShowFeedback(false);
+      toast.success('Feedback removed');
+    } else {
+      setFeedback('good');
+      setShowFeedback(true);
+      toast.success('Good response');
+      setTimeout(() => setShowFeedback(false), 2000);
+    }
+  };
+
+  const handleBadFeedback = () => {
+    if (feedback === 'bad') {
+      setFeedback(null);
+      setShowFeedback(false);
+      toast.success('Feedback removed');
+    } else {
+      setFeedback('bad');
+      setShowFeedback(true);
+      toast.success('Thanks for your feedback');
+      setTimeout(() => setShowFeedback(false), 2000);
+    }
+  };
+  
+  // Disable opposite feedback button when one is selected
+  const isGoodDisabled = feedback === 'bad';
+  const isBadDisabled = feedback === 'good';
+
+  return (
+    <div className="flex items-center justify-end gap-1 mt-2 relative">
+      {/* Copy Button */}
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0 rounded-full hover:bg-muted-foreground/10"
+              onClick={async () => {
+                try {
+                  const textToCopy = getCleanContent();
+                  await navigator.clipboard.writeText(textToCopy);
+                  setIsCopied(groupIndex);
+                  toast.success('Copied to clipboard');
+                  setTimeout(() => setIsCopied(null), 1500);
+                } catch (err) {
+                  console.error('Failed to copy text: ', err);
+                  toast.error('Failed to copy text');
+                }
+              }}
+            >
+              {isCopied === groupIndex ? (
+                <Check className="h-3.5 w-3.5 text-foreground" />
+              ) : (
+                <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+              )}
+              <span className="sr-only">Copy</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p className="text-xs">{isCopied ? 'Copied!' : 'Copy to clipboard'}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+
+      {/* Good Response Button */}
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`h-6 w-6 p-0 rounded-full hover:bg-muted-foreground/10 ${
+                feedback === 'good' ? 'bg-muted' : ''
+              } ${isGoodDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+              onClick={handleGoodFeedback}
+              disabled={isGoodDisabled}
+            >
+              <ThumbsUp className={`h-3.5 w-3.5 ${feedback === 'good' ? 'fill-foreground text-foreground' : 'text-muted-foreground'}`} />
+              <span className="sr-only">Good response</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p className="text-xs">{feedback === 'good' ? 'Remove feedback' : 'Good response'}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+
+      {/* Bad Response Button */}
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`h-6 w-6 p-0 rounded-full hover:bg-muted-foreground/10 ${
+                feedback === 'bad' ? 'bg-muted' : ''
+              } ${isBadDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+              onClick={handleBadFeedback}
+              disabled={isBadDisabled}
+            >
+              <ThumbsDown className={`h-3.5 w-3.5 ${feedback === 'bad' ? 'fill-foreground text-foreground' : 'text-muted-foreground'}`} />
+              <span className="sr-only">Bad response</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p className="text-xs">{feedback === 'bad' ? 'Remove feedback' : 'Bad response'}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+
+      {/* Retry Button - only shown on the last message */}
+      {(onRetry || onSubmit) && (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0 rounded-full hover:bg-muted-foreground/10 text-muted-foreground"
+                onClick={() => {
+                  if (onRetry) {
+                    onRetry();
+                    return;
+                  }
+                  
+                  if (!onSubmit) return;
+                  
+                  // Find the user group just before this assistant group
+                  const userGroup = finalGroupedMessages
+                    .slice(0, groupIndex)
+                    .reverse()
+                    .find((g: any) => g.type === 'user');
+                  if (!userGroup) return;
+                  
+                  const userMessage = userGroup.messages[0];
+                  let prompt = typeof userMessage.content === 'string' 
+                    ? userMessage.content 
+                    : '';
+                  
+                  try {
+                    const parsed = JSON.parse(prompt);
+                    if (parsed && typeof parsed.content === 'string') {
+                      prompt = parsed.content;
+                    }
+                  } catch (e) {}
+                  
+                  // Remove attachment info from prompt
+                  prompt = prompt.replace(/\[Uploaded File: .*?\]/g, '').trim();
+                  
+                  if (typeof setInputValue === 'function') {
+                    setInputValue(prompt);
+                  }
+                  
+                  toast.success('Retrying previous prompt...');
+                  onSubmit(prompt);
+                  
+                  // Auto-scroll to bottom after retry
+                  setTimeout(() => scrollToBottom('smooth'), 100);
+                }}
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                <span className="sr-only">Retry</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="text-xs">Retry</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
+      
+    </div>
+  );
+};
 
 export const ThreadContent: React.FC<ThreadContentProps> = ({
   messages,
@@ -487,6 +701,9 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
   emptyStateComponent,
   threadMetadata,
   scrollContainerRef,
+  onSubmit,
+  setInputValue,
+  finalGroupedMessages,
   agentMetadata,
   agentData,
 }) => {
@@ -495,9 +712,35 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
   const contentRef = useRef<HTMLDivElement>(null);
   const [shouldJustifyToTop, setShouldJustifyToTop] = useState(false);
   const { session } = useAuth();
-
+  const [copiedPromptIdx, setCopiedPromptIdx] = useState<number | null>(null);
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState<string>('');
+  const [originalDimensions, setOriginalDimensions] = useState<{
+    width: number;
+    height: number;
+  } | null>(null);
   // React Query file preloader
   const { preloadFiles } = useFilePreloader();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = 'smooth') => {
+    messagesEndRef.current?.scrollIntoView({ behavior });
+  }, []);
+
+  // Auto-scroll to bottom when new messages arrive or agent status changes
+  React.useEffect(() => {
+    if (agentStatus === 'running' || agentStatus === 'connecting') {
+      scrollToBottom('smooth');
+    }
+  }, [agentStatus, scrollToBottom]);
+
+  React.useEffect(() => {
+    if (messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage.type === 'user') {
+        scrollToBottom('smooth');
+      }
+    }
+  }, [messages, scrollToBottom]);
 
   const containerClassName = isPreviewMode
     ? 'flex-1 overflow-y-auto scrollbar-none py-4 pb-0'
@@ -1043,9 +1286,7 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                       <div
                                         key={msgKey}
                                         className={
-                                          assistantMessageCount > 0
-                                            ? 'mt-4'
-                                            : ''
+                                          `group relative ${assistantMessageCount > 0 ? 'mt-4' : ''}`
                                         }
                                       >
                                         <div className="prose prose-sm dark:prose-invert chat-markdown max-w-none [&>:first-child]:mt-0 prose-headings:mt-3 break-words overflow-hidden">
@@ -1060,6 +1301,29 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
 
                                 return elements;
                               })()}
+
+                              {/* Action buttons for assistant messages */}
+                              {!readOnly &&
+                                !(
+                                  groupIndex ===
+                                    finalGroupedMessages.length - 1 &&
+                                  (streamHookStatus === 'streaming' ||
+                                    streamHookStatus === 'connecting')
+                                ) &&
+                                group.messages.some(
+                                  (msg) => msg.type === 'assistant',
+                                ) && (
+                                  <div className="mt-2 flex justify-end">
+                                    <ActionButtons
+                                      content={group.messages.find(m => m.type === 'assistant')?.content || ''}
+                                      groupIndex={groupIndex}
+                                      finalGroupedMessages={finalGroupedMessages}
+                                      onSubmit={onSubmit}
+                                      setInputValue={setInputValue}
+                                      scrollToBottom={scrollToBottom}
+                                    />
+                                  </div>
+                                )}
 
                               {groupIndex === finalGroupedMessages.length - 1 &&
                                 !readOnly &&
