@@ -64,6 +64,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/auth', request.url))
   }
 
+  // Redirect authenticated users from root path to dashboard
+  if (isRootPath && user) {
+    return NextResponse.redirect(new URL('/dashboard', request.url))
+  }
+
   // IMPORTANT: You *must* return the supabaseResponse object as it is.
   // If you're creating a new response object with NextResponse.next() make sure to:
   // 1. Pass the request in it, like so:
