@@ -19,7 +19,7 @@ import { toast } from 'sonner';
 import { cn, truncateString } from '@/lib/utils';
 import { useAgentWorkflows } from '@/hooks/react-query/agents/use-agent-workflows';
 import { ComposioConnector } from '@/components/agents/composio/composio-connector';
-import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
+import { MarkdownRenderer } from '@/components/ui/markdown-renderer-optimized';
 
 interface EventBasedTriggerDialogProps {
     open: boolean;

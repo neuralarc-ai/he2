@@ -24,7 +24,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Progress } from '@/components/ui/progress';
-import { Markdown } from '@/components/ui/markdown';
+import { Markdown } from '@/components/ui/markdown-optimized';
 import { FileAttachment } from '../file-attachment';
 
 interface CompleteContent {

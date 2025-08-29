@@ -30,7 +30,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Markdown } from '@/components/ui/markdown';
+import { Markdown } from '@/components/ui/markdown-optimized';
 import { toast } from 'sonner';
 import { useAuth } from '@/components/AuthProvider';
 import { cn } from '@/lib/utils';

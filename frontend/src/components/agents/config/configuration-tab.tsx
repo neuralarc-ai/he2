@@ -1,6 +1,6 @@
 import React from 'react';
 import { Settings, Wrench, Server, BookOpen, Workflow, Zap, ChevronDown, Brain } from 'lucide-react';
-import { ExpandableMarkdownEditor } from '@/components/ui/expandable-markdown-editor';
+import { ExpandableMarkdownEditor } from '@/components/ui/expandable-markdown-editor-optimized';
 import { AgentToolsConfiguration } from '../agent-tools-configuration';
 import { AgentMCPConfiguration } from '../agent-mcp-configuration';
 import { AgentKnowledgeBaseManager } from '../knowledge-base/agent-knowledge-base-manager';

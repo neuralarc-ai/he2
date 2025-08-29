@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Markdown } from '@/components/ui/markdown';
+import { Markdown } from '@/components/ui/markdown-optimized';
 import { cn } from '@/lib/utils';
 
 interface MarkdownRendererProps {

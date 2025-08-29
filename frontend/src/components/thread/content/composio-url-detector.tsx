@@ -3,7 +3,7 @@ import { ExternalLink, ShieldCheck, Server } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Markdown } from '@/components/ui/markdown';
+import { Markdown } from '@/components/ui/markdown-optimized';
 
 interface ComposioUrlDetectorProps {
   content: string;

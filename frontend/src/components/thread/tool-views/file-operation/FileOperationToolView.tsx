@@ -14,7 +14,7 @@ import {
 import {
   MarkdownRenderer,
   processUnicodeContent,
-} from '@/components/file-renderers/markdown-renderer';
+} from '@/components/file-renderers/markdown-renderer-optimized';
 import { CsvRenderer } from '@/components/file-renderers/csv-renderer';
 import { cn } from '@/lib/utils';
 import { useTheme } from 'next-themes';

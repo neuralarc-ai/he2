@@ -11,8 +11,6 @@ import datetime
 import asyncio
 import logging
 
-# TODO: add subpages, etc... in filters as sometimes its necessary 
-
 class SandboxWebSearchTool(SandboxToolsBase):
     """Tool for performing web searches using Tavily API and web scraping using Firecrawl."""
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { ContentFormat, FormatDetectionResult } from './mcp-format-detector';
-import { MarkdownRenderer } from '@/components/file-renderers/markdown-renderer';
+import { MarkdownRenderer } from '@/components/file-renderers/markdown-renderer-optimized';
 import { CsvRenderer } from '@/components/thread/preview-renderers/csv-renderer';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card } from '@/components/ui/card';
