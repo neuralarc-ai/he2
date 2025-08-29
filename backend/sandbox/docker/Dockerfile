@@ -80,6 +80,9 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && corepack enable \
     && corepack prepare pnpm@9.1.0 --activate
 
+# Install Wrangler for Cloudflare Pages deployment
+RUN npm install -g wrangler
+
 # pnpm config and store dir for faster installs
 ENV PNPM_HOME=/root/.local/share/pnpm
 ENV PATH="$PNPM_HOME:$PATH"
