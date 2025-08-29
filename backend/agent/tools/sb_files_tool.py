@@ -18,6 +18,18 @@ class SandboxFilesTool(SandboxToolsBase):
         self.SNIPPET_LINES = 4  # Number of context lines to show around edits
         self.workspace_path = "/workspace"  # Ensure we're always operating in /workspace
 
+    def _get_model_for_environment(self) -> str:
+        """Get the appropriate model based on environment mode."""
+        # Get environment mode directly from environment variable
+        env_mode = os.getenv("ENV_MODE", "local").lower()
+        
+        # For production, use Vertex AI Gemini 2.5 Pro (same as in helium_config.py)
+        if env_mode == "production":
+            return "vertexai/gemini-2.5-pro"
+        
+        # For local/development/staging, use free Qwen model
+        return "openrouter/qwen/qwen3-coder:free"
+
     def clean_path(self, path: str) -> str:
         """Clean and normalize a path to be relative to /workspace"""
         return clean_path(path, self.workspace_path)
@@ -339,47 +351,31 @@ class SandboxFilesTool(SandboxToolsBase):
         except Exception as e:
             return self.fail_response(f"Error deleting file: {str(e)}")
 
-    async def _call_vertex_ai_api(self, file_content: str, code_edit: str, instructions: str, file_path: str) -> tuple[Optional[str], Optional[str]]:
-        """
-        Call Vertex AI Gemini API to apply edits to file content.
-        Returns a tuple (new_content, error_message).
-        On success, error_message is None.
-        On failure, new_content is None.
-        """
+    async def _call_ai_api(self, file_content: str, code_edit: str, instructions: str, file_path: str) -> tuple[Optional[str], Optional[str]]:
+        """Call the AI model API for intelligent file editing."""
         try:
-            # Check if Vertex AI is properly configured
-            if not config.VERTEXAI_PROJECT:
-                error_msg = "Vertex AI project not configured. Please set VERTEXAI_PROJECT environment variable."
-                logger.warning(error_msg)
-                return None, error_msg
-            
-            if not config.VERTEXAI_LOCATION:
-                error_msg = "Vertex AI location not configured. Please set VERTEXAI_LOCATION environment variable."
-                logger.warning(error_msg)
-                return None, error_msg
+            # Get the appropriate model for the current environment
+            model_name = self._get_model_for_environment()
+            logger.debug(f"Using model '{model_name}' for file editing in environment '{os.getenv('ENV_MODE', 'unknown')}'")
             
             messages = [{
                 "role": "user", 
                 "content": f"<instruction>{instructions}</instruction>\n<code>{file_content}</code>\n<update>{code_edit}</update>"
             }]
 
-            logger.debug("Using Vertex AI Gemini API for file editing.")
+            logger.debug(f"Using {model_name} API for file editing.")
             
-            # Prepare parameters for Vertex AI call
+            # Prepare parameters for API call - use the same pattern as the main LLM service
             params = {
-                "model": "vertexai/gemini-2.0-flash",
+                "model": model_name,
                 "messages": messages,
                 "temperature": 0.0,
                 "timeout": 30.0
             }
             
-            # Add Vertex AI specific configuration
-            if config.VERTEXAI_CREDENTIALS:
-                params["vertex_credentials"] = config.VERTEXAI_CREDENTIALS
-            if config.VERTEXAI_PROJECT:
-                params["vertex_project"] = config.VERTEXAI_PROJECT
-            if config.VERTEXAI_LOCATION:
-                params["vertex_location"] = config.VERTEXAI_LOCATION
+            # Let LiteLLM handle Vertex AI configuration automatically
+            # The main LLM service already sets up VERTEXAI_* environment variables
+            # and LiteLLM will use them when calling vertexai/ models
             
             response = await litellm.acompletion(**params)
             
@@ -394,7 +390,7 @@ class SandboxFilesTool(SandboxToolsBase):
                 
                 return content, None
             else:
-                error_msg = f"Invalid response from Vertex AI Gemini API: {response}"
+                error_msg = f"Invalid response from {model_name} API: {response}"
                 logger.error(error_msg)
                 return None, error_msg
                 
@@ -405,7 +401,7 @@ class SandboxFilesTool(SandboxToolsBase):
                 error_message += f"\n\nAPI Response Body:\n{e.response.text}"
             elif hasattr(e, 'body'): # litellm sometimes puts it in body
                 error_message += f"\n\nAPI Response Body:\n{e.body}"
-            logger.error(f"Error calling Vertex AI Gemini API: {error_message}", exc_info=True)
+            logger.error(f"Error calling {model_name} API: {error_message}", exc_info=True)
             return None, error_message
 
     @openapi_schema({
@@ -493,13 +489,13 @@ def authenticate_user(username, password):
             # Read current content
             original_content = (await self.sandbox.fs.download_file(full_path)).decode()
             
-            # Try Vertex AI Gemini editing first
+            # Try AI-powered editing first
             logger.debug(f"Attempting AI-powered edit for file '{target_file}' with instructions: {instructions[:100]}...")
-            new_content, error_message = await self._call_vertex_ai_api(original_content, code_edit, instructions, target_file)
+            new_content, error_message = await self._call_ai_api(original_content, code_edit, instructions, target_file)
 
             if error_message:
                 return ToolResult(success=False, output=json.dumps({
-                    "message": f"Vertex AI Gemini editing failed: {error_message}",
+                    "message": f"AI-powered editing failed: {error_message}",
                     "file_path": target_file,
                     "original_content": original_content,
                     "updated_content": None
@@ -507,7 +503,7 @@ def authenticate_user(username, password):
 
             if new_content is None:
                 return ToolResult(success=False, output=json.dumps({
-                    "message": "Vertex AI Gemini editing failed for an unknown reason. The model returned no content.",
+                    "message": "AI-powered editing failed for an unknown reason. The model returned no content.",
                     "file_path": target_file,
                     "original_content": original_content,
                     "updated_content": None
@@ -521,12 +517,12 @@ def authenticate_user(username, password):
                     "updated_content": original_content
                 }))
 
-            # Vertex AI Gemini editing successful
+            # AI-powered editing successful
             await self.sandbox.fs.upload_file(new_content.encode(), full_path)
             
             # Return rich data for frontend diff view
             return ToolResult(success=True, output=json.dumps({
-                "message": f"File '{target_file}' edited successfully using Vertex AI Gemini.",
+                "message": f"File '{target_file}' edited successfully using AI-powered editing.",
                 "file_path": target_file,
                 "original_content": original_content,
                 "updated_content": new_content

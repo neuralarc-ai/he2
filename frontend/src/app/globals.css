@@ -64,7 +64,7 @@
   --exitToLeft: exitToLeft 250ms ease;
   --exitToRight: exitToRight 250ms ease;
   --animate-elliptical-orbit: elliptical-orbit 20s linear infinite;
-  --animate-shiny-text: shiny-text 8s infinite;
+  --animate-shiny-text: shiny-text 2s infinite;
   @keyframes orbit {
     0% {
       transform: rotate(calc(var(--angle) * 1deg))
@@ -229,13 +229,10 @@
   }
 
   @keyframes shiny-text {
-    0%,
-    90%,
-    100% {
+    0% {
       background-position: calc(-100% - var(--shiny-width)) 0;
     }
-    30%,
-    60% {
+    100% {
       background-position: calc(100% + var(--shiny-width)) 0;
     }
   }
@@ -757,16 +754,13 @@
 }
 
 @theme inline {
-  --animate-shiny-text: shiny-text 5s infinite;
+  --animate-shiny-text: shiny-text 2s infinite;
  
   @keyframes shiny-text {
-    0%,
-    90%,
-    100% {
+    0% {
       background-position: calc(-100% - var(--shiny-width)) 0;
     }
-    30%,
-    60% {
+    100% {
       background-position: calc(100% + var(--shiny-width)) 0;
     }
   }

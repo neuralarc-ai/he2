@@ -19,6 +19,7 @@ import {
 import { HeliumLogo } from '@/components/sidebar/helium-logo';
 import { AgentLoader } from './loader';
 import { AgentAvatar, AgentName } from './agent-avatar';
+import { AnimatedLoader } from './AnimatedLoader';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -532,15 +533,14 @@ const ActionButtons: React.FC<{
   const isBadDisabled = feedback === 'good';
 
   return (
-    <div className="flex items-center justify-end gap-1 mt-2 relative">
+    <div className="flex items-center justify-end gap-2 relative">
       {/* Copy Button */}
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 w-6 p-0 rounded-full hover:bg-muted-foreground/10"
+              variant="ghost"              
+              className="h-6 w-6 rounded-sm hover:bg-muted"
               onClick={async () => {
                 try {
                   const textToCopy = getCleanContent();
@@ -573,9 +573,8 @@ const ActionButtons: React.FC<{
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              variant="ghost"
-              size="sm"
-              className={`h-6 w-6 p-0 rounded-full hover:bg-muted-foreground/10 ${
+              variant="ghost"              
+              className={`h-6 w-6 p-0 rounded-sm ${
                 feedback === 'good' ? 'bg-muted' : ''
               } ${isGoodDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
               onClick={handleGoodFeedback}
@@ -596,9 +595,8 @@ const ActionButtons: React.FC<{
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              variant="ghost"
-              size="sm"
-              className={`h-6 w-6 p-0 rounded-full hover:bg-muted-foreground/10 ${
+              variant="ghost"          
+              className={`h-6 w-6 p-0 rounded-sm ${
                 feedback === 'bad' ? 'bg-muted' : ''
               } ${isBadDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
               onClick={handleBadFeedback}
@@ -621,8 +619,7 @@ const ActionButtons: React.FC<{
             <TooltipTrigger asChild>
               <Button
                 variant="ghost"
-                size="sm"
-                className="h-6 w-6 p-0 rounded-full hover:bg-muted-foreground/10 text-muted-foreground"
+                className="h-6 w-6 p-0 rounded-sm text-muted-foreground"
                 onClick={() => {
                   if (onRetry) {
                     onRetry();
@@ -696,7 +693,7 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
   project,
   debugMode = false,
   isPreviewMode = false,
-  agentName = 'Helio',
+  agentName = 'Helium',
   agentAvatar = <HeliumLogo size={16} />,
   emptyStateComponent,
   threadMetadata,
@@ -1167,29 +1164,7 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                         }
                       >
                         <div className="flex flex-col gap-2">
-                          <div className="flex items-center">
-                            <div className="rounded-md flex items-center justify-center relative">
-                              {groupAgentId ? (
-                                <AgentAvatar
-                                  agentId={groupAgentId}
-                                  size={16}
-                                  className="h-5 w-5"
-                                />
-                              ) : (
-                                getAgentInfo().avatar
-                              )}
-                            </div>
-                            <p className="ml-2 text-base text-muted-foreground">
-                              {groupAgentId ? (
-                                <AgentName
-                                  agentId={groupAgentId}
-                                  fallback={getAgentInfo().name}
-                                />
-                              ) : (
-                                getAgentInfo().name
-                              )}
-                            </p>
-                          </div>
+                          {/* Agent avatar and name are now only shown above the loader, not above messages */}
 
                           {/* Message content - ALL messages in the group */}
                           <div className="flex max-w-[90%] text-sm xl:text-base break-words overflow-hidden">
@@ -1313,7 +1288,18 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                 group.messages.some(
                                   (msg) => msg.type === 'assistant',
                                 ) && (
-                                  <div className="mt-2 flex justify-end">
+                                  <div className="flex items-center justify-between">
+                                    {/* Agent info on the left */}
+                                    <div className="flex items-center">
+                                      <div className="rounded-md flex items-center justify-center">
+                                        {getAgentInfo().avatar}
+                                      </div>
+                                      <p className="ml-2 text-base text-muted-foreground">
+                                        {getAgentInfo().name}
+                                      </p>
+                                    </div>
+                                    
+                                    {/* Action buttons on the right */}
                                     <ActionButtons
                                       content={group.messages.find(m => m.type === 'assistant')?.content || ''}
                                       groupIndex={groupIndex}
@@ -1490,6 +1476,18 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                     })()}
                                   </div>
                                 )}
+
+                              {/* Show AnimatedLoader when agent is running and this is the last assistant group */}
+                              {!readOnly &&
+                                groupIndex === finalGroupedMessages.length - 1 &&
+                                (agentStatus === 'running' || agentStatus === 'connecting') &&
+                                group.messages.some(
+                                  (msg) => msg.type === 'assistant',
+                                ) && (
+                                  <div className="mt-4 overflow-visible pb-8 flex ml-2">
+                                    <AnimatedLoader />
+                                  </div>
+                                )}
                             </div>
                           </div>
                         </div>
@@ -1506,7 +1504,7 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                   messages[messages.length - 1].type === 'user') && (
                   <div ref={latestMessageRef} className="w-full h-22 rounded">
                     <div className="flex flex-col gap-2">
-                      {/* Logo positioned above the loader */}
+                      {/* Agent avatar and name above the loader */}
                       <div className="flex items-center">
                         <div className="rounded-md flex items-center justify-center">
                           {getAgentInfo().avatar}

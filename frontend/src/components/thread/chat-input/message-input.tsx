@@ -289,11 +289,11 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
                     align="start"
-                    className="p-2 rounded-3xl dark:bg-background"
+                    className="p-2 rounded-xl bg-background shadow-md"
                   >
                     <DropdownMenuItem
                       onClick={handleFileUpload}
-                      className="cursor-pointer rounded-2xl"
+                      className="cursor-pointer px-2.5 rounded-sm hover:bg-white! dark:hover:bg-muted!"
                     >
                       <Image
                         src={
@@ -302,8 +302,8 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
                             : '/icons/Vector-light.svg'
                         }
                         alt="Paperclip"
-                        width={16}
-                        height={16}
+                        width={18}
+                        height={18}
                         className="mr-1"
                       />
                       Attach files
@@ -311,7 +311,7 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
                     {selectedAgentId && onOpenIntegrations && (
                       <DropdownMenuItem
                         onClick={onOpenIntegrations}
-                        className="cursor-pointer rounded-2xl"
+                        className="cursor-pointer px-2.5 rounded-sm hover:bg-white! dark:hover:bg-muted!"
                       >
                         <Image
                           src={
@@ -320,8 +320,8 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
                               : '/icons/integrations.svg'
                           }
                           alt="Integrations"
-                          width={16}
-                          height={16}
+                          width={18}
+                          height={18}
                           className="mr-1"
                         />
                         Integrations

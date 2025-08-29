@@ -26,6 +26,15 @@ MODELS = {
         },
         "context_window": 200_000,  # 200k tokens
         "tier_availability": ["free", "paid"]
+    },
+    "openrouter/qwen/qwen3-coder:free": {
+        "aliases": ["qwen/qwen3-coder:free"],
+        "pricing": {
+            "input_cost_per_million_tokens": 0.00,
+            "output_cost_per_million_tokens": 0.00
+        },
+        "context_window": 128_000,  # 128k tokens
+        "tier_availability": ["free"]
     },    
     
     # All models available for all tiers
