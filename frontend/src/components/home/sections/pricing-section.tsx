@@ -467,7 +467,10 @@ function PricingTier({
             </div>
           )}
         </div>
-        <p className="hidden text-sm mt-2">{tier.description}</p>
+        <p className="text-sm mt-2 text-muted-foreground">{tier.description}</p>
+        {tier.subDescription && (
+          <p className="text-xs mt-1 text-muted-foreground/70">{tier.subDescription}</p>
+        )}
 
         {billingPeriod === 'yearly_commitment' && tier.monthlyCommitmentStripePriceId ? (
           <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold bg-green-50 border-green-200 text-green-700 w-fit">
@@ -639,12 +642,12 @@ export function PricingSection({
         <div className={cn(
           "grid gap-6 w-full",
           insideDialog
-            ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 2xl:grid-cols-4"
-            : "min-[650px]:grid-cols-2 lg:grid-cols-4",
+            ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+            : "min-[650px]:grid-cols-2 lg:grid-cols-3",
           !insideDialog && "grid-rows-1 items-stretch"
         )}>
           {siteConfig.cloudPricingItems
-            .filter((tier) => !tier.hidden && (!hideFree || tier.price !== '$0'))
+            .filter((tier) => (!hideFree || tier.price !== '$0'))
             .map((tier) => (
               <PricingTier
                 key={tier.name}
