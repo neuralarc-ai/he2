@@ -19,6 +19,11 @@ import {
   Sun,
   Moon,
   KeyRound,
+  Plug,
+  UserCog,
+  BookOpen,
+  Building2,
+  ChevronRight,
   EllipsisIcon,
   SquarePen,
 } from 'lucide-react';
@@ -35,6 +40,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
   SidebarMenu,
@@ -441,6 +449,14 @@ export function NavUserWithTeams({
                         className="mb-0 mr-1"
                       /> 
                     {personalAccount.name}                    
+                  </DropdownMenuItem>
+                  
+                  {/* Personalization Section */}
+                  <DropdownMenuItem asChild>
+                    <Link href="/settings" className="gap-2 p-2">
+                      <UserCog className="h-4 w-4" />
+                      Personalization
+                    </Link>
                   </DropdownMenuItem>
                 </>
               )} */}
