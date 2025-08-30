@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AnimatedShinyText } from '@/components/ui/animated-shiny-text';
+import { AnimatedShinyText } from '@/components/ui/animated-shiny-text';  
 
 const items = [
   { id: 1, content: "Igniting Helium God Mode intelligence..." },
@@ -45,7 +45,7 @@ export const AgentLoader = () => {
           style={{ position: "absolute" }}
           className='ml-7'
       >
-          <AnimatedShinyText className='text-sm'>{items[index].content}</AnimatedShinyText>
+          <AnimatedShinyText className='text-xs'>{items[index].content}</AnimatedShinyText>
       </motion.div>
       </AnimatePresence>
     </div>

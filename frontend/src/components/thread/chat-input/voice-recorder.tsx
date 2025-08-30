@@ -154,25 +154,25 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
     const getIcon = () => {
         switch (state) {
             case 'recording':
-                return <Square className="h-4 w-4" />;
+                return <Square className="h-fit w-[18px]" />;
             case 'processing':
-                return <Loader2 className="h-4 w-4 animate-spin" />;
+                return <Loader2 className="h-fit w-[18px] animate-spin" />;
             default:
                 return (
                     <>
                     <Image
                       src="/icons/mic-light.svg"
                       alt="mic Light Logo"
-                      width={20}
-                      height={20}
+                      width={17}
+                      height={17}
                       className="block dark:hidden mb-0"
                     />
                     {/* Dark logo */}
                     <Image
                       src="/icons/mic-dark.svg"
                       alt="mic Dark Logo"
-                      width={20}
-                      height={20}
+                      width={17}
+                      height={17}
                       className="hidden dark:block mb-0"
                     />
                   </>
@@ -186,12 +186,11 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
                 <TooltipTrigger asChild>
                     <Button
                         type="button"
-                        variant="ghost"
-                        size="sm"
+                        variant="outline"
                         onClick={handleClick}
                         onContextMenu={handleRightClick}
                         disabled={disabled || state === 'processing'}
-                        className={`h-8 px-2 py-2 bg-transparent border-0 rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/50 flex items-center gap-2 transition-colors ${getButtonClass()}`}
+                        className={`h-8 w-8 p-1.5 bg-transparent dark:border-muted-foreground/30 shadow-none rounded-full transition-all duration-200 text-muted-foreground hover:text-foreground hover:bg-background/50! flex items-center gap-2 ${getButtonClass()}`}
                     >
                         {getIcon()}
                     </Button>

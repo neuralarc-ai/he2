@@ -248,7 +248,7 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
             onPaste={handlePaste}
             placeholder={placeholder}
             className={cn(
-              'w-full bg-transparent dark:bg-transparent md:text-base md:placeholder:text-base border-none shadow-none focus-visible:ring-0 px-1 pb-8 pt-5 min-h-[86px] max-h-[240px] overflow-y-auto resize-none',
+              "w-full bg-transparent dark:bg-transparent md:text-base md:placeholder:text-base border-none shadow-none focus-visible:ring-0 px-1 pb-8 pt-5 min-h-[86px] max-h-[240px] overflow-y-auto resize-none font-[-apple-system,BlinkMacSystemFont,'Segoe_UI',Roboto,'Helvetica_Neue',Arial,sans-serif]",
               isDraggingOver ? 'opacity-40' : '',
             )}
             disabled={loading || (disabled && !isAgentRunning)}
@@ -378,7 +378,7 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
               className={cn(
                 'w-8 h-8 flex-shrink-0 rounded-full cursor-pointer',
                 resolvedTheme === 'dark'
-                  ? 'bg-helium-yellow hover:bg-helium-yellow/80'
+                  ? 'bg-helium-blue hover:bg-helium-blue/80'
                   : 'bg-helium-blue hover:bg-helium-blue/80',
                 (!value.trim() &&
                   uploadedFiles.length === 0 &&
@@ -399,11 +399,11 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
               {loading ? (
                 <Loader2 className="h-5 w-5 animate-spin" />
               ) : isAgentRunning ? (
-                <div className="min-h-[12px] min-w-[12px] w-[12px] h-[12px] rounded-xs bg-current" />
+                <div className="min-h-[12px] min-w-[12px] w-[12px] h-[12px] rounded-xs bg-white" />
               ) : (
                 <div
                   className={
-                    mounted && resolvedTheme === 'light' ? 'text-white' : 'text-black'
+                    mounted && resolvedTheme === 'light' ? 'text-white' : 'text-white'
                   }
                 >
                   <ArrowUp className="h-5 w-5 text" />

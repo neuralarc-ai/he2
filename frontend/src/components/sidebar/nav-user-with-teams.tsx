@@ -316,14 +316,27 @@ export function NavUserWithTeams({
                     Settings
                   </span>
                 </div>
-                <DynamicIcon
-                  lightPath="/icons/more-horizontal-light.svg"
-                  darkPath="/icons/more-horizontal-dark.svg"
-                  alt="menu"
-                  width={16}
-                  height={16}
-                  className="ml-auto size-4 group-data-[collapsible=icon]:mr-2"
-                />
+                {/* Show user avatar in collapsed state, more icon in expanded state */}
+                <div className="ml-auto group-data-[collapsible=icon]:mr-2">
+                  <div className="group-data-[collapsible=icon]:block hidden">
+                    <Avatar className="h-6 w-6 rounded-lg">
+                      <AvatarImage src={user.avatar} alt={user.name} />
+                      <AvatarFallback className="rounded-lg text-xs">
+                        {getInitials(user.name)}
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
+                  <div className="group-data-[collapsible=icon]:hidden">
+                    <DynamicIcon
+                      lightPath="/icons/more-horizontal-light.svg"
+                      darkPath="/icons/more-horizontal-dark.svg"
+                      alt="menu"
+                      width={16}
+                      height={16}
+                      className="size-4"
+                    />
+                  </div>
+                </div>
               </SidebarMenuButton>
             </DropdownMenuTrigger>
             <DropdownMenuContent

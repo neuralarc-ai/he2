@@ -318,11 +318,11 @@ export function SidebarLeft({
         </SidebarGroup>
         <NavAgents />
       </SidebarContent>
-      {state !== 'collapsed' && (
+      {/* {state !== 'collapsed' && (
         <div className="px-3 py-2">
           <CTACard />
         </div>
-      )}
+      )} */}
       <SidebarFooter>
         <NavUserWithTeams user={user} />
       </SidebarFooter>

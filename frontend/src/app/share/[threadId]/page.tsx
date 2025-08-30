@@ -731,6 +731,7 @@ export default function ThreadPage({
         />
         {renderWelcomeOverlay()}
         {renderFloatingControls()}
+        
       </div>
 
       <MemoizedToolCallSidePanel
