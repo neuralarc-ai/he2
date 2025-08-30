@@ -17,7 +17,6 @@ export default function PersonalAccountSettingsPage({
     { name: 'Billing', href: '/settings/billing' },
     { name: 'Usage Logs', href: '/settings/usage-logs' },
     ...(isLocalMode() ? [{ name: 'Local .Env Manager', href: '/settings/env-manager' }] : []),
-    { name: 'Company Profile', href: '/settings/company-profile' },
     // { name: 'Prompt Library', href: '/settings/prompt-library' },
   ];
   return (

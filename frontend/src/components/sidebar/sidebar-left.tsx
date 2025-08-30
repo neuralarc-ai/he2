@@ -14,7 +14,9 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarHeader,
+  SidebarMenu,
   SidebarMenuButton,
+  SidebarMenuItem,
   SidebarRail,
   SidebarTrigger,
   useSidebar,
@@ -327,7 +329,7 @@ export function SidebarLeft({
                 className="touch-manipulation"
               >
                 <Link href="/prompt-library" className="flex items-center">
-                  <Book className="h-4 w-4 mr-1" strokeWidth={1} />
+                  <Book className="h-4 w-4 mr-1" strokeWidth={2} />
                   <span>Prompt Library</span>
                 </Link>
               </SidebarMenuButton>

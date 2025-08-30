@@ -3,10 +3,16 @@
 import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
-import { Copy, CheckCircle, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { Copy, CheckCircle, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 interface GeneratedPrompt {
   id: number;
@@ -23,6 +29,8 @@ export default function PromptLibraryPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [industryType, setIndustryType] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [previewPrompt, setPreviewPrompt] = useState<GeneratedPrompt | null>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const itemsPerPage = 12;
 
   useEffect(() => {
@@ -74,8 +82,7 @@ export default function PromptLibraryPage() {
   }, [prompts]);
 
   const filteredPrompts = React.useMemo(() => {
-    if (!searchQuery.trim() && (!industryType || industryType === 'All')) return prompts;
-    const query = searchQuery.trim().toLowerCase();
+    const query = searchQuery.toLowerCase();
     return prompts.filter((p) => {
       const matchesType =
         !industryType || industryType === 'All' || p.industry === industryType || p.industryType === industryType;
@@ -101,7 +108,19 @@ export default function PromptLibraryPage() {
   const copyToClipboard = (text: string, id: number) => {
     navigator.clipboard.writeText(text);
     setCopiedId(id);
+    toast.success('Prompt copied to clipboard!');
     setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const handleCardClick = (prompt: GeneratedPrompt) => {
+    setPreviewPrompt(prompt);
+    setIsPreviewOpen(true);
+  };
+
+  const handlePreviewCopy = () => {
+    if (previewPrompt) {
+      copyToClipboard(previewPrompt.content, previewPrompt.id);
+    }
   };
 
   return (
@@ -142,18 +161,25 @@ export default function PromptLibraryPage() {
       {/* Prompts Grid */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {paginatedPrompts.map((prompt) => (
-          <Card key={prompt.id} className="p-4 h-36 hover:shadow-md transition-shadow">
+          <Card 
+            key={prompt.id} 
+            className="p-4 h-48 hover:shadow-md transition-all duration-200 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
+            onClick={() => handleCardClick(prompt)}
+          >
             <div className="flex justify-between items-start">
               <div>
-                <h3 className="font-medium text-gray-900 text-sm">{prompt.type}</h3>
-                <p className="text-xs text-gray-500">
+                <h3 className="font-medium text-gray-900 dark:text-gray-100 text-sm">{prompt.type}</h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   {prompt.industry}
                   {prompt.industryType && ` • ${prompt.industryType}`}
                 </p>
               </div>
               <button
-                onClick={() => copyToClipboard(prompt.content, prompt.id)}
-                className="text-gray-400 hover:text-gray-600"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  copyToClipboard(prompt.content, prompt.id);
+                }}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
               >
                 {copiedId === prompt.id ? (
                   <CheckCircle className="h-4 w-4 text-green-500" />
@@ -162,12 +188,48 @@ export default function PromptLibraryPage() {
                 )}
               </button>
             </div>
-            <p className="mt-2 text-xs text-gray-600 line-clamp-3">
+            <p className="mt-3 text-xs text-gray-600 dark:text-gray-300 line-clamp-5 leading-relaxed">
               {prompt.content}
             </p>
           </Card>
         ))}
       </div>
+
+      {/* Preview Dialog */}
+      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <div className="flex items-center justify-between">
+              <DialogTitle className="text-lg font-semibold">
+                {previewPrompt?.type} - {previewPrompt?.industry}
+              </DialogTitle>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handlePreviewCopy}
+                className="flex items-center gap-2"
+              >
+                {copiedId === previewPrompt?.id ? (
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
+                {copiedId === previewPrompt?.id ? 'Copied!' : 'Copy'}
+              </Button>
+            </div>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {previewPrompt?.industryType && `${previewPrompt.industryType} • `}{previewPrompt?.industry}
+            </p>
+          </DialogHeader>
+          <div className="mt-4">
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+              <p className="text-sm text-gray-700 dark:text-gray-200 whitespace-pre-wrap leading-relaxed">
+                {previewPrompt?.content}
+              </p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {filteredPrompts.length === 0 ? (
         <div className="text-center py-12 border rounded-lg mt-6">
@@ -178,15 +240,15 @@ export default function PromptLibraryPage() {
       ) : (
         <div className="flex items-center justify-between px-2 mt-6">
           <div className="text-sm text-gray-500">
-            Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredPrompts.length)} of {filteredPrompts.length} prompts
+            Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredPrompts.length)} of{' '}
+            {filteredPrompts.length} prompts
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
               onClick={() => handlePageChange(1)}
               disabled={currentPage === 1}
-              className="h-8 w-8 p-0"
             >
               <ChevronsLeft className="h-4 w-4" />
             </Button>
@@ -195,19 +257,17 @@ export default function PromptLibraryPage() {
               size="sm"
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
-              className="h-8 w-8 p-0"
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <div className="text-sm">
+            <span className="text-sm text-gray-500">
               Page {currentPage} of {totalPages}
-            </div>
+            </span>
             <Button
               variant="outline"
               size="sm"
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
-              className="h-8 w-8 p-0"
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
@@ -216,7 +276,6 @@ export default function PromptLibraryPage() {
               size="sm"
               onClick={() => handlePageChange(totalPages)}
               disabled={currentPage === totalPages}
-              className="h-8 w-8 p-0"
             >
               <ChevronsRight className="h-4 w-4" />
             </Button>
