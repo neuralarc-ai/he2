@@ -283,7 +283,7 @@ export function DashboardContent() {
             <div className="flex-1 flex items-center justify-center px-4 py-8">
               <div className="w-full max-w-[800px] flex flex-col items-center justify-center space-y-1 md:space-y-2">
                 <div className="flex flex-col items-center text-center w-full">
-                  <div className="tracking-tight text-2xl md:text-3xl font-normal text-foreground/90 libre-baskerville-regular">
+                  <div className="tracking-normal text-2xl lg:text-3xl xl:text-3xl font-normal text-foreground/80 libre-baskerville-regular">
                     {currentWelcomeMessage.split('{name}').map((part, index, array) => {
                       if (index === array.length - 1) {
                         return part;
@@ -291,7 +291,7 @@ export function DashboardContent() {
                       return (
                         <span key={index}>
                           {part}
-                          <span className="libre-baskerville-bold">{cachedUserName}</span>
+                          <span>{cachedUserName}</span>
                         </span>
                       );
                     })}
@@ -324,6 +324,13 @@ export function DashboardContent() {
               </div>
             )} */}
           </div>
+        </div>
+        
+        {/* Disclaimer text at bottom */}
+        <div className="flex-shrink-0 px-4 py-2 text-center">
+          <p className="text-xs text-muted-foreground">
+            Helium can make mistakes. Check important info. See Cookie Preferences.
+          </p>
         </div>
         
         <BillingErrorAlert

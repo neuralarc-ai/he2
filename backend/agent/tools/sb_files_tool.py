@@ -7,6 +7,7 @@ from utils.config import config
 import os
 import json
 import litellm
+import openai
 import asyncio
 from typing import Optional
 
@@ -17,19 +18,6 @@ class SandboxFilesTool(SandboxToolsBase):
         super().__init__(project_id, thread_manager)
         self.SNIPPET_LINES = 4  # Number of context lines to show around edits
         self.workspace_path = "/workspace"  # Ensure we're always operating in /workspace
-
-    def _get_model_for_environment(self) -> str:
-        """Get the appropriate model based on environment mode."""
-        # Get environment mode directly from environment variable
-        env_mode = os.getenv("ENV_MODE", "local").lower()
-        
-        # For production, randomly select from the three Vertex AI models
-        if env_mode == "production":
-            from utils.constants import get_random_production_model
-            return get_random_production_model()
-        
-        # For local/development/staging, use free Qwen model
-        return "openrouter/qwen/qwen3-coder:free"
 
     def clean_path(self, path: str) -> str:
         """Clean and normalize a path to be relative to /workspace"""
@@ -352,33 +340,35 @@ class SandboxFilesTool(SandboxToolsBase):
         except Exception as e:
             return self.fail_response(f"Error deleting file: {str(e)}")
 
-    async def _call_ai_api(self, file_content: str, code_edit: str, instructions: str, file_path: str) -> tuple[Optional[str], Optional[str]]:
-        """Call the AI model API for intelligent file editing."""
+    async def _call_qwen_api(self, file_content: str, code_edit: str, instructions: str, file_path: str) -> tuple[Optional[str], Optional[str]]:
+        """
+        Call Qwen3-Coder API via OpenRouter to apply edits to file content.
+        Returns a tuple (new_content, error_message).
+        On success, error_message is None.
+        On failure, new_content is None.
+        """
         try:
-            # Get the appropriate model for the current environment
-            model_name = self._get_model_for_environment()
-            logger.debug(f"Using model '{model_name}' for file editing in environment '{os.getenv('ENV_MODE', 'unknown')}'")
+            openrouter_key = getattr(config, 'OPENROUTER_API_KEY', None) or os.getenv('OPENROUTER_API_KEY')
+            
+            if not openrouter_key:
+                error_msg = "No OpenRouter API key found, cannot perform AI edit."
+                logger.warning(error_msg)
+                return None, error_msg
             
             messages = [{
                 "role": "user", 
                 "content": f"<instruction>{instructions}</instruction>\n<code>{file_content}</code>\n<update>{code_edit}</update>"
             }]
 
-            logger.debug(f"Using {model_name} API for file editing.")
-            
-            # Prepare parameters for API call - use the same pattern as the main LLM service
-            params = {
-                "model": model_name,
-                "messages": messages,
-                "temperature": 0.0,
-                "timeout": 30.0
-            }
-            
-            # Let LiteLLM handle Vertex AI configuration automatically
-            # The main LLM service already sets up VERTEXAI_* environment variables
-            # and LiteLLM will use them when calling vertexai/ models
-            
-            response = await litellm.acompletion(**params)
+            logger.debug("Using Qwen3-Coder via OpenRouter for file editing.")
+            response = await litellm.acompletion(
+                model="openrouter/qwen/qwen3-coder:free",
+                messages=messages,
+                api_key=openrouter_key,
+                api_base="https://openrouter.ai/api/v1",
+                temperature=0.0,
+                timeout=60.0
+            )
             
             if response and response.choices and len(response.choices) > 0:
                 content = response.choices[0].message.content.strip()
@@ -391,7 +381,7 @@ class SandboxFilesTool(SandboxToolsBase):
                 
                 return content, None
             else:
-                error_msg = f"Invalid response from {model_name} API: {response}"
+                error_msg = f"Invalid response from Qwen3-Coder API: {response}"
                 logger.error(error_msg)
                 return None, error_msg
                 
@@ -402,7 +392,7 @@ class SandboxFilesTool(SandboxToolsBase):
                 error_message += f"\n\nAPI Response Body:\n{e.response.text}"
             elif hasattr(e, 'body'): # litellm sometimes puts it in body
                 error_message += f"\n\nAPI Response Body:\n{e.body}"
-            logger.error(f"Error calling {model_name} API: {error_message}", exc_info=True)
+            logger.error(f"Error calling Qwen3-Coder API: {error_message}", exc_info=True)
             return None, error_message
 
     @openapi_schema({
@@ -490,13 +480,13 @@ def authenticate_user(username, password):
             # Read current content
             original_content = (await self.sandbox.fs.download_file(full_path)).decode()
             
-            # Try AI-powered editing first
+            # Try Qwen3-Coder AI editing first
             logger.debug(f"Attempting AI-powered edit for file '{target_file}' with instructions: {instructions[:100]}...")
-            new_content, error_message = await self._call_ai_api(original_content, code_edit, instructions, target_file)
+            new_content, error_message = await self._call_qwen_api(original_content, code_edit, instructions, target_file)
 
             if error_message:
                 return ToolResult(success=False, output=json.dumps({
-                    "message": f"AI-powered editing failed: {error_message}",
+                    "message": f"Qwen3-Coder AI editing failed: {error_message}",
                     "file_path": target_file,
                     "original_content": original_content,
                     "updated_content": None
@@ -504,7 +494,7 @@ def authenticate_user(username, password):
 
             if new_content is None:
                 return ToolResult(success=False, output=json.dumps({
-                    "message": "AI-powered editing failed for an unknown reason. The model returned no content.",
+                    "message": "AI editing failed for an unknown reason. The model returned no content.",
                     "file_path": target_file,
                     "original_content": original_content,
                     "updated_content": None
@@ -518,12 +508,12 @@ def authenticate_user(username, password):
                     "updated_content": original_content
                 }))
 
-            # AI-powered editing successful
+            # AI editing successful
             await self.sandbox.fs.upload_file(new_content.encode(), full_path)
             
             # Return rich data for frontend diff view
             return ToolResult(success=True, output=json.dumps({
-                "message": f"File '{target_file}' edited successfully using AI-powered editing.",
+                "message": f"File '{target_file}' edited successfully.",
                 "file_path": target_file,
                 "original_content": original_content,
                 "updated_content": new_content

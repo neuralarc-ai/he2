@@ -10,7 +10,7 @@ export const AnimatedLoader: React.FC<AnimatedLoaderProps> = ({ className = '' }
     <div className={`flex items-center gap-3 ${className}`}>
       <div className="relative w-[12px] h-[12px] scale-75">
         <div 
-          className="absolute bg-black dark:bg-white rounded-full transform -translate-x-1/2 -translate-y-1/2 animate-[rotateClockwise_4s_infinite_cubic-bezier(0.4,0,0.2,1)]"
+          className="absolute bg-black dark:bg-white rounded-full transform -translate-x-1/2 -translate-y-1/2 animate-[rotateClockwise_3s_infinite_cubic-bezier(0.4,0,0.2,1)]"
           style={{
             animationDelay: '0s',
             top: '0%',
@@ -20,9 +20,9 @@ export const AnimatedLoader: React.FC<AnimatedLoaderProps> = ({ className = '' }
           }}
         />
         <div 
-          className="absolute bg-black dark:bg-white rounded-full transform -translate-x-1/2 -translate-y-1/2 animate-[rotateClockwise_4s_infinite_cubic-bezier(0.4,0,0.2,1)]"
+          className="absolute bg-black dark:bg-white rounded-full transform -translate-x-1/2 -translate-y-1/2 animate-[rotateClockwise_3s_infinite_cubic-bezier(0.4,0,0.2,1)]"
           style={{
-            animationDelay: '-1s',
+            animationDelay: '-0.75s',
             top: '0%',
             left: '100%',
             width: '11px',
@@ -30,9 +30,9 @@ export const AnimatedLoader: React.FC<AnimatedLoaderProps> = ({ className = '' }
           }}
         />
         <div 
-          className="absolute bg-black dark:bg-white rounded-full transform -translate-x-1/2 -translate-y-1/2 animate-[rotateClockwise_4s_infinite_cubic-bezier(0.4,0,0.2,1)]"
+          className="absolute bg-black dark:bg-white rounded-full transform -translate-x-1/2 -translate-y-1/2 animate-[rotateClockwise_3s_infinite_cubic-bezier(0.4,0,0.2,1)]"
           style={{
-            animationDelay: '-2s',
+            animationDelay: '-1.5s',
             top: '100%',
             left: '100%',
             width: '8px',
@@ -40,9 +40,9 @@ export const AnimatedLoader: React.FC<AnimatedLoaderProps> = ({ className = '' }
           }}
         />
         <div 
-          className="absolute bg-black dark:bg-white rounded-full transform -translate-x-1/2 -translate-y-1/2 animate-[rotateClockwise_4s_infinite_cubic-bezier(0.4,0,0.2,1)]"
+          className="absolute bg-black dark:bg-white rounded-full transform -translate-x-1/2 -translate-y-1/2 animate-[rotateClockwise_3s_infinite_cubic-bezier(0.4,0,0.2,1)]"
           style={{
-            animationDelay: '-3s',
+            animationDelay: '-2.25s',
             top: '100%',
             left: '0%',
             width: '11px',
@@ -65,7 +65,9 @@ export const AnimatedLoader: React.FC<AnimatedLoaderProps> = ({ className = '' }
         `}</style>
       </div>
       
-      <AnimatedShinyText shimmerWidth={50} className="text-base font-semibold -ml-1">Helium</AnimatedShinyText>
+      <AnimatedShinyText className="text-base font-semibold -ml-1">
+        <span>Helium</span>
+      </AnimatedShinyText>
     </div>
   );
 };

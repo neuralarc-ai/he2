@@ -169,14 +169,14 @@ export function SiteHeader({
               onChange={(e) => setEditName(e.target.value)}
               onKeyDown={handleKeyDown}
               onBlur={saveNewName}
-              className="h-8 w-auto min-w-[180px] text-base font-medium"
+              className="h-8 w-auto min-w-[180px] font-medium font-[-apple-system,BlinkMacSystemFont,'Segoe_UI',Roboto,'Helvetica_Neue',Arial,sans-serif] focus:outline-none focus:ring-0 focus:ring-offset-0 focus:border-none focus:bg-transparent focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-none focus-visible:bg-transparent bg-transparent shadow-none md:text-base p-0"
               maxLength={50}
             />
           ) : !projectName || projectName === 'Project' ? (
             <Skeleton className="h-5 w-32" />
           ) : (
             <div
-              className="text-base font-medium text-muted-foreground hover:text-foreground cursor-pointer flex items-center"
+              className="text-base font-medium text-muted-foreground hover:text-foreground cursor-pointer flex items-center font-[-apple-system,BlinkMacSystemFont,'Segoe_UI',Roboto,'Helvetica_Neue',Arial,sans-serif]"
               onClick={startEditing}
               title="Click to rename project"
             >

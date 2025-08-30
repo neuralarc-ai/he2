@@ -206,8 +206,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
                 <TooltipTrigger asChild>
                     <Button
                         type="button"
-                        variant="ghost"
-                        size="sm"
+                        variant="outline"
                         onClick={handleClick}
                         disabled={disabled}
                         className={`h-8 px-2 py-2 bg-transparent border-0 rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/50 flex items-center gap-2 transition-colors ${getButtonClass()}`}

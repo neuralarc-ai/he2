@@ -230,12 +230,28 @@
 
   @keyframes shiny-text {
     0% {
-      background-position: calc(-100% - var(--shiny-width)) 0;
+      background-position: -100% center;
     }
     100% {
-      background-position: calc(100% + var(--shiny-width)) 0;
+      background-position: 100% center;
     }
   }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -100% center;
+  }
+  100% {
+    background-position: 100% center;
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite linear;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 :root {
@@ -279,7 +295,7 @@
 }
 
 .dark {
-  --background: oklch(0.1872 0.002 286.2);
+  --background: oklch(0.2072 0.002 286.2);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.2 0.005 285.823);
   --card-foreground: oklch(0.985 0 0);
@@ -303,7 +319,7 @@
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.1638 0 0);
+  --sidebar: oklch(0.1838 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.488 0.243 264.376);
   --sidebar-primary-foreground: oklch(0.985 0 0);
@@ -772,3 +788,10 @@
   pre.shiki {
     background: transparent !important;
   }
+
+/* Dark theme shimmer colors */
+.dark [style*="--shimmer-color-1"] {
+  --shimmer-color-1: var(--helium-blue) !important;
+  --shimmer-color-2: var(--helium-green) !important;
+  --shimmer-color-3: var(--helium-yellow) !important;
+}

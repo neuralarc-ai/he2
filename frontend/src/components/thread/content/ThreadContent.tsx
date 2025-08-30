@@ -17,7 +17,7 @@ import {
   safeJsonParse,
 } from '@/components/thread/utils';
 import { HeliumLogo } from '@/components/sidebar/helium-logo';
-import { AgentLoader } from './loader';
+
 import { AgentAvatar, AgentName } from './agent-avatar';
 import { AnimatedLoader } from './AnimatedLoader';
 import { Button } from '@/components/ui/button';
@@ -1126,7 +1126,7 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                         )}
 
                         <div className="flex justify-end">
-                          <div className="flex max-w-[85%] rounded-3xl rounded-br-lg bg-card border px-4 py-3 break-words overflow-hidden">
+                          <div className="flex max-w-[85%] rounded-2xl rounded-br-sm bg-sidebar dark:bg-sidebar-accent border px-4 py-3 pb-2 break-words overflow-hidden">
                             <div className="space-y-3 min-w-0 flex-1">
                               {cleanContent && (
                                 <ComposioUrlDetector
@@ -1294,7 +1294,7 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                       <div className="rounded-md flex items-center justify-center">
                                         {getAgentInfo().avatar}
                                       </div>
-                                      <p className="ml-2 text-base text-muted-foreground">
+                                      <p className="ml-1.5 text-base font-semibold text-muted-foreground">
                                         {getAgentInfo().name}
                                       </p>
                                     </div>
@@ -1367,7 +1367,7 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                         <>
                                           <StreamingText
                                             content={textBeforeTag}
-                                            className="text-sm prose prose-sm dark:prose-invert chat-markdown max-w-none [&>:first-child]:mt-0 prose-headings:mt-3 break-words overflow-wrap-anywhere"
+                                            className="text-sm xl:text-base prose prose-sm dark:prose-invert chat-markdown max-w-none [&>:first-child]:mt-0 prose-headings:mt-3 break-words overflow-wrap-anywhere"
                                           />
 
                                           {detectedTag && (
@@ -1505,18 +1505,18 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                   <div ref={latestMessageRef} className="w-full h-22 rounded">
                     <div className="flex flex-col gap-2">
                       {/* Agent avatar and name above the loader */}
-                      <div className="flex items-center">
+                      {/* <div className="flex items-center">
                         <div className="rounded-md flex items-center justify-center">
                           {getAgentInfo().avatar}
                         </div>
                         <p className="ml-2 text-base text-muted-foreground">
                           {getAgentInfo().name}
                         </p>
-                      </div>
+                      </div> */}
 
                       {/* Loader content */}
-                      <div className="space-y-2 w-full h-12">
-                        <AgentLoader />
+                      <div className="space-y-2 w-full h-12 ml-2">
+                        <AnimatedLoader />
                       </div>
                     </div>
                   </div>
@@ -1559,7 +1559,7 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                         <div className="rounded-md flex items-center justify-center">
                           {getAgentInfo().avatar}
                         </div>
-                        <p className="ml-2 text-base text-muted-foreground">
+                        <p className="ml-2 text-base font-semibold text-muted-foreground">
                           {getAgentInfo().name}
                         </p>
                       </div>
