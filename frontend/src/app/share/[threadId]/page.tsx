@@ -28,6 +28,7 @@ import {
 } from '@/components/thread/types';
 import { safeJsonParse } from '@/components/thread/utils';
 import { useAgentStream } from '@/hooks/useAgentStream';
+import { triggerTokenUpdate } from '@/lib/token-updates';
 import { ThreadSkeleton } from '@/components/thread/content/ThreadSkeleton';
 import { extractToolName } from '@/components/thread/tool-views/xml-parser';
 
@@ -156,6 +157,11 @@ export default function ThreadPage({
           setAgentStatus('idle');
           setAgentRunId(null);
           setAutoOpenedPanel(false);
+          
+          // Trigger token usage update when agent completes
+          if (hookStatus === 'completed') {
+            triggerTokenUpdate.onAgentComplete();
+          }
           break;
         case 'connecting':
           setAgentStatus('connecting');

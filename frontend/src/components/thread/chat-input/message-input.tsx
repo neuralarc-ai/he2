@@ -299,11 +299,11 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
                         src={
                           resolvedTheme === 'dark'
                             ? '/icons/paperclip-dark.svg'
-                            : '/icons/Vector-light.svg'
+                            : '/icons/paperclip.svg'
                         }
                         alt="Paperclip"
-                        width={16}
-                        height={16}
+                        width={18}
+                        height={18}
                         className="mr-1"
                       />
                       Attach files

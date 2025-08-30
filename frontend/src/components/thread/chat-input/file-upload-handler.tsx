@@ -264,10 +264,10 @@ export const FileUploadHandler = forwardRef<
                     <>
                     {/*  <Image src="/icons/paperclip-light.svg" alt="Paperclip" width={24} height={24} /> */}
                    <Image
-                                                  src="/icons/Vector-light.svg"
+                                                  src="/icons/paperclip.svg"
                                                   alt="Paperclip Dark Logo"
-                                                  width={16}
-                                                  height={16}
+                                                  width={20}
+                                                  height={20}
                                                   className="block dark:hidden mb-0"
                                                 />
                                                 {/* Dark logo */}

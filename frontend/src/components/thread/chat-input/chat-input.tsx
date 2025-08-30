@@ -29,6 +29,7 @@ import { BillingModal } from '@/components/billing/billing-modal';
 import { useRouter } from 'next/navigation';
 import posthog from 'posthog-js';
 import { BorderBeam } from '@/components/magicui/border-beam';
+import { triggerTokenUpdate } from '@/lib/token-updates';
 
 export interface ChatInputHandles {
   getPendingFiles: () => File[];
@@ -258,6 +259,9 @@ export const ChatInput = forwardRef<ChatInputHandles, ChatInputProps>(
         model_name: baseModelName,
         enable_thinking: thinkingEnabled,
       });
+
+      // Trigger token usage update when message is sent
+      triggerTokenUpdate.onMessageSent();
 
       if (!isControlled) {
         setUncontrolledValue('');

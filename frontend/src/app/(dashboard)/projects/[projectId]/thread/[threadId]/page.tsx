@@ -49,6 +49,7 @@ import { useAgentSelection } from '@/lib/stores/agent-selection-store';
 import { useQueryClient } from '@tanstack/react-query';
 import { threadKeys } from '@/hooks/react-query/threads/keys';
 import { useProjectRealtime } from '@/hooks/useProjectRealtime';
+import { triggerTokenUpdate } from '@/lib/token-updates';
 
 export default function ThreadPage({
   params,
@@ -253,6 +254,11 @@ export default function ThreadPage({
           setAgentStatus('idle');
           setAgentRunId(null);
           setAutoOpenedPanel(false);
+
+          // Trigger token usage update when agent completes
+          if (hookStatus === 'completed') {
+            triggerTokenUpdate.onAgentComplete();
+          }
 
           // No scroll needed with flex-column-reverse
           break;

@@ -12,7 +12,7 @@ export async function GET() {
     
     if (userError || !user) {
       console.log('User not authenticated');
-      return NextResponse.json({ used_tokens: 0 });
+      return NextResponse.json({ used_tokens: 0, error: 'User not authenticated' });
     }
 
     // Get the user's account
@@ -24,7 +24,7 @@ export async function GET() {
 
     if (accountsError || !accounts) {
       console.log('Account not found');
-      return NextResponse.json({ used_tokens: 0 });
+      return NextResponse.json({ used_tokens: 0, error: 'Account not found' });
     }
 
     // Get usage logs from the backend billing API (same as the frontend does)
@@ -36,7 +36,7 @@ export async function GET() {
     
     if (sessionError || !session?.access_token) {
       console.log('No session or access token, using default');
-      return NextResponse.json({ used_tokens: 0 });
+      return NextResponse.json({ used_tokens: 0, error: 'No session or access token' });
     }
 
     console.log('Making request to backend billing API...');
@@ -52,7 +52,7 @@ export async function GET() {
 
     if (!response.ok) {
       console.log('Backend API not available, using default');
-      return NextResponse.json({ used_tokens: 0 });
+      return NextResponse.json({ used_tokens: 0, error: 'Backend API not available' });
     }
 
     const usageData = await response.json();
@@ -60,7 +60,7 @@ export async function GET() {
     
     if (!usageData?.logs || usageData.logs.length === 0) {
       console.log('No logs in usage data, using default');
-      return NextResponse.json({ used_tokens: 0 });
+      return NextResponse.json({ used_tokens: 0, message: 'No usage logs found' });
     }
 
     // Calculate total tokens from usage logs (same logic as frontend)
@@ -81,11 +81,16 @@ export async function GET() {
     
     return NextResponse.json({ 
       used_tokens: totalTokens,
-      account_id: accounts.account_id 
+      account_id: accounts.account_id,
+      last_updated: new Date().toISOString()
     });
 
   } catch (error) {
     console.error('Error in token usage API:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ 
+      error: 'Internal server error', 
+      used_tokens: 0,
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
   }
 }

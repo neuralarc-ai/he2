@@ -129,6 +129,8 @@ export function NavUserWithTeams({
   const [editLoading, setEditLoading] = React.useState(false);
   const [tokenUsage, setTokenUsage] = React.useState(0);
   const [totalTokens, setTotalTokens] = React.useState(250000);
+  const [isLoadingTokens, setIsLoadingTokens] = React.useState(true);
+  const [tokenUsageError, setTokenUsageError] = React.useState<string | null>(null);
   const { theme, setTheme } = useTheme();
   const { enabled: customAgentsEnabled, loading: flagLoading } =
     useFeatureFlag('custom_agents');
@@ -223,10 +225,27 @@ export function NavUserWithTeams({
       .substring(0, 2);
   };
 
+  // Utility function to dispatch custom events for token updates
+  const dispatchTokenUpdateEvent = React.useCallback((eventType: 'agent-complete' | 'message-sent') => {
+    window.dispatchEvent(new CustomEvent(eventType, {
+      detail: { timestamp: new Date().toISOString() }
+    }));
+  }, []);
+
+  // Expose the function globally so other components can use it
+  React.useEffect(() => {
+    (window as any).dispatchTokenUpdateEvent = dispatchTokenUpdateEvent;
+    return () => {
+      delete (window as any).dispatchTokenUpdateEvent;
+    };
+  }, [dispatchTokenUpdateEvent]);
+
   // Fetch token usage
   const fetchTokenUsage = React.useCallback(async () => {
     try {
-      // Replace this with your real API call
+      setIsLoadingTokens(true);
+      setTokenUsageError(null);
+      
       const response = await fetch('/api/token-usage');
       
       if (!response.ok) {
@@ -235,17 +254,45 @@ export function NavUserWithTeams({
       
       const data = await response.json();
       console.log('Token usage API response:', data);
-      setTokenUsage(data.used_tokens);
-    } catch (err) {
-      console.error('Error fetching token usage:', err);
-      console.log('Using fallback token usage: 22000');
-      setTokenUsage(1222); // Fallback value
+      
+      if (data.used_tokens !== undefined) {
+        setTokenUsage(data.used_tokens);
+      } else {
+        throw new Error('Invalid token usage data received');
+      }
+      
+    } catch (error) {
+      console.error('Failed to fetch token usage:', error);
+      setTokenUsageError(error instanceof Error ? error.message : 'Failed to fetch token usage');
+    } finally {
+      setIsLoadingTokens(false);
     }
   }, []);
 
-  // Fetch token usage on component mount
+  // Fetch token usage on mount and set up periodic refresh
   React.useEffect(() => {
     fetchTokenUsage();
+  }, [fetchTokenUsage]);
+
+  // Listen for custom events to refresh token usage
+  React.useEffect(() => {
+    const handleAgentComplete = () => {
+      console.log('Agent completed, refreshing token usage');
+      fetchTokenUsage();
+    };
+    
+    const handleMessageSent = () => {
+      console.log('Message sent, refreshing token usage');
+      fetchTokenUsage();
+    };
+
+    window.addEventListener('agent-complete', handleAgentComplete);
+    window.addEventListener('message-sent', handleMessageSent);
+    
+    return () => {
+      window.removeEventListener('agent-complete', handleAgentComplete);
+      window.removeEventListener('message-sent', handleMessageSent);
+    };
   }, [fetchTokenUsage]);
 
   // Handle name editing
@@ -363,20 +410,24 @@ export function NavUserWithTeams({
               
               {/* Token Usage Section */}
               <div className="px-1.5 py-2">
-                <div className="text-xs text-muted-foreground mb-2">
-                  {tokenUsage >= totalTokens 
-                    ? "You have used 100% of your tokens"
-                    : `You have used ${Math.round((tokenUsage / totalTokens) * 100)}% of your tokens`
-                  }
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Token Usage
+                  </span>
                 </div>
-                <div className="text-xs text-muted-foreground mb-2">
-                  {tokenUsage.toLocaleString()} / {totalTokens.toLocaleString()}
-                </div>
-                <div className="w-full bg-muted rounded-full h-2">
-                  <div 
-                    className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${Math.min((tokenUsage / totalTokens) * 100, 100)}%` }}
-                  />
+                <div className="mt-2">
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    You have used {Math.round((tokenUsage / totalTokens) * 100)}% of your tokens
+                  </div>
+                  <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                    {tokenUsage.toLocaleString()} / {totalTokens.toLocaleString()}
+                  </div>
+                  <div className="mt-2 w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                    <div
+                      className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${Math.min((tokenUsage / totalTokens) * 100, 100)}%` }}
+                    />
+                  </div>
                 </div>
               </div>
               

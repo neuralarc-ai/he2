@@ -14,6 +14,7 @@ import { useStartAgentMutation, useStopAgentMutation } from '@/hooks/react-query
 import { BillingError } from '@/lib/api';
 import { normalizeFilenameToNFC } from '@/lib/utils/unicode';
 import { HeliumLogo } from '../sidebar/helium-logo';
+import { triggerTokenUpdate } from '@/lib/token-updates';
 
 interface Agent {
   agent_id: string;
@@ -111,6 +112,11 @@ export const AgentPreview = ({ agent, agentMetadata }: AgentPreviewProps) => {
       case 'failed':
         setAgentStatus('idle');
         setAgentRunId(null);
+        
+        // Trigger token usage update when agent completes
+        if (hookStatus === 'completed') {
+          triggerTokenUpdate.onAgentComplete();
+        }
         break;
       case 'connecting':
         setAgentStatus('connecting');
