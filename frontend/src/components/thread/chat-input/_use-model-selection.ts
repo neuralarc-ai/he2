@@ -37,9 +37,15 @@ export const MODELS = {
     recommended: true,
     lowQuality: false
   },
+  'claude-sonnet-4-vertex': { 
+    tier: 'premium',
+    priority: 99, 
+    recommended: false,
+    lowQuality: false
+  },
   'gpt-5': { 
     tier: 'premium', 
-    priority: 99,
+    priority: 98,
     recommended: false,
     lowQuality: false
   },
@@ -64,13 +70,13 @@ export const MODELS = {
   // Vertex AI models removed
   'grok-4': { 
     tier: 'premium', 
-    priority: 94,
+    priority: 93,
     recommended: false,
     lowQuality: false
   },
   'sonnet-3.7': { 
     tier: 'premium', 
-    priority: 93, 
+    priority: 92, 
     recommended: false,
     lowQuality: false
   },

@@ -215,12 +215,12 @@ export function SiteHeader({
                   
                   <div className="mb-2">
                     <div className="flex items-center">
-                      <p className="text-xs text-muted-foreground w-20 whitespace-nowrap">Tokens Used:</p>
+                      <p className="text-xs text-muted-foreground w-20 whitespace-nowrap">Credits Used:</p>
                       {tokenUsageLoading ? (
                         <p className="text-xs text-muted-foreground">Loading...</p>
                       ) : threadTokenUsage ? (
                         <p className="text-sm font-semibold text-muted-foreground">
-                          {threadTokenUsage.total_completion_tokens.toLocaleString()}
+                          {Math.round((threadTokenUsage.estimated_cost || 0) * 100).toLocaleString()}
                         </p>
                       ) : (
                         <p className="text-xs text-muted-foreground">0</p>

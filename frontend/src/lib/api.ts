@@ -1598,6 +1598,7 @@ export interface SubscriptionStatus {
   };
   // Credit information
   credit_balance?: number;
+  credit_balance_credits?: number; // Add credit amount (1 credit = $0.01)
   can_purchase_credits?: boolean;
 }
 
@@ -1655,23 +1656,17 @@ export interface UserSubscriptionResponse {
 
 // Usage log entry interface
 export interface UsageLogEntry {
-  message_id: string;
   thread_id: string;
-  created_at: string;
-  content: {
-    usage: {
-      prompt_tokens: number;
-      completion_tokens: number;
-    };
-    model: string;
-  };
-  total_tokens: number;
-  estimated_cost: number | string;
   project_id: string;
-  // Credit usage fields
-  credit_used?: number;
-  payment_method?: 'credits' | 'subscription';
-  was_over_limit?: boolean;
+  project_name: string;
+  created_at: string;
+  total_credits: number;
+  request_count: number;
+  total_prompt_tokens: number;
+  total_completion_tokens: number;
+  total_tokens: number;
+  primary_model: string;
+  models_used: string[];
 }
 
 // Usage logs response interface
@@ -2131,54 +2126,3 @@ export const reactivateSubscription = async (): Promise<ReactivateSubscriptionRe
   }
 };
 
-// Transcription API Types
-export interface TranscriptionResponse {
-  text: string;
-}
-
-// Transcription API Functions
-export const transcribeAudio = async (audioFile: File): Promise<TranscriptionResponse> => {
-  try {
-    const supabase = createClient();
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
-    if (!session?.access_token) {
-      throw new NoAccessTokenAvailableError();
-    }
-
-    const formData = new FormData();
-    formData.append('audio_file', audioFile);
-
-    const response = await fetch(`${API_URL}/transcription`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${session.access_token}`,
-      },
-      body: formData,
-    });
-
-    if (!response.ok) {
-      const errorText = await response
-        .text()
-        .catch(() => 'No error details available');
-      console.error(
-        `Error transcribing audio: ${response.status} ${response.statusText}`,
-      );
-      throw new Error(
-        `Error transcribing audio: ${response.statusText} (${response.status})`,
-      );
-    }
-
-    return response.json();
-  } catch (error) {
-    if (error instanceof NoAccessTokenAvailableError) {
-      throw error;
-    }
-
-    console.error('Failed to transcribe audio:', error);
-    handleApiError(error, { operation: 'transcribe audio', resource: 'speech-to-text' });
-    throw error;
-  }
-};

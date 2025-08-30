@@ -57,6 +57,7 @@ import { useFeatureFlag } from '@/lib/feature-flags';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { useSubscriptionData } from '@/contexts/SubscriptionContext';
 
 // Custom Logout Icon component using the logout.svg
 const LogoutIcon = ({ className }: { className?: string }) => (
@@ -128,10 +129,13 @@ export function NavUserWithTeams({
   const [editName, setEditName] = React.useState(user.name);
   const [editLoading, setEditLoading] = React.useState(false);
   const [tokenUsage, setTokenUsage] = React.useState(0);
-  const [totalTokens, setTotalTokens] = React.useState(250000);
+  const [totalTokens, setTotalTokens] = React.useState(500);
   const { theme, setTheme } = useTheme();
   const { enabled: customAgentsEnabled, loading: flagLoading } =
     useFeatureFlag('custom_agents');
+  
+  // Get real-time subscription data for credit usage
+  const { data: subscriptionData } = useSubscriptionData();
 
   // Prepare personal account and team accounts
   const personalAccount = React.useMemo(
@@ -374,21 +378,34 @@ export function NavUserWithTeams({
                 </div>
               </DropdownMenuLabel>
               
-              {/* Token Usage Section */}
+              {/* Credit Usage Section */}
               <div className="px-1.5 py-2">
                 <div className="text-xs text-muted-foreground mb-2">
-                  {tokenUsage >= totalTokens 
-                    ? "You have used 100% of your tokens"
-                    : `You have used ${Math.round((tokenUsage / totalTokens) * 100)}% of your tokens`
+                  {subscriptionData ? (
+                    subscriptionData.current_usage && subscriptionData.cost_limit ? (
+                      subscriptionData.current_usage >= subscriptionData.cost_limit 
+                        ? "You have used 100% of your credits"
+                        : `You have used ${Math.round((subscriptionData.current_usage / subscriptionData.cost_limit) * 100)}% of your credits`
+                    ) : "No usage limit set"
+                  ) : "Loading usage..."
                   }
                 </div>
                 <div className="text-xs text-muted-foreground mb-2">
-                  {tokenUsage.toLocaleString()} / {totalTokens.toLocaleString()}
+                  {subscriptionData ? (
+                    subscriptionData.current_usage && subscriptionData.cost_limit ? (
+                      `${Math.round((subscriptionData.current_usage || 0) * 100).toLocaleString()} / ${Math.round((subscriptionData.cost_limit || 0) * 100).toLocaleString()}`
+                    ) : "0 / 0"
+                  ) : "Loading..."
+                  }
                 </div>
                 <div className="w-full bg-muted rounded-full h-2">
                   <div 
                     className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${Math.min((tokenUsage / totalTokens) * 100, 100)}%` }}
+                    style={{ 
+                      width: subscriptionData && subscriptionData.current_usage && subscriptionData.cost_limit 
+                        ? `${Math.min((subscriptionData.current_usage / subscriptionData.cost_limit) * 100, 100)}%`
+                        : '0%'
+                    }}
                   />
                 </div>
               </div>
@@ -484,6 +501,12 @@ export function NavUserWithTeams({
 
               {/* User Settings Section */}
               <DropdownMenuGroup>                
+                <DropdownMenuItem asChild className="rounded-full cursor-pointer">
+                  <Link href="/settings/billing">
+                    <CreditCard className="h-4 w-4 mb-0" />
+                    Billing
+                  </Link>
+                </DropdownMenuItem>
                 {!flagLoading && customAgentsEnabled && (
                   <DropdownMenuItem asChild className="rounded-full cursor-pointer">
                     <Link href="/settings/credentials">
