@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Square, Loader2 } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Square } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -7,177 +7,197 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { useTranscription } from '@/hooks/react-query/transcription/use-transcription';
+import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import Image from 'next/image';
-// Custom Mic Icon component using the mic.svg
 
 interface VoiceRecorderProps {
     onTranscription: (text: string) => void;
     disabled?: boolean;
 }
 
-const MAX_RECORDING_TIME = 15 * 60 * 1000; // 15 minutes in milliseconds
-
 export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
     onTranscription,
     disabled = false,
 }) => {
-    const [state, setState] = useState<'idle' | 'recording' | 'processing'>('idle');
-    const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-    const chunksRef = useRef<Blob[]>([]);
-    const streamRef = useRef<MediaStream | null>(null);
-    const recordingStartTimeRef = useRef<number | null>(null);
-    const maxTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const [isListening, setIsListening] = useState(false);
+    const lastTranscriptRef = useRef<string>('');
+    const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    
+    const {
+        transcript,
+        listening,
+        resetTranscript,
+        browserSupportsSpeechRecognition,
+        isMicrophoneAvailable
+    } = useSpeechRecognition();
 
-    const transcriptionMutation = useTranscription();
-
-    // Auto-stop recording after 15 minutes
+    // Real-time transcription feedback with minimal debouncing
     useEffect(() => {
-        if (state === 'recording') {
-            recordingStartTimeRef.current = Date.now();
-            maxTimeoutRef.current = setTimeout(() => {
-                stopRecording();
-            }, MAX_RECORDING_TIME);
-        } else {
-            recordingStartTimeRef.current = null;
-            if (maxTimeoutRef.current) {
-                clearTimeout(maxTimeoutRef.current);
-                maxTimeoutRef.current = null;
+        if (isListening && transcript.trim()) {
+            // Clear any existing timeout
+            if (updateTimeoutRef.current) {
+                clearTimeout(updateTimeoutRef.current);
             }
+            
+            // Set a new timeout to send the complete transcript
+            updateTimeoutRef.current = setTimeout(() => {
+                const currentTranscript = transcript.trim();
+                if (currentTranscript !== lastTranscriptRef.current) {
+                    lastTranscriptRef.current = currentTranscript;
+                    onTranscription(currentTranscript);
+                }
+            }, 150); // Reduced to 150ms for more responsive updates
         }
-
+        
+        // Cleanup timeout on unmount or when not listening
         return () => {
-            if (maxTimeoutRef.current) {
-                clearTimeout(maxTimeoutRef.current);
+            if (updateTimeoutRef.current) {
+                clearTimeout(updateTimeoutRef.current);
             }
         };
-    }, [state]);
+    }, [transcript, isListening, onTranscription]);
 
-    const startRecording = async () => {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            streamRef.current = stream;
+    // Check if browser supports speech recognition
+    if (!browserSupportsSpeechRecognition) {
+        return (
+            <TooltipProvider>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            disabled={true}
+                            className="h-8 px-2 py-2 bg-transparent border-0 rounded-xl text-muted-foreground opacity-50 cursor-not-allowed"
+                        >
+                            <Image
+                                src="/icons/mic-light.svg"
+                                alt="mic Light Logo"
+                                width={20}
+                                height={20}
+                                className="block dark:hidden mb-0"
+                            />
+                            <Image
+                                src="/icons/mic-dark.svg"
+                                alt="mic Dark Logo"
+                                width={20}
+                                height={20}
+                                className="hidden dark:block mb-0"
+                            />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="text-xs">
+                        <p>Speech recognition not supported in this browser</p>
+                    </TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
+        );
+    }
 
-            const options = { mimeType: 'audio/webm' };
-            const mediaRecorder = new MediaRecorder(stream, options);
-            mediaRecorderRef.current = mediaRecorder;
-            chunksRef.current = [];
+    // Check if microphone is available
+    if (!isMicrophoneAvailable) {
+        return (
+            <TooltipProvider>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            disabled={true}
+                            className="h-8 px-2 py-2 bg-transparent border-0 rounded-xl text-muted-foreground opacity-50 cursor-not-allowed"
+                        >
+                            <Image
+                                src="/icons/mic-light.svg"
+                                alt="mic Light Logo"
+                                width={20}
+                                height={20}
+                                className="block dark:hidden mb-0"
+                            />
+                            <Image
+                                src="/icons/mic-dark.svg"
+                                alt="mic Dark Logo"
+                                width={20}
+                                height={20}
+                                className="hidden dark:block mb-0"
+                            />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="text-xs">
+                        <p>Microphone access required</p>
+                    </TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
+        );
+    }
 
-            mediaRecorder.ondataavailable = (event) => {
-                if (event.data.size > 0) {
-                    chunksRef.current.push(event.data);
-                }
-            };
-
-            mediaRecorder.onstop = async () => {
-                if (chunksRef.current.length === 0) {
-                    // Recording was cancelled
-                    cleanupStream();
-                    setState('idle');
-                    return;
-                }
-
-                setState('processing');
-                const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' });
-                const audioFile = new File([audioBlob], 'recording.webm', { type: 'audio/webm' });
-
-                transcriptionMutation.mutate(audioFile, {
-                    onSuccess: (data) => {
-                        onTranscription(data.text);
-                        setState('idle');
-                    },
-                    onError: (error) => {
-                        console.error('Transcription failed:', error);
-                        setState('idle');
-                    },
-                });
-
-                cleanupStream();
-            };
-
-            mediaRecorder.start();
-            setState('recording');
-        } catch (error) {
-            console.error('Error starting recording:', error);
-            setState('idle');
-        }
+    const handleStartListening = () => {
+        setIsListening(true);
+        lastTranscriptRef.current = '';
+        resetTranscript();
+        SpeechRecognition.startListening({ 
+            continuous: true,
+            language: 'en-US'
+        });
     };
 
-    const stopRecording = () => {
-        if (mediaRecorderRef.current && state === 'recording') {
-            mediaRecorderRef.current.stop();
+    const handleStopListening = () => {
+        setIsListening(false);
+        SpeechRecognition.stopListening();
+        
+        // Clear any pending timeout
+        if (updateTimeoutRef.current) {
+            clearTimeout(updateTimeoutRef.current);
+            updateTimeoutRef.current = null;
         }
-    };
-
-    const cancelRecording = () => {
-        if (mediaRecorderRef.current && state === 'recording') {
-            chunksRef.current = []; // Clear chunks to signal cancellation
-            mediaRecorderRef.current.stop();
-            cleanupStream();
-            setState('idle');
+        
+        // Send final transcript if there's any
+        if (transcript.trim() && transcript.trim() !== lastTranscriptRef.current) {
+            onTranscription(transcript.trim());
         }
-    };
-
-    const cleanupStream = () => {
-        if (streamRef.current) {
-            streamRef.current.getTracks().forEach(track => track.stop());
-            streamRef.current = null;
-        }
+        
+        // Reset transcript for next use
+        resetTranscript();
+        lastTranscriptRef.current = '';
     };
 
     const handleClick = () => {
-        if (state === 'idle') {
-            startRecording();
-        } else if (state === 'recording') {
-            stopRecording();
-        }
-    };
-
-    const handleRightClick = (e: React.MouseEvent) => {
-        e.preventDefault();
-        if (state === 'recording') {
-            cancelRecording();
+        if (isListening) {
+            handleStopListening();
+        } else {
+            handleStartListening();
         }
     };
 
     const getButtonClass = () => {
-        switch (state) {
-            case 'recording':
-                return 'text-red-500 hover:bg-red-50 hover:text-red-600';
-            case 'processing':
-                return '';
-            default:
-                return '';
+        if (isListening) {
+            return 'text-red-500 hover:bg-red-50 hover:text-red-600';
         }
+        return '';
     };
 
     const getIcon = () => {
-        switch (state) {
-            case 'recording':
-                return <Square className="h-4 w-4" />;
-            case 'processing':
-                return <Loader2 className="h-4 w-4 animate-spin" />;
-            default:
-                return (
-                    <>
-                    <Image
-                      src="/icons/mic-light.svg"
-                      alt="mic Light Logo"
-                      width={20}
-                      height={20}
-                      className="block dark:hidden mb-0"
-                    />
-                    {/* Dark logo */}
-                    <Image
-                      src="/icons/mic-dark.svg"
-                      alt="mic Dark Logo"
-                      width={20}
-                      height={20}
-                      className="hidden dark:block mb-0"
-                    />
-                  </>
-                )
+        if (isListening) {
+            return <Square className="h-4 w-4" />;
         }
+        return (
+            <>
+                <Image
+                    src="/icons/mic-light.svg"
+                    alt="mic Light Logo"
+                    width={20}
+                    height={20}
+                    className="block dark:hidden mb-0"
+                />
+                <Image
+                    src="/icons/mic-dark.svg"
+                    alt="mic Dark Logo"
+                    width={20}
+                    height={20}
+                    className="hidden dark:block mb-0"
+                />
+            </>
+        );
     };
 
     return (
@@ -189,8 +209,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
                         variant="ghost"
                         size="sm"
                         onClick={handleClick}
-                        onContextMenu={handleRightClick}
-                        disabled={disabled || state === 'processing'}
+                        disabled={disabled}
                         className={`h-8 px-2 py-2 bg-transparent border-0 rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/50 flex items-center gap-2 transition-colors ${getButtonClass()}`}
                     >
                         {getIcon()}
@@ -198,11 +217,9 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
                 </TooltipTrigger>
                 <TooltipContent side="top" className="text-xs">
                     <p>
-                        {state === 'recording' 
+                        {isListening 
                             ? 'Click to stop recording' 
-                            : state === 'processing' 
-                                ? 'Processing...' 
-                                : 'Record voice message'
+                            : 'Record voice message'
                         }
                     </p>
                 </TooltipContent>

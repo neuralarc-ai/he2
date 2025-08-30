@@ -281,13 +281,11 @@ export const ChatInput = forwardRef<ChatInputHandles, ChatInputProps>(
     };
 
     const handleTranscription = (transcribedText: string) => {
-      const currentValue = isControlled ? controlledValue : uncontrolledValue;
-      const newValue = currentValue ? `${currentValue} ${transcribedText}` : transcribedText;
-
+      // Replace the entire input value with the transcribed text
       if (isControlled) {
-        controlledOnChange(newValue);
+        controlledOnChange(transcribedText);
       } else {
-        setUncontrolledValue(newValue);
+        setUncontrolledValue(transcribedText);
       }
     };
 
