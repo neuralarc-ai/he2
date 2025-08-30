@@ -175,15 +175,6 @@ export default function TeamBillingPage({
 
             <div className='flex justify-center items-center gap-4'>
               <Button
-                variant="outline"
-                className="border-border hover:bg-muted/50 shadow-sm hover:shadow-md transition-all whitespace-nowrap flex items-center"
-                asChild
-              >
-                <Link href="/model-pricing">
-                  View Model Pricing
-                </Link>
-              </Button>
-              <Button
                 onClick={() => setShowBillingModal(true)}
                 className="bg-primary hover:bg-primary/90 shadow-md hover:shadow-lg transition-all"
               >
