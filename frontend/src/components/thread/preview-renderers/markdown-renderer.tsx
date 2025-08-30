@@ -22,7 +22,7 @@ export function MarkdownRenderer({
             <ScrollArea className="w-full h-full">
                 <div className="p-4">
                     <Markdown
-                        className="prose prose-sm dark:prose-invert max-w-none [&>:first-child]:mt-0"
+                        className="prose prose-sm dark:prose-invert max-w-none [&>:first-child]:mt-0 chat-markdown"
                     >
                         {content}
                     </Markdown>

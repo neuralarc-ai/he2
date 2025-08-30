@@ -190,24 +190,24 @@ export default function PricingPage() {
   const selectedModel = models.find((model) => model.id === selectedModelId);
 
   // Function to calculate cost based on tokens and model pricing
-  const calculateCost = (
-    inputTokens: number,
-    outputTokens: number,
-    model: Model,
-  ) => {
-    if (
-      !model.input_cost_per_million_tokens ||
-      !model.output_cost_per_million_tokens
-    ) {
-      return 0;
+  const calculateCost = (inputTokens: number, outputTokens: number, model: Model) => {
+    if (!model.input_cost_per_million_tokens || !model.output_cost_per_million_tokens) {
+      return null;
     }
-
-    const inputCost =
-      (inputTokens / 1000000) * model.input_cost_per_million_tokens;
-    const outputCost =
-      (outputTokens / 1000000) * model.output_cost_per_million_tokens;
-
-    return inputCost + outputCost;
+    
+    const inputCost = (inputTokens / 1_000_000) * model.input_cost_per_million_tokens;
+    const outputCost = (outputTokens / 1_000_000) * model.output_cost_per_million_tokens;
+    const totalCost = inputCost + outputCost;
+    
+    // Convert to credits (1 credit = $0.01)
+    const credits = Math.round(totalCost * 100);
+    
+    return {
+      inputCost: Math.round(inputCost * 100),
+      outputCost: Math.round(outputCost * 100),
+      totalCost: credits,
+      dollarAmount: totalCost
+    };
   };
 
   if (loading) {
@@ -252,7 +252,7 @@ export default function PricingPage() {
       <div className="space-y-4">
         <h1 className="text-3xl font-bold text-foreground">Token Pricing</h1>
         <p className="text-lg text-muted-foreground max-w-3xl">
-          Understand how tokens work, explore pricing for AI models, and find
+          Understand how credits work, explore pricing for AI models, and find
           the right plan for your needs.
         </p>
       </div>
@@ -267,9 +267,9 @@ export default function PricingPage() {
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground">
-            Tokens are the fundamental units that AI models use to process text
-            - the more complex or lengthy your task, the more tokens it
-            requires. Compute usage is measured by both input tokens (your
+            Credits are the fundamental units that AI models use to process text
+            - the more complex or lengthy your task, the more credits it
+            requires. Credit usage is measured by both input tokens (your
             prompts and context) and output tokens (the AI's responses), with
             different models having varying computational requirements and costs
             per token.
@@ -291,7 +291,7 @@ export default function PricingPage() {
             interactions. We apply a 50% markup over direct model provider costs
             to maintain our platform and services. Your total cost depends on
             the specific model used and the number of tokens processed for both
-            input (prompts, context) and output (generated responses).
+            input (prompts, context) and output (generated responses). Costs are displayed in credits (1 credit = $0.01).
           </p>
         </CardContent>
       </Card>
@@ -381,7 +381,7 @@ export default function PricingPage() {
                             <span className="text-muted-foreground">Cost:</span>
                             {calculatedCost !== null ? (
                               <span className="text-blue-600">
-                                ${calculatedCost.toFixed(2)}
+                                {calculatedCost.totalCost} credits
                               </span>
                             ) : (
                               <span className="text-muted-foreground">
@@ -466,7 +466,7 @@ export default function PricingPage() {
                               ${model.input_cost_per_million_tokens.toFixed(2)}
                             </div>
                             <div className="text-xs text-muted-foreground">
-                              per 1M tokens
+                              ({Math.round(model.input_cost_per_million_tokens * 100)} credits per 1M tokens)
                             </div>
                           </>
                         ) : (
@@ -487,7 +487,7 @@ export default function PricingPage() {
                               ${model.output_cost_per_million_tokens.toFixed(2)}
                             </div>
                             <div className="text-xs text-muted-foreground">
-                              per 1M tokens
+                              ({Math.round(model.output_cost_per_million_tokens * 100)} credits per 1M tokens)
                             </div>
                           </>
                         ) : (

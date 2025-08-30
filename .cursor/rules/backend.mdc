@@ -1,8 +1,6 @@
 ---
-globs: backend/**/*
-alwaysApply: false
+alwaysApply: true
 ---
-
 # Backend Development Guidelines
 
 ## Python Standards & Best Practices

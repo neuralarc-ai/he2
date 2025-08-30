@@ -1,25 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AnimatedShinyText } from '@/components/ui/animated-shiny-text';
+import { AnimatedShinyText } from '@/components/ui/animated-shiny-text';  
 
 const items = [
-    { id: 1, content: "Initializing neural pathways..." },
-    { id: 2, content: "Analyzing query complexity..." },
-    { id: 3, content: "Assembling cognitive framework..." },
-    { id: 4, content: "Orchestrating thought processes..." },
-    { id: 5, content: "Synthesizing contextual understanding..." },
-    { id: 6, content: "Calibrating response parameters..." },
-    { id: 7, content: "Engaging reasoning algorithms..." },
-    { id: 8, content: "Processing semantic structures..." },
-    { id: 9, content: "Formulating strategic approach..." },
-    { id: 10, content: "Optimizing solution pathways..." },
-    { id: 11, content: "Harmonizing data streams..." },
-    { id: 12, content: "Architecting intelligent response..." },
-    { id: 13, content: "Fine-tuning cognitive models..." },
-    { id: 14, content: "Weaving narrative threads..." },
-    { id: 15, content: "Crystallizing insights..." },
-    { id: 16, content: "Preparing comprehensive analysis..." }
-  ];
+  { id: 1, content: "Igniting Helium God Mode intelligence..." },
+  { id: 2, content: "Calibrating cognition streams..." },
+  { id: 3, content: "Synchronizing agent constellation..." },
+  { id: 4, content: "Aligning multi-domain vectors..." },
+  { id: 5, content: "Infusing strategic clarity into the lens..." },
+  { id: 6, content: "Composing orchestration layers..." },
+  { id: 7, content: "Activating intelligence harmonics..." },
+  { id: 8, content: "Refining delegation protocols..." },
+  { id: 9, content: "Energizing agent matrix..." },
+  { id: 10, content: "Mapping adaptive workflows..." },
+  { id: 11, content: "Optimizing resonance fields..." },
+  { id: 12, content: "Unifying operational streams..." },
+  { id: 13, content: "Translating complexity into clarity..." },
+  { id: 14, content: "Preparing deployment cadence..." },
+  { id: 15, content: "Crystallizing master intelligence..." },
+  { id: 16, content: "Launching Helium convergence protocol..." }
+];
 
 export const AgentLoader = () => {
   const [index, setIndex] = useState(0);
@@ -29,13 +29,12 @@ export const AgentLoader = () => {
         if (state >= items.length - 1) return 0;
         return state + 1;
       });
-    }, 1500);
+    }, 1600);
     return () => clearInterval(id);
   }, []);
 
   return (
     <div className="flex py-2 items-center w-full">
-      <div>✨</div>
       <AnimatePresence>
       <motion.div
           key={items[index].id}

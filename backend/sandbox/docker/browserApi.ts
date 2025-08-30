@@ -44,7 +44,7 @@ class BrowserAutomation {
                     logger: (logLine: LogLine) => {
                         console.log(`[${logLine.category}] ${logLine.message}`);
                     },
-                    modelName: "openai/gpt-5",
+                    modelName: "google/gemini-2.5-pro",
                     modelClientOptions: {
                         apiKey
                     },

@@ -367,7 +367,39 @@ export const agentApi = {
 
     return result.data || [];
   },
+
+  async getThreadTokenUsage(threadId: string): Promise<ThreadTokenUsage | null> {
+    const result = await backendApi.get(
+      `/billing/thread-token-usage/${threadId}`,
+      {
+        errorContext: { operation: 'load thread token usage', resource: 'token usage' },
+      }
+    );
+
+    return result.data || null;
+  },
 };
+
+export interface ThreadTokenUsage {
+  total_prompt_tokens: number;
+  total_completion_tokens: number;
+  total_tokens: number;
+  estimated_cost: number;
+  request_count: number;
+  models: string[];
+  message?: string;
+}
+
+export interface ThreadCreditUsageResponse {
+  total_credits_used: number;
+  usage_count: number;
+  usage_details: Array<{
+    amount: number;
+    created_at: string;
+    description: string;
+    message_id?: string;
+  }>;
+}
 
 export const billingApi = {
   async getSubscription(): Promise<SubscriptionStatus | null> {
@@ -432,6 +464,28 @@ export const billingApi = {
       `/billing/usage-logs?page=${page}&items_per_page=${itemsPerPage}`,
       {
         errorContext: { operation: 'load usage logs', resource: 'usage history' },
+      }
+    );
+
+    return result.data || null;
+  },
+
+  async getThreadCreditUsage(threadId: string): Promise<ThreadCreditUsageResponse | null> {
+    const result = await backendApi.get(
+      `/billing/thread-credit-usage/${threadId}`,
+      {
+        errorContext: { operation: 'load thread credit usage', resource: 'credit usage' },
+      }
+    );
+
+    return result.data || null;
+  },
+
+  async getThreadTokenUsage(threadId: string): Promise<ThreadTokenUsage | null> {
+    const result = await backendApi.get(
+      `/billing/thread-token-usage/${threadId}`,
+      {
+        errorContext: { operation: 'load thread token usage', resource: 'token usage' },
       }
     );
 

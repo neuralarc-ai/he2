@@ -17,6 +17,7 @@ import { useQueryClient } from '@tanstack/react-query';
 // import { AgentSelector } from '../../thread/chat-input/agent-selector';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { CustomMCPDialog } from '../mcp/custom-mcp-dialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const CATEGORY_EMOJIS: Record<string, string> = {
   'popular': '🔥',
@@ -27,6 +28,7 @@ const CATEGORY_EMOJIS: Record<string, string> = {
   'communication': '💬',
   'project-management': '📋',
   'scheduling': '📅',
+  'Design & creative tools': '🎨',
 };
 
 interface ConnectedApp {
@@ -55,18 +57,54 @@ const getAgentConnectedApps = (
   profiles: ComposioProfile[],
   toolkits: ComposioToolkit[]
 ): ConnectedApp[] => {
-  if (!agent?.custom_mcps || !profiles?.length || !toolkits?.length) return [];
+  if (!agent?.custom_mcps || !toolkits?.length) return [];
 
   const connectedApps: ConnectedApp[] = [];
   
   agent.custom_mcps.forEach((mcpConfig: any) => {
+    // Handle MCP configs with profile_id (Composio apps)
     if (mcpConfig.config?.profile_id) {
-      const profile = profiles.find(p => p.profile_id === mcpConfig.config.profile_id);
+      const profile = profiles?.find(p => p.profile_id === mcpConfig.config.profile_id);
       const toolkit = toolkits.find(t => t.slug === profile?.toolkit_slug);
       if (profile && toolkit) {
         connectedApps.push({
           toolkit,
           profile,
+          mcpConfig
+        });
+      }
+    } 
+    // Handle MCP configs without profile_id (custom HTTP apps)
+    else if (mcpConfig.name && mcpConfig.type === 'http') {
+      // Always use the exact name from MCP config for HTTP type apps
+      const toolkit: ComposioToolkit = {
+        slug: mcpConfig.name.toLowerCase().replace(/\s+/g, '-'),
+        name: mcpConfig.name, // Use the exact name from MCP config
+        description: `Custom integration with ${mcpConfig.name}`,
+        logo: '',
+        tags: ['custom', 'http'],
+        categories: ['custom'],
+        auth_schemes: [] // Required by ComposioToolkit interface
+      };
+      
+      // Only include the toolkit if it's not already in the list
+      if (!connectedApps.some(app => app.toolkit.name.toLowerCase() === toolkit.name.toLowerCase())) {
+      
+        const now = new Date().toISOString();
+        connectedApps.push({
+          toolkit,
+          profile: {
+            profile_id: `custom-${toolkit.slug}-${Date.now()}`,
+            profile_name: mcpConfig.name,
+            display_name: mcpConfig.name,
+            toolkit_slug: toolkit.slug,
+            toolkit_name: toolkit.name,
+            mcp_url: '',
+            is_connected: true,
+            is_default: false,
+            created_at: now,
+            config: {}
+          },
           mcpConfig
         });
       }
@@ -157,7 +195,23 @@ const ConnectedAppCard = ({
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <h3 className="font-medium text-sm leading-tight truncate mb-1">{toolkit.name}</h3>
+          <div className="flex items-center gap-2">
+            <h3 className="font-medium text-sm leading-tight truncate">{toolkit.name}</h3>
+            {mcpConfig.type === 'http' && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="text-xs text-muted-foreground">
+                      <Server className="h-3 w-3" />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Custom MCP Integration</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </div>
           <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
             Connected as "{profile.profile_name}"
           </p>
@@ -511,7 +565,7 @@ export const ComposioRegistry: React.FC<ComposioRegistryProps> = ({
                 <p className="text-sm text-muted-foreground">
                   {mode === 'profile-only' 
                     ? 'Create a connection profile for your favorite apps'
-                    : `Connect your favorite apps with ${currentAgentId ? 'this agent' : 'your agent'}`
+                    : `Connect your favorite apps with ${currentAgentId && agent?.name ? agent.name : 'your agent'} Agent`
                   }
                 </p>
               </div>
@@ -521,7 +575,7 @@ export const ComposioRegistry: React.FC<ComposioRegistryProps> = ({
                     <AgentSelector
                       selectedAgentId={currentAgentId}
                       onAgentSelect={handleAgentSelect}
-                      isSunaAgent={agent?.metadata?.is_suna_default}
+                      isHeliumAgent={agent?.metadata?.is_helium_default}
                     />
                   )} */}
                 </div>
@@ -577,7 +631,9 @@ export const ComposioRegistry: React.FC<ComposioRegistryProps> = ({
                     <CollapsibleTrigger asChild>
                       <div className="w-full hover:underline flex items-center justify-between p-0 h-auto">
                         <div className="flex items-center gap-2">
-                          <h3 className="text-lg font-medium">Connected to this agent</h3>
+                          <h3 className="text-lg font-medium">
+                            Connected to {currentAgentId && agent?.name ? agent.name : 'this agent'} Agent
+                          </h3>
                           {isLoadingConnectedApps ? (
                             <Skeleton className="w-6 h-5 rounded ml-2" />
                           ) : connectedApps.length > 0 && (

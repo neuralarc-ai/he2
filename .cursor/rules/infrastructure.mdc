@@ -126,14 +126,14 @@ networks:
 NODE_ENV=development
 NEXT_PUBLIC_SUPABASE_URL=http://localhost:54321
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
-DATABASE_URL=postgresql://user:pass@localhost:5432/suna_dev
+DATABASE_URL=postgresql://user:pass@localhost:5432/he2_dev
 REDIS_URL=redis://localhost:6379
 LOG_LEVEL=debug
 
 # .env.production
 NODE_ENV=production
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-DATABASE_URL=postgresql://user:pass@prod-db:5432/suna_prod
+DATABASE_URL=postgresql://user:pass@prod-db:5432/he2_prod
 REDIS_URL=redis://prod-redis:6379
 LOG_LEVEL=info
 SENTRY_DSN=your_sentry_dsn
@@ -456,7 +456,7 @@ set -e
 echo "Setting up secrets for production..."
 
 # Create Kubernetes secrets
-kubectl create secret generic suna-secrets \
+kubectl create secret generic he2-secrets \
   --from-literal=database-url=$DATABASE_URL \
   --from-literal=redis-url=$REDIS_URL \
   --from-literal=supabase-key=$SUPABASE_SERVICE_KEY \
@@ -475,7 +475,7 @@ echo "✅ Secrets configured"
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: suna-ingress
+  name: he2-ingress
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
@@ -484,10 +484,10 @@ metadata:
 spec:
   tls:
     - hosts:
-        - suna.example.com
-      secretName: suna-tls
+        - he2.example.com
+      secretName: he2-tls
   rules:
-    - host: suna.example.com
+    - host: he2.example.com
       http:
         paths:
           - path: /api/
@@ -552,15 +552,15 @@ DATABASE_URL=${DATABASE_URL}
 echo "Creating database backup..."
 
 # Create backup with compression
-pg_dump "$DATABASE_URL" | gzip > "$BACKUP_DIR/suna_backup_$TIMESTAMP.sql.gz"
+pg_dump "$DATABASE_URL" | gzip > "$BACKUP_DIR/he2_backup_$TIMESTAMP.sql.gz"
 
 # Upload to cloud storage (adjust for your provider)
-aws s3 cp "$BACKUP_DIR/suna_backup_$TIMESTAMP.sql.gz" "s3://suna-backups/"
+aws s3 cp "$BACKUP_DIR/he2_backup_$TIMESTAMP.sql.gz" "s3://he2-backups/"
 
 # Clean up local backups older than 7 days
-find "$BACKUP_DIR" -name "suna_backup_*.sql.gz" -mtime +7 -delete
+find "$BACKUP_DIR" -name "he2_backup_*.sql.gz" -mtime +7 -delete
 
-echo "✅ Database backup completed: suna_backup_$TIMESTAMP.sql.gz"
+echo "✅ Database backup completed: he2_backup_$TIMESTAMP.sql.gz"
 ```
 
 ### Disaster Recovery Plan
@@ -580,7 +580,7 @@ fi
 echo "Restoring database from $BACKUP_FILE..."
 
 # Download backup from cloud storage
-aws s3 cp "s3://suna-backups/$BACKUP_FILE" "/tmp/$BACKUP_FILE"
+aws s3 cp "s3://he2-backups/$BACKUP_FILE" "/tmp/$BACKUP_FILE"
 
 # Restore database
 gunzip -c "/tmp/$BACKUP_FILE" | psql "$DATABASE_URL"

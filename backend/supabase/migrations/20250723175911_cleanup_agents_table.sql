@@ -150,7 +150,7 @@ GRANT EXECUTE ON FUNCTION get_agent_version_config(UUID) TO authenticated, servi
 -- Add helpful comments
 COMMENT ON COLUMN agents.config IS 'Single source of truth for all agent configuration including system_prompt, tools, and metadata';
 COMMENT ON COLUMN agent_versions.config IS 'Single source of truth for versioned agent configuration';
-COMMENT ON COLUMN agents.metadata IS 'Agent metadata including is_suna_default, centrally_managed flags, and restrictions - crucial for default agent functionality';
+COMMENT ON COLUMN agents.metadata IS 'Agent metadata including is_helium_default, centrally_managed flags, and restrictions - crucial for default agent functionality';
 
 -- Ensure config is never null
 ALTER TABLE agents ALTER COLUMN config SET NOT NULL;

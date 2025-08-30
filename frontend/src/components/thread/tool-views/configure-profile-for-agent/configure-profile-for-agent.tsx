@@ -155,7 +155,7 @@ export function ConfigureProfileForAgentToolView({
                       {enabled_tools.length}
                     </Badge>
                   </div>
-
+                  
                   <div className="space-y-2">
                     {enabled_tools.map((tool, index) => (
                       <div
@@ -170,8 +170,8 @@ export function ConfigureProfileForAgentToolView({
                             <p className="font-medium text-zinc-900 dark:text-zinc-100">
                               {formatToolName(tool)}
                             </p>
-                            <Badge
-                              variant="secondary"
+                            <Badge 
+                              variant="secondary" 
                               className="text-xs bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300"
                             >
                               <Tag className="w-2.5 h-2.5" />
@@ -196,7 +196,7 @@ export function ConfigureProfileForAgentToolView({
                       Version Information
                     </h3>
                   </div>
-
+                  
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Card,
   CardContent,
@@ -37,6 +37,8 @@ interface DailyUsage {
   date: string;
   logs: UsageLogEntry[];
   totalTokens: number;
+  totalCompletionTokens: number;
+  totalPromptTokens: number;
   totalCost: number;
   requestCount: number;
   models: string[];
@@ -76,19 +78,55 @@ export default function UsageLogs({ accountId }: Props) {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString();
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  };
+
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    });
+  };
+
+  const formatTokenCount = (count: number) => {
+    if (count >= 1_000_000) {
+      return `${(count / 1_000_000).toFixed(1)}M`;
+    } else if (count >= 1_000) {
+      return `${(count / 1_000).toFixed(1)}K`;
+    }
+    return count.toString();
+  };
+
+  const formatCredits = (credits: number) => {
+    return `${credits.toLocaleString()} credits`;
+  };
+
+  const formatRequestCount = (count: number) => {
+    return `${count} request${count !== 1 ? 's' : ''}`;
   };
 
   const formatCost = (cost: number | string) => {
     if (typeof cost === 'string' || cost === 0) {
-      return typeof cost === 'string' ? cost : '$0.0000';
+      return typeof cost === 'string' ? cost : '0 credits';
     }
-    return `$${cost.toFixed(4)}`;
+    // Convert dollar cost to credits (assuming 1 credit = $0.01)
+    const credits = Math.round(cost * 100);
+    return `${credits.toLocaleString()} credits`;
   };
 
   const formatCreditAmount = (amount: number) => {
     if (amount === 0) return null;
-    return `$${amount.toFixed(4)}`;
+    // Convert dollar amount to credits
+    const credits = Math.round(amount * 100);
+    return `${credits.toLocaleString()} credits`;
   };
 
   const formatDateOnly = (dateString: string) => {
@@ -108,120 +146,113 @@ export default function UsageLogs({ accountId }: Props) {
 
   // Group usage logs by date
   const groupLogsByDate = (logs: UsageLogEntry[]): DailyUsage[] => {
-    const grouped = logs.reduce(
-      (acc, log) => {
-        const date = new Date(log.created_at).toDateString();
+    const grouped: { [key: string]: DailyUsage } = {};
 
-        if (!acc[date]) {
-          acc[date] = {
-            date,
-            logs: [],
-            totalTokens: 0,
-            totalCost: 0,
-            requestCount: 0,
-            models: [],
-          };
-        }
+    logs.forEach((log) => {
+      const date = new Date(log.created_at).toDateString();
+      
+      if (!grouped[date]) {
+        grouped[date] = {
+          date,
+          logs: [],
+          totalTokens: 0,
+          totalPromptTokens: 0,
+          totalCompletionTokens: 0,
+          totalCost: 0,
+          requestCount: 0,
+          models: [],
+        };
+      }
 
-        acc[date].logs.push(log);
-        acc[date].totalTokens += log.total_tokens;
-        acc[date].totalCost +=
-          typeof log.estimated_cost === 'number' ? log.estimated_cost : 0;
-        acc[date].requestCount += 1;
+      grouped[date].logs.push(log);
+      grouped[date].totalTokens += log.total_tokens;
+      grouped[date].totalCompletionTokens += log.total_completion_tokens;
+      grouped[date].totalPromptTokens += log.total_prompt_tokens;
+      grouped[date].totalCost += log.total_credits / 100; // Convert credits back to dollars for display
+      grouped[date].requestCount += log.request_count;
 
-        if (!acc[date].models.includes(log.content.model)) {
-          acc[date].models.push(log.content.model);
-        }
+      if (!grouped[date].models.includes(log.primary_model)) {
+        grouped[date].models.push(log.primary_model);
+      }
+    });
 
-        return acc;
-      },
-      {} as Record<string, DailyUsage>,
-    );
-
-    return Object.values(grouped).sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-    );
+    return Object.values(grouped).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   };
 
-
-
-  if (isLoading && page === 0) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Usage Logs</CardTitle>
-          <CardDescription>Loading your token usage history...</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-16 w-full" />
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (error) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Usage Logs</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
-            <p className="text-sm text-destructive">
-              Error: {error.message || 'Failed to load usage logs'}
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  // Handle local development mode message
-  if (currentPageData?.message) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Usage Logs</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="p-4 bg-muted/30 border border-border rounded-lg text-center">
-            <p className="text-sm text-muted-foreground">
-              {currentPageData.message}
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  const dailyUsage = groupLogsByDate(allLogs);
-  const totalUsage = allLogs.reduce(
-    (sum, log) =>
-      sum + (typeof log.estimated_cost === 'number' ? log.estimated_cost : 0),
-    0,
+  const totalCost = useMemo(
+    () =>
+      allLogs.reduce(
+        (sum, log) => sum + (log.total_credits / 100), // Convert credits back to dollars
+        0,
+      ),
+    [allLogs],
   );
 
   // Get subscription limit from the first page data
   const subscriptionLimit = currentPageData?.subscription_limit || 0;
 
-  return (
-    <div className="space-y-6">
-      {/* Show credit usage info if user has gone over limit */}
-      {subscriptionLimit > 0 && totalUsage > subscriptionLimit && (
+  if (isLoading && page === 0) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-4 w-32" />
+        <div className="space-y-2">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-20 w-full" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Alert>
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription>
+          Failed to load usage logs: {error?.message || String(error)}
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  if (!allLogs.length) {
+    return (
+      <Alert>
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>No Usage Data</AlertTitle>
+        <AlertDescription>
+          No usage logs found for this month.
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  const groupedLogs = groupLogsByDate(allLogs);
+
+  // Show credit usage info if user has gone over limit
+  if (subscriptionLimit > 0 && totalCost > subscriptionLimit) {
+    return (
+      <div className="space-y-4">
         <Alert>
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Credits Being Used</AlertTitle>
+          <AlertTitle>Usage Limit Reached</AlertTitle>
           <AlertDescription>
-            You've exceeded your monthly subscription limit of ${subscriptionLimit.toFixed(2)}. 
-            Additional usage is being deducted from your credit balance.
+            Monthly limit of {Math.round(subscriptionLimit * 100)} credits reached and credits are unavailable. Please upgrade your plan or wait until next month.
           </AlertDescription>
         </Alert>
-      )}
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => window.open('/settings/billing', '_blank')}>
+            Upgrade Plan
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
+  return (
+    <div className="space-y-6">
       {/* Usage Logs Accordion */}
       <Card>
         <CardHeader>
@@ -238,25 +269,24 @@ export default function UsageLogs({ accountId }: Props) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {dailyUsage.length === 0 ? (
+          {groupedLogs.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-muted-foreground">No usage logs found.</p>
             </div>
           ) : (
             <>
               <Accordion type="single" collapsible className="w-full">
-                {dailyUsage.map((day) => (
+                {groupedLogs.map((day) => (
                   <AccordionItem key={day.date} value={day.date}>
                     <AccordionTrigger className="hover:no-underline">
                       <div className="flex justify-between items-center w-full mr-4">
                         <div className="text-left">
                           <div className="font-semibold">
-                            {formatDateOnly(day.date)}
+                            {formatDate(day.date)}
                           </div>
                           <div className="text-sm text-muted-foreground">
                             {day.requestCount} request
-                            {day.requestCount !== 1 ? 's' : ''} •{' '}
-                            {day.models.join(', ')}
+                            {day.requestCount !== 1 ? 's' : ''}
                           </div>
                         </div>
                         <div className="text-right">
@@ -264,84 +294,52 @@ export default function UsageLogs({ accountId }: Props) {
                             {formatCost(day.totalCost)}
                           </div>
                           <div className="text-sm text-muted-foreground font-mono">
-                            {day.totalTokens.toLocaleString()} tokens
+                            <div className="text-blue-600 font-semibold">
+                              {day.totalCompletionTokens.toLocaleString()} completion
+                            </div>
+                            <div className="text-xs">
+                              {day.totalTokens.toLocaleString()} total tokens
+                            </div>
                           </div>
                         </div>
                       </div>
                     </AccordionTrigger>
                     <AccordionContent>
                       <div className="rounded-md border mt-4">
-                        <Table>
-                          <TableHeader>
-                            <TableRow className="hover:bg-transparent">
-                              <TableHead className="w-[180px] text-xs">Time</TableHead>
-                              <TableHead className="text-xs">Model</TableHead>
-                              <TableHead className="text-xs text-right">Prompt</TableHead>
-                              <TableHead className="text-xs text-right">Completion</TableHead>
-                              <TableHead className="text-xs text-right">Total</TableHead>
-                              <TableHead className="text-xs text-right">Cost</TableHead>
-                              <TableHead className="text-xs text-right">Payment</TableHead>
-                              <TableHead className="w-[100px] text-xs text-center">Thread</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {day.logs.map((log, index) => (
-                              <TableRow
-                                key={`${log.message_id}_${index}`}
-                                className="hover:bg-muted/50 group"
-                              >
-                                <TableCell className="font-mono text-xs text-muted-foreground">
-                                  {new Date(log.created_at).toLocaleTimeString()}
-                                </TableCell>
-                                <TableCell className="text-xs">
-                                  <Badge variant="secondary" className="font-mono text-xs">
-                                    {log.content.model.replace('openrouter/', '').replace('anthropic/', '')}
-                                  </Badge>
-                                </TableCell>
-                                <TableCell className="text-right font-mono text-xs">
-                                  {log.content.usage.prompt_tokens.toLocaleString()}
-                                </TableCell>
-                                <TableCell className="text-right font-mono text-xs">
-                                  {log.content.usage.completion_tokens.toLocaleString()}
-                                </TableCell>
-                                <TableCell className="text-right font-mono text-xs">
-                                  {log.total_tokens.toLocaleString()}
-                                </TableCell>
-                                <TableCell className="text-right font-mono text-xs">
-                                  {formatCost(log.estimated_cost)}
-                                </TableCell>
-                                <TableCell className="text-right text-xs">
-                                  {log.payment_method === 'credits' ? (
-                                    <div className="flex items-center justify-end gap-2">
-                                      <Badge variant="outline" className="text-xs">
-                                        Credits
-                                      </Badge>
-                                      {log.credit_used && log.credit_used > 0 && (
-                                        <span className="text-xs text-muted-foreground">
-                                          -{formatCreditAmount(log.credit_used)}
-                                        </span>
-                                      )}
-                                    </div>
-                                  ) : (
-                                    <Badge variant="secondary" className="text-xs">
-                                      Subscription
-                                    </Badge>
-                                  )}
-                                </TableCell>
-                                <TableCell className="text-center">
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => handleThreadClick(log.thread_id, log.project_id)}
-                                    className="h-6 px-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                                  >
-                                    <ExternalLink className="h-3 w-3" />
-                                  </Button>
-                                </TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
+                                            <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="text-xs text-center">Time</TableHead>
+                          <TableHead className="text-xs text-center">Project</TableHead>
+                          <TableHead className="text-xs text-center">Requests</TableHead>
+                          <TableHead className="text-xs text-center">Total Tokens</TableHead>
+                          <TableHead className="text-xs text-center">Credits Used</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {day.logs.map((log, logIndex) => (
+                          <TableRow key={`${day.date}-${logIndex}`}>
+                            <TableCell className="font-mono text-xs text-muted-foreground text-center">
+                              {formatTime(log.created_at)}
+                            </TableCell>
+                            <TableCell className="text-xs text-center">
+                              <div className="max-w-[200px] truncate mx-auto" title={log.project_name || 'Unknown Project'}>
+                                {log.project_name || 'Unknown Project'}
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-xs text-center">
+                              {formatRequestCount(log.request_count || 1)}
+                            </TableCell>
+                            <TableCell className="text-xs text-center">
+                              {formatTokenCount(log.total_tokens || 0)}
+                            </TableCell>
+                            <TableCell className="text-xs text-center font-medium">
+                              {formatCredits(log.total_credits || 0)}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
                       </div>
                     </AccordionContent>
                   </AccordionItem>

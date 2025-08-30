@@ -122,7 +122,7 @@ export const ExpandableMarkdownEditor: React.FC<ExpandableMarkdownEditorProps> =
         >
           <div className="p-4 max-h-32 overflow-hidden">
             {value ? (
-              <div className="prose prose-sm dark:prose-invert max-w-none text-sm">
+              <div className="prose prose-sm dark:prose-invert max-w-none text-sm chat-markdown">
                 {renderMarkdown(value, true)}
               </div>
             ) : (
@@ -192,7 +192,7 @@ export const ExpandableMarkdownEditor: React.FC<ExpandableMarkdownEditorProps> =
               <ScrollArea className="flex-1 h-[70vh]">
                 <div className="pr-6 py-2">
                   {value ? (
-                    <div className="prose prose-base dark:prose-invert max-w-none leading-relaxed">
+                    <div className="prose prose-base dark:prose-invert chat-markdown max-w-none leading-relaxed">
                       {renderMarkdown(value)}
                     </div>
                   ) : (

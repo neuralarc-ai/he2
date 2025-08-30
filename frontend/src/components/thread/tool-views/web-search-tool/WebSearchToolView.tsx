@@ -76,21 +76,19 @@ export function WebSearchToolView({
   };
 
   return (
-    <Card className="gap-0 flex border shadow-none border-t border-b-0 border-x-0 p-0 rounded-none flex-col h-full overflow-hidden bg-card">
-      <CardHeader className="h-14 bg-zinc-50/80 dark:bg-zinc-900/80 backdrop-blur-sm border-b p-2 px-4 space-y-2">
+    <Card className="gap-0 flex border shadow-none p-0 rounded-lg flex-col h-full overflow-hidden bg-card">
+      <CardHeader className="h-9 bg-gradient-to-t from-zinc-50/80 to-zinc-200/70 dark:from-zinc-900/90 dark:to-zinc-800/90 text-center backdrop-blur-lg border-b p-2 px-4 space-y-2 rounded-t-lg">
         <div className="flex flex-row items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="relative p-2 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/10 border border-blue-500/20">
-              <Search className="w-5 h-5 text-blue-500 dark:text-blue-400" />
-            </div>
+          <div className="flex items-center w-full justify-center gap-1">
+            <Search className="w-4 h-4 text-muted-foreground" />
             <div>
-              <CardTitle className="text-base font-medium text-zinc-900 dark:text-zinc-100">
+              <CardTitle className="text-sm font-semibold text-muted-foreground">
                 {toolTitle}
               </CardTitle>
             </div>
           </div>
 
-          {!isStreaming && (
+          {/* {!isStreaming && (
             <Badge
               variant="secondary"
               className={
@@ -106,7 +104,7 @@ export function WebSearchToolView({
               )}
               {actualIsSuccess ? 'Search completed successfully' : 'Search failed'}
             </Badge>
-          )}
+          )} */}
         </div>
       </CardHeader>
 
@@ -122,174 +120,49 @@ export function WebSearchToolView({
           />
         ) : searchResults.length > 0 || answer ? (
           <ScrollArea className="h-full w-full">
-            <div className="p-4 py-0 my-4">
-              {images.length > 0 && (
-                <div className="mb-6">
-                  <h3 className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-3 flex items-center">
-                    <ImageIcon className="h-4 w-4 mr-2 opacity-70" />
-                    Images
-                  </h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-1">
-                    {images.slice(0, 6).map((image, idx) => (
-                      <a
-                        key={idx}
-                        href={image}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="group relative overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900 hover:border-blue-300 dark:hover:border-blue-700 transition-colors shadow-sm hover:shadow-md"
-                      >
-                        <img
-                          src={image}
-                          alt={`Search result ${idx + 1}`}
-                          className="object-cover w-full h-32 group-hover:opacity-90 transition-opacity"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='18' height='18' rx='2' ry='2'%3E%3C/rect%3E%3Ccircle cx='8.5' cy='8.5' r='1.5'%3E%3C/circle%3E%3Cpolyline points='21 15 16 10 5 21'%3E%3C/polyline%3E%3C/svg%3E";
-                            target.classList.add("p-4");
-                          }}
-                        />
-                        <div className="absolute top-0 right-0 p-1">
-                          <Badge variant="secondary" className="bg-black/60 hover:bg-black/70 text-white border-none shadow-md">
-                            <ExternalLink className="h-3 w-3" />
-                          </Badge>
-                        </div>
-                      </a>
-                    ))}
-                  </div>
-                  {images.length > 6 && (
-                    <Button variant="outline" size="sm" className="mt-2 text-xs">
-                      View {images.length - 6} more images
-                    </Button>
-                  )}
-                </div>
-              )}
+            <div className="p-4 px-0 py-0">
 
-              {searchResults.length > 0 && (
-                <div className="text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-4 flex items-center justify-between">
-                  <span>Search Results ({searchResults.length})</span>
-                  <Badge variant="outline" className="text-xs font-normal">
-                    <Clock className="h-3 w-3 mr-1.5 opacity-70" />
-                    {new Date().toLocaleDateString()}
-                  </Badge>
-                </div>
-              )}
-
-              <div className="space-y-4">
+              <div className="space-y-0">
                 {searchResults.map((result, idx) => {
                   const { icon: ResultTypeIcon, label: resultTypeLabel } = getResultType(result);
                   const isExpanded = expandedResults[idx] || false;
                   const favicon = getFavicon(result.url);
 
                   return (
-                    <div
-                      key={idx}
-                      className="bg-card border rounded-lg shadow-sm hover:shadow transition-shadow"
-                    >
+                    <div key={idx} className="relative">
                       <div className="p-4">
-                        <div className="flex items-start gap-3 mb-2">
-                          {favicon && (
-                            <img
-                              src={favicon}
-                              alt=""
-                              className="w-5 h-5 mt-1 rounded"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).style.display = 'none';
-                              }}
-                            />
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <Badge variant="outline" className="text-xs px-2 py-0 h-5 font-normal bg-zinc-50 dark:bg-zinc-800">
-                                <ResultTypeIcon className="h-3 w-3 mr-1 opacity-70" />
-                                {resultTypeLabel}
-                              </Badge>
-                            </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            {favicon && (
+                              <img
+                                src={favicon}
+                                alt=""
+                                className="w-4 h-4 rounded-full flex-shrink-0"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).style.display = 'none';
+                                }}
+                              />
+                            )}
                             <a
                               href={result.url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-md font-medium text-blue-600 dark:text-blue-400 hover:underline line-clamp-1 mb-1"
+                              className="prose prose-sm dark:prose-invert chat-markdown text-sm font-medium text-black dark:text-white hover:underline line-clamp-1"
                             >
-                              {truncateString(cleanUrl(result.title), 50)}
+                              {result.title || truncateString(cleanUrl(result.url), 50)}
                             </a>
-                            <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-2 flex items-center">
-                              <Globe className="h-3 w-3 mr-1.5 flex-shrink-0 opacity-70" />
-                              {truncateString(cleanUrl(result.url), 70)}
+                          </div>
+                          {result.snippet && (
+                            <div className="mt-0.5 prose prose-sm dark:prose-invert chat-markdown text-xs text-zinc-600 dark:text-zinc-400 leading-5">
+                              {truncateString(result.snippet, 180)}
                             </div>
-                          </div>
-                          {/* <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-8 w-8 p-0 rounded-full"
-                                  onClick={() => toggleExpand(idx)}
-                                >
-                                  {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>{isExpanded ? 'Show less' : 'Show more'}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider> */}
+                          )}
                         </div>
-
-                        {/* {result.snippet && (
-                          <div className={cn(
-                            "text-sm text-zinc-600 dark:text-zinc-400",
-                            isExpanded ? "whitespace-pre-wrap break-words max-h-96 overflow-y-auto" : "line-clamp-2"
-                          )}>
-                            {isExpanded ? (
-                              // When expanded, preserve line breaks and show full content
-                              result.snippet
-                                ?.replace(/\\\\\n/g, '\n')
-                                ?.replace(/\\\\n/g, '\n')
-                                ?.replace(/\\n/g, '\n')
-                                ?.replace(/\\\\\t/g, '\t')
-                                ?.replace(/\\\\t/g, '\t')
-                                ?.replace(/\\t/g, '\t')
-                                ?.replace(/\\\\\r/g, '\r')
-                                ?.replace(/\\\\r/g, '\r')
-                                ?.replace(/\\r/g, '\r')
-                                ?.trim()
-                            ) : (
-                              // When collapsed, convert to single line
-                              result.snippet
-                                ?.replace(/\\\\\n/g, ' ')
-                                ?.replace(/\\\\n/g, ' ')
-                                ?.replace(/\\n/g, ' ')
-                                ?.replace(/\\\\\t/g, ' ')
-                                ?.replace(/\\\\t/g, ' ')
-                                ?.replace(/\\t/g, ' ')
-                                ?.replace(/\\\\\r/g, ' ')
-                                ?.replace(/\\\\r/g, ' ')
-                                ?.replace(/\\r/g, ' ')
-                                ?.replace(/\s+/g, ' ')
-                                ?.trim()
-                            )}
-                          </div>
-                        )} */}
                       </div>
-
-                      {isExpanded && (
-                        <div className="bg-zinc-50 px-4 dark:bg-zinc-800/50 border-t border-zinc-200 dark:border-zinc-800 p-3 flex justify-between items-center">
-                          <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                            Source: {cleanUrl(result.url)}
-                          </div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-7 text-xs bg-white dark:bg-zinc-900"
-                            asChild
-                          >
-                            <a href={result.url} target="_blank" rel="noopener noreferrer">
-                              <ExternalLink className="h-3 w-3" />
-                              Visit Site
-                            </a>
-                          </Button>
-                        </div>
+                      
+                      {/* Separator line - only show if not the last item */}
+                      {idx < searchResults.length - 1 && (
+                        <div className="absolute bottom-0 left-0 right-0 h-px bg-zinc-200 dark:bg-zinc-700"></div>
                       )}
                     </div>
                   );
@@ -317,7 +190,7 @@ export function WebSearchToolView({
         )}
       </CardContent>
 
-      <div className="px-4 py-2 h-10 bg-gradient-to-r from-zinc-50/90 to-zinc-100/90 dark:from-zinc-900/90 dark:to-zinc-800/90 backdrop-blur-sm border-t border-zinc-200 dark:border-zinc-800 flex justify-between items-center gap-4">
+      <div className="px-4 py-2 h-fit bg-white dark:bg-zinc-900 backdrop-blur-sm border-t border-zinc-200 dark:border-zinc-800 flex justify-between items-center gap-4 rounded-b-lg">
         <div className="h-full flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
           {!isStreaming && searchResults.length > 0 && (
             <Badge variant="outline" className="h-6 py-0.5">

@@ -113,6 +113,7 @@ export interface ComposioProfile {
   is_connected: boolean;
   is_default: boolean;
   created_at: string;
+  config?: Record<string, any>;
 }
 
 export interface ComposioProfilesResponse {

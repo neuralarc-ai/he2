@@ -150,7 +150,7 @@ class BrowserTool(SandboxToolsBase):
                         return True
                     else:
                         # If the browser api is not healthy, we need to restart the browser api
-                        model_api_key = config.OPENAI_API_KEY
+                        model_api_key = config.GEMINI_API_KEY
 
                         response = await self.sandbox.process.exec(f"curl -X POST 'http://localhost:8004/api/init' -H 'Content-Type: application/json' -d '{{\"api_key\": \"{model_api_key}\"}}'", timeout=90)
                         if response.exit_code == 0:
@@ -333,7 +333,7 @@ class BrowserTool(SandboxToolsBase):
                 "properties": {
                     "action": {
                         "type": "string",
-                        "description": "The action to perform. Examples: 'click the login button', 'fill in the email field with test@example.com', 'scroll down to see more content', 'select option 2 from the dropdown', 'press Enter', 'go back', 'wait 5 seconds', 'click at coordinates 100,200', 'drag the file icon to the drop zone', 'select United States from the country dropdown'"
+                        "description": "The action to perform. Examples: 'click the login button', 'fill in the email field with %email%', 'scroll down to see more content', 'select option 2 from the dropdown', 'press Enter', 'go back', 'wait 5 seconds', 'click at coordinates 100,200', 'select United States from the country dropdown'"
                     },
                     "variables": {
                         "type": "object",

@@ -3,38 +3,38 @@ from utils.logger import logger
 
 
 def extract_agent_config(agent_data: Dict[str, Any], version_data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-    """Extract agent configuration with simplified logic for Suna vs custom agents."""
+    """Extract agent configuration with simplified logic for Helium vs custom agents."""
     agent_id = agent_data.get('agent_id', 'Unknown')
     metadata = agent_data.get('metadata', {})
-    is_suna_default = metadata.get('is_suna_default', False)
+    is_helium_default = metadata.get('is_helium_default', False)
     
-    # Handle Suna agents with special logic
-    if is_suna_default:
-        return _extract_suna_agent_config(agent_data, version_data)
+    # Handle Helium agents with special logic
+    if is_helium_default:
+        return _extract_helium_agent_config(agent_data, version_data)
     
     # Handle custom agents with versioning
     return _extract_custom_agent_config(agent_data, version_data)
 
 
-def _extract_suna_agent_config(agent_data: Dict[str, Any], version_data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-    """Extract config for Suna agents - always use central config with user customizations."""
-    from agent.suna_config import SUNA_CONFIG
+def _extract_helium_agent_config(agent_data: Dict[str, Any], version_data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    """Extract config for Helium agents - always use central config with user customizations."""
+    from agent.helium_config import HELIUM_CONFIG
     
     agent_id = agent_data.get('agent_id', 'Unknown')
-    logger.debug(f"Using Suna central config for agent {agent_id}")
+    logger.debug(f"Using Helium central config for agent {agent_id}")
     
-    # Start with central Suna config
+    # Start with central Helium config
     config = {
         'agent_id': agent_data['agent_id'],
-        'name': SUNA_CONFIG['name'],
-        'description': SUNA_CONFIG['description'],
-        'system_prompt': SUNA_CONFIG['system_prompt'],
-        'model': SUNA_CONFIG['model'],
-        'agentpress_tools': _extract_agentpress_tools_for_run(SUNA_CONFIG['agentpress_tools']),
-        'avatar': SUNA_CONFIG['avatar'],
-        'avatar_color': SUNA_CONFIG['avatar_color'],
+        'name': HELIUM_CONFIG['name'],
+        'description': HELIUM_CONFIG['description'],
+        'system_prompt': HELIUM_CONFIG['system_prompt'],
+        'model': HELIUM_CONFIG['model'],
+        'agentpress_tools': _extract_agentpress_tools_for_run(HELIUM_CONFIG['agentpress_tools']),
+        'avatar': HELIUM_CONFIG['avatar'],
+        'avatar_color': HELIUM_CONFIG['avatar_color'],
         'is_default': True,
-        'is_suna_default': True,
+        'is_helium_default': True,
         'centrally_managed': True,
         'account_id': agent_data.get('account_id'),
         'current_version_id': agent_data.get('current_version_id'),
@@ -118,7 +118,7 @@ def _extract_custom_agent_config(agent_data: Dict[str, Any], version_data: Optio
             'avatar_color': agent_data.get('avatar_color'),
             'profile_image_url': agent_data.get('profile_image_url'),
             'is_default': agent_data.get('is_default', False),
-            'is_suna_default': False,
+            'is_helium_default': False,
             'centrally_managed': False,
             'account_id': agent_data.get('account_id'),
             'current_version_id': agent_data.get('current_version_id'),
@@ -144,7 +144,7 @@ def _extract_custom_agent_config(agent_data: Dict[str, Any], version_data: Optio
         'avatar_color': agent_data.get('avatar_color'),
         'profile_image_url': agent_data.get('profile_image_url'),
         'is_default': agent_data.get('is_default', False),
-        'is_suna_default': False,
+        'is_helium_default': False,
         'centrally_managed': False,
         'account_id': agent_data.get('account_id'),
         'current_version_id': agent_data.get('current_version_id'),
@@ -160,7 +160,7 @@ def build_unified_config(
     custom_mcps: Optional[List[Dict[str, Any]]] = None,
     avatar: Optional[str] = None,
     avatar_color: Optional[str] = None,
-    suna_metadata: Optional[Dict[str, Any]] = None,
+    helium_metadata: Optional[Dict[str, Any]] = None,
     workflows: Optional[List[Dict[str, Any]]] = None,
     triggers: Optional[List[Dict[str, Any]]] = None
 ) -> Dict[str, Any]:
@@ -186,8 +186,8 @@ def build_unified_config(
         }
     }
     
-    if suna_metadata:
-        config['suna_metadata'] = suna_metadata
+    if helium_metadata:
+        config['helium_metadata'] = helium_metadata
     
     return config
 

@@ -83,7 +83,7 @@ export const EditableMarkdown: React.FC<EditableMarkdownProps> = ({
       <div 
         className={cn(
           value ? '' : 'text-muted-foreground italic',
-          'prose prose-sm dark:prose-invert max-w-none'
+          'prose prose-sm dark:prose-invert max-w-none chat-markdown'
         )}
         style={{ minHeight }}
       >

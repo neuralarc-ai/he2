@@ -161,15 +161,15 @@ async def check_agent_count_limit(client, account_id: str) -> Dict[str, Any]:
 
         agents_result = await client.table('agents').select('agent_id, metadata').eq('account_id', account_id).execute()
         
-        non_suna_agents = []
+        non_helium_agents = []
         for agent in agents_result.data or []:
             metadata = agent.get('metadata', {}) or {}
-            is_suna_default = metadata.get('is_suna_default', False)
-            if not is_suna_default:
-                non_suna_agents.append(agent)
+            is_helium_default = metadata.get('is_helium_default', False)
+            if not is_helium_default:
+                non_helium_agents.append(agent)
                 
-        current_count = len(non_suna_agents)
-        logger.debug(f"Account {account_id} has {current_count} custom agents (excluding Suna defaults)")
+        current_count = len(non_helium_agents)
+        logger.debug(f"Account {account_id} has {current_count} custom agents (excluding Helium defaults)")
         
         try:
             from services.billing import get_subscription_tier

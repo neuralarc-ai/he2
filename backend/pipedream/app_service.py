@@ -95,7 +95,7 @@ class AppService:
         if self.session is None or self.session.is_closed:
             self.session = httpx.AsyncClient(
                 timeout=httpx.Timeout(30.0),
-                headers={"User-Agent": "Suna-Pipedream-Client/1.0"}
+                headers={"User-Agent": "Helium-Pipedream-Client/1.0"}
             )
         return self.session
     
@@ -261,7 +261,7 @@ class AppService:
             "google_analytics", "facebook", "instagram", "twitter", "linkedin", "mailchimp",
             "stripe", "paypal", "quickbooks", "xero", "square",
             "aws", "google_cloud", "microsoft_azure", "digitalocean", "heroku",
-            "shopify", "woocommerce", "magento", "bigcommerce"
+            "shopify", "woocommerce", "magento", "bigcommerce", "canva"
         ]
         
         apps = []

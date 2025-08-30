@@ -340,49 +340,35 @@ class SandboxFilesTool(SandboxToolsBase):
         except Exception as e:
             return self.fail_response(f"Error deleting file: {str(e)}")
 
-    async def _call_morph_api(self, file_content: str, code_edit: str, instructions: str, file_path: str) -> tuple[Optional[str], Optional[str]]:
+    async def _call_qwen_api(self, file_content: str, code_edit: str, instructions: str, file_path: str) -> tuple[Optional[str], Optional[str]]:
         """
-        Call Morph API to apply edits to file content.
+        Call Qwen3-Coder API via OpenRouter to apply edits to file content.
         Returns a tuple (new_content, error_message).
         On success, error_message is None.
         On failure, new_content is None.
         """
         try:
-            morph_api_key = getattr(config, 'MORPH_API_KEY', None) or os.getenv('MORPH_API_KEY')
             openrouter_key = getattr(config, 'OPENROUTER_API_KEY', None) or os.getenv('OPENROUTER_API_KEY')
+            
+            if not openrouter_key:
+                error_msg = "No OpenRouter API key found, cannot perform AI edit."
+                logger.warning(error_msg)
+                return None, error_msg
             
             messages = [{
                 "role": "user", 
                 "content": f"<instruction>{instructions}</instruction>\n<code>{file_content}</code>\n<update>{code_edit}</update>"
             }]
 
-            response = None
-            if morph_api_key:
-                logger.debug("Using direct Morph API for file editing.")
-                client = openai.AsyncOpenAI(
-                    api_key=morph_api_key,
-                    base_url="https://api.morphllm.com/v1"
-                )
-                response = await client.chat.completions.create(
-                    model="morph-v3-large",
-                    messages=messages,
-                    temperature=0.0,
-                    timeout=30.0
-                )
-            elif openrouter_key:
-                logger.debug("Morph API key not set, falling back to OpenRouter for file editing via litellm.")
-                response = await litellm.acompletion(
-                    model="openrouter/morph/morph-v3-large",
-                    messages=messages,
-                    api_key=openrouter_key,
-                    api_base="https://openrouter.ai/api/v1",
-                    temperature=0.0,
-                    timeout=30.0
-                )
-            else:
-                error_msg = "No Morph or OpenRouter API key found, cannot perform AI edit."
-                logger.warning(error_msg)
-                return None, error_msg
+            logger.debug("Using Qwen3-Coder via OpenRouter for file editing.")
+            response = await litellm.acompletion(
+                model="openrouter/qwen/qwen3-coder:free",
+                messages=messages,
+                api_key=openrouter_key,
+                api_base="https://openrouter.ai/api/v1",
+                temperature=0.0,
+                timeout=60.0
+            )
             
             if response and response.choices and len(response.choices) > 0:
                 content = response.choices[0].message.content.strip()
@@ -395,7 +381,7 @@ class SandboxFilesTool(SandboxToolsBase):
                 
                 return content, None
             else:
-                error_msg = f"Invalid response from Morph/OpenRouter API: {response}"
+                error_msg = f"Invalid response from Qwen3-Coder API: {response}"
                 logger.error(error_msg)
                 return None, error_msg
                 
@@ -406,7 +392,7 @@ class SandboxFilesTool(SandboxToolsBase):
                 error_message += f"\n\nAPI Response Body:\n{e.response.text}"
             elif hasattr(e, 'body'): # litellm sometimes puts it in body
                 error_message += f"\n\nAPI Response Body:\n{e.body}"
-            logger.error(f"Error calling Morph/OpenRouter API: {error_message}", exc_info=True)
+            logger.error(f"Error calling Qwen3-Coder API: {error_message}", exc_info=True)
             return None, error_message
 
     @openapi_schema({
@@ -494,13 +480,13 @@ def authenticate_user(username, password):
             # Read current content
             original_content = (await self.sandbox.fs.download_file(full_path)).decode()
             
-            # Try Morph AI editing first
+            # Try Qwen3-Coder AI editing first
             logger.debug(f"Attempting AI-powered edit for file '{target_file}' with instructions: {instructions[:100]}...")
-            new_content, error_message = await self._call_morph_api(original_content, code_edit, instructions, target_file)
+            new_content, error_message = await self._call_qwen_api(original_content, code_edit, instructions, target_file)
 
             if error_message:
                 return ToolResult(success=False, output=json.dumps({
-                    "message": f"AI editing failed: {error_message}",
+                    "message": f"Qwen3-Coder AI editing failed: {error_message}",
                     "file_path": target_file,
                     "original_content": original_content,
                     "updated_content": None

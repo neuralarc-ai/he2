@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, Suspense, useEffect, useRef } from 'react';
+import React, { useState, Suspense, useEffect, useRef, useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
@@ -58,6 +58,63 @@ export function DashboardContent() {
   const initiateAgentMutation = useInitiateAgentWithInvalidation();
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
+  // Fixed welcome message - use useMemo to prevent regeneration on every render
+  const welcomeMessages = [
+    "What do we tackle first, {name}?",
+    "Let's lock in - what's the focus, {name}?",
+    "What's the game plan, {name}?",
+    "Time to go higher, {name} — what's the move?",
+    "Ready to lift off, {name}?",
+    "Let's rise above the noise, {name}."
+  ];
+  
+  const welcomeMessage = useMemo(() => {
+    // Get cached message or generate new one
+    const cachedMessage = localStorage.getItem('cached_welcome_message');
+    if (cachedMessage) {
+      return cachedMessage;
+    }
+    
+    // Generate new random message and cache it
+    const randomMessage = welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)];
+    localStorage.setItem('cached_welcome_message', randomMessage);
+    return randomMessage;
+  }, []); // Empty dependency array - only runs once
+
+  const [currentWelcomeMessage, setCurrentWelcomeMessage] = useState('');
+
+  // Cache user's name to avoid repeated processing
+  const cachedUserName = useMemo(() => {
+    // Check localStorage first for cached name
+    const cachedName = localStorage.getItem('cached_user_name');
+    
+    if (cachedName && personalAccount?.name === cachedName) {
+      // Return cached capitalized name if it matches current user
+      return localStorage.getItem('cached_capitalized_name') || 'there';
+    }
+    
+    // Process and cache new name
+    if (personalAccount?.name) {
+      const firstName = personalAccount.name.split(' ')[0];
+      const capitalizedFirstName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
+      
+      // Cache both original and capitalized names
+      localStorage.setItem('cached_user_name', personalAccount.name);
+      localStorage.setItem('cached_capitalized_name', capitalizedFirstName);
+      
+      return capitalizedFirstName;
+    }
+    
+    return 'there';
+  }, [personalAccount?.name]);
+
+  // Set welcome message with cached user's name - only when dependencies change
+  useEffect(() => {
+    // Replace {name} placeholder with cached capitalized name
+    const personalizedMessage = welcomeMessage.replace('{name}', cachedUserName);
+    setCurrentWelcomeMessage(personalizedMessage);
+  }, [welcomeMessage, cachedUserName]);
+
   // Feature flag for custom agents section
   const { enabled: customAgentsEnabled } = useFeatureFlag('custom_agents');
 
@@ -72,9 +129,9 @@ export function DashboardContent() {
   const selectedAgent = selectedAgentId
     ? agents.find(agent => agent.agent_id === selectedAgentId)
     : null;
-  const displayName = selectedAgent?.name || 'Suna';
+      const displayName = selectedAgent?.name || 'Helium';
   const agentAvatar = undefined;
-  const isSunaAgent = selectedAgent?.metadata?.is_suna_default || false;
+  const isHeliumAgent = selectedAgent?.metadata?.is_helium_default || false;
 
   const threadQuery = useThreadQuery(initiatedThreadId || '');
 
@@ -84,7 +141,7 @@ export function DashboardContent() {
     console.log('🚀 Dashboard effect:', { 
       agentsLength: agents.length, 
       selectedAgentId, 
-      agents: agents.map(a => ({ id: a.agent_id, name: a.name, isDefault: a.metadata?.is_suna_default })) 
+      agents: agents.map(a => ({ id: a.agent_id, name: a.name, isDefault: a.metadata?.is_helium_default })) 
     });
     
     if (agents.length > 0) {
@@ -218,24 +275,34 @@ export function DashboardContent() {
       <div className="flex flex-col h-screen w-full overflow-hidden">
         <div className="flex-1 overflow-y-auto">
           <div className="min-h-full flex flex-col">
-            {customAgentsEnabled && (
+            {/* {customAgentsEnabled && (
               <div className="flex justify-center px-4 pt-4 md:pt-8">
                 <ReleaseBadge text="Custom Agents, Playbooks, and more!" link="/agents?tab=my-agents" />
               </div>
-            )}
+            )} */}
             <div className="flex-1 flex items-center justify-center px-4 py-8">
-              <div className="w-full max-w-[650px] flex flex-col items-center justify-center space-y-4 md:space-y-6">
+              <div className="w-full max-w-[800px] flex flex-col items-center justify-center space-y-1 md:space-y-2">
                 <div className="flex flex-col items-center text-center w-full">
-                  <p className="tracking-tight text-2xl md:text-3xl font-normal text-foreground/90">
-                    What would you like to do today?
-                  </p>
+                  <div className="tracking-normal text-2xl lg:text-3xl xl:text-3xl font-normal text-foreground/80 libre-baskerville-regular">
+                    {currentWelcomeMessage.split('{name}').map((part, index, array) => {
+                      if (index === array.length - 1) {
+                        return part;
+                      }
+                      return (
+                        <span key={index}>
+                          {part}
+                          <span>{cachedUserName}</span>
+                        </span>
+                      );
+                    })}
+                  </div>
                 </div>
                 <div className="w-full">
                   <ChatInput
                     ref={chatInputRef}
                     onSubmit={handleSubmit}
                     loading={isSubmitting}
-                    placeholder="Describe what you need help with..."
+                    placeholder="Assign a task or ask anything..."
                     value={inputValue}
                     onChange={setInputValue}
                     hideAttachments={false}
@@ -257,6 +324,13 @@ export function DashboardContent() {
               </div>
             )} */}
           </div>
+        </div>
+        
+        {/* Disclaimer text at bottom */}
+        <div className="flex-shrink-0 px-4 py-2 text-center">
+          <p className="text-xs text-muted-foreground">
+            Helium can make mistakes. Check important info. See Cookie Preferences.
+          </p>
         </div>
         
         <BillingErrorAlert

@@ -258,15 +258,10 @@ class PromptManager:
                 sample_response = file.read()
             default_system_content = default_system_content + "\n\n <sample_assistant_response>" + sample_response + "</sample_assistant_response>"
         
-        # Check if agent has builder tools enabled - use agent builder prompt
+        # Check if agent has builder tools enabled - use agent builder prompt ONLY when explicitly configured
         if agent_config:
-            agentpress_tools = agent_config.get('agentpress_tools', {})
-            has_builder_tools = any(
-                agentpress_tools.get(tool, False) 
-                for tool in ['agent_config_tool', 'mcp_search_tool', 'credential_profile_tool', 'workflow_tool', 'trigger_tool']
-            )
-            
-            if has_builder_tools:
+            # Only use agent builder prompt if explicitly set in system_prompt or if this is a dedicated builder agent
+            if agent_config.get('system_prompt') and 'builder' in agent_config.get('system_prompt', '').lower():
                 system_content = get_agent_builder_prompt()
             elif agent_config.get('system_prompt'):
                 system_content = agent_config['system_prompt'].strip()
@@ -382,15 +377,10 @@ class MessageManager:
         """Build temporary message based on configuration and context."""
         system_message = None
         
-        # Add agent builder system prompt if agent has builder tools enabled
+        # Add agent builder system prompt if agent is explicitly configured as a builder
         if self.agent_config:
-            agentpress_tools = self.agent_config.get('agentpress_tools', {})
-            has_builder_tools = any(
-                agentpress_tools.get(tool, False) 
-                for tool in ['agent_config_tool', 'mcp_search_tool', 'credential_profile_tool', 'workflow_tool', 'trigger_tool']
-            )
-            
-            if has_builder_tools:
+            # Only use agent builder prompt if explicitly set in system_prompt
+            if self.agent_config.get('system_prompt') and 'builder' in self.agent_config.get('system_prompt', '').lower():
                 from agent.agent_builder_prompt import AGENT_BUILDER_SYSTEM_PROMPT
                 system_message = AGENT_BUILDER_SYSTEM_PROMPT
         
@@ -470,8 +460,8 @@ class AgentRunner:
             # If not a dict, assume all tools are enabled
             return disabled_tools
         
-        # Special case: Suna default agents with empty tool config enable all tools
-        if self.config.agent_config.get('is_suna_default', False) and not raw_tools:
+        # Special case: Helium default agents with empty tool config enable all tools
+        if self.config.agent_config.get('is_helium_default', False) and not raw_tools:
             return disabled_tools
         
         def is_tool_enabled(tool_name: str) -> bool:
@@ -521,6 +511,7 @@ class AgentRunner:
             return 4096
         elif "gemini-2.5-pro" in self.config.model_name.lower():
             return 64000
+        # Vertex AI models removed
         elif "kimi-k2" in self.config.model_name.lower():
             return 8192
         return None
@@ -726,7 +717,14 @@ async def run_agent(
     elif model_name != "openai/gpt-5-mini":
         logger.debug(f"Using user-selected model: {effective_model}")
     else:
-        logger.debug(f"Using default model: {effective_model}")
+        # In production, randomly select from the three Vertex AI models for default
+        env_mode = os.getenv("ENV_MODE", "local").lower()
+        if env_mode == "production" and model_name == "openai/gpt-5-mini":
+            from utils.constants import get_random_production_model
+            effective_model = get_random_production_model()
+            logger.debug(f"Production environment: randomly selected model: {effective_model}")
+        else:
+            logger.debug(f"Using default model: {effective_model}")
     
     config = AgentConfig(
         thread_id=thread_id,

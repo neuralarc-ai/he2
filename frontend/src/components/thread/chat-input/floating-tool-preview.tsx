@@ -1,9 +1,10 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CircleDashed, Maximize2 } from 'lucide-react';
-import { getToolIcon, getUserFriendlyToolName } from '@/components/thread/utils';
+import { ChevronUp, Check, ListTodo, Loader, XCircle, CircleDashed } from 'lucide-react';
+import { getUserFriendlyToolName } from '@/components/thread/utils';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
+
+export type AgentStatus = 'running' | 'stopped' | 'idle' | 'completed';
 
 export interface ToolCallInput {
   assistantCall: {
@@ -30,34 +31,116 @@ interface FloatingToolPreviewProps {
   indicatorIndex?: number;
   indicatorTotal?: number;
   onIndicatorClick?: (index: number) => void;
+  agentStatus?: AgentStatus;
 }
 
 const FLOATING_LAYOUT_ID = 'tool-panel-float';
 const CONTENT_LAYOUT_ID = 'tool-panel-content';
 
-const getToolResultStatus = (toolCall: any): boolean => {
-  const content = toolCall?.toolResult?.content;
-  if (!content) return toolCall?.toolResult?.isSuccess ?? true;
+// Function to extract task list data from tool call content
+const extractTaskListData = (toolCall: ToolCallInput): any => {
+  const content = toolCall.assistantCall?.content || toolCall.toolResult?.content;
+  if (!content) return null;
 
-  const safeParse = (data: any) => {
-    try { return typeof data === 'string' ? JSON.parse(data) : data; }
-    catch { return null; }
-  };
-
-  const parsed = safeParse(content);
-  if (!parsed) return toolCall?.toolResult?.isSuccess ?? true;
-
-  if (parsed.content) {
-    const inner = safeParse(parsed.content);
-    if (inner?.tool_execution?.result?.success !== undefined) {
-      return inner.tool_execution.result.success;
+  try {
+    const parsed = typeof content === 'string' ? JSON.parse(content) : content;
+    
+    // Check for tool_execution format
+    if (parsed.tool_execution?.result?.output) {
+      const output = parsed.tool_execution.result.output;
+      const outputData = typeof output === 'string' ? JSON.parse(output) : output;
+      
+      // Check for sections with tasks
+      if (outputData?.sections && Array.isArray(outputData.sections)) {
+        return {
+          sections: outputData.sections,
+          total_tasks: outputData.total_tasks || 0,
+          total_sections: outputData.total_sections || 0
+        };
+      }
     }
-  }
-  const success = parsed.tool_execution?.result?.success ??
-    parsed.result?.success ??
-    parsed.success;
 
-  return success !== undefined ? success : (toolCall?.toolResult?.isSuccess ?? true);
+    // Check for direct sections array
+    if (parsed.sections && Array.isArray(parsed.sections)) {
+      return {
+        sections: parsed.sections,
+        total_tasks: parsed.total_tasks || 0,
+        total_sections: parsed.total_sections || 0
+      };
+    }
+
+    // Check for nested content
+    if (parsed.content) {
+      return extractTaskListData({ ...toolCall, assistantCall: { content: parsed.content } });
+    }
+
+    return null;
+  } catch (e) {
+    return null;
+  }
+};
+
+// Function to get current task progress information
+const getTaskProgressInfo = (toolCall: ToolCallInput): { currentTask: string | null; progress: number; totalTasks: number } => {
+  const taskData = extractTaskListData(toolCall);
+  if (!taskData || !taskData.sections) {
+    return { currentTask: null, progress: 0, totalTasks: 0 };
+  }
+
+  const allTasks = taskData.sections.flatMap((section: any) => section.tasks || []);
+  const totalTasks = allTasks.length;
+  
+  if (totalTasks === 0) {
+    return { currentTask: null, progress: 0, totalTasks: 0 };
+  }
+
+  // Find the first incomplete task
+  const currentTask = allTasks.find((task: any) => task.status !== 'completed');
+  
+  // Calculate progress based on completed tasks
+  const completedTasks = allTasks.filter((task: any) => task.status === 'completed').length;
+  const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+  return {
+    currentTask: currentTask?.content || null,
+    progress,
+    totalTasks
+  };
+};
+
+// Function to extract meaningful task description from tool call content
+const extractTaskDescription = (toolCall: ToolCallInput): string | null => {
+  const content = toolCall.assistantCall?.content;
+  if (!content) return null;
+
+  try {
+    const parsed = typeof content === 'string' ? JSON.parse(content) : content;
+
+    if (parsed && typeof parsed === 'object' && parsed.tool_calls && Array.isArray(parsed.tool_calls) && parsed.tool_calls.length > 0) {
+      const firstToolCall = parsed.tool_calls[0];
+      if (firstToolCall.function?.arguments) {
+        const args = typeof firstToolCall.function.arguments === 'string'
+          ? JSON.parse(firstToolCall.function.arguments)
+          : firstToolCall.function.arguments;
+
+        // Look for common task description fields and return the first one found
+        if (args.task) return args.task;
+        if (args.description) return args.description;
+        if (args.prompt) return args.prompt;
+        if (args.query) return args.query;
+      }
+    }
+  } catch (e) {
+    // If parsing fails, it's not the structured data we're looking for.
+    return null;
+  }
+
+  return null;
+};
+
+// Function to check if task is completed
+const isTaskCompleted = (toolCall: ToolCallInput): boolean => {
+  return toolCall.toolResult?.content && toolCall.toolResult.content !== 'STREAMING';
 };
 
 export const FloatingToolPreview: React.FC<FloatingToolPreviewProps> = ({
@@ -68,8 +151,9 @@ export const FloatingToolPreview: React.FC<FloatingToolPreviewProps> = ({
   isVisible,
   showIndicators = false,
   indicatorIndex = 0,
-  indicatorTotal = 1,
+  indicatorTotal,
   onIndicatorClick,
+  agentStatus,
 }) => {
   const [isExpanding, setIsExpanding] = React.useState(false);
   const currentToolCall = toolCalls[currentIndex];
@@ -83,11 +167,49 @@ export const FloatingToolPreview: React.FC<FloatingToolPreviewProps> = ({
 
   if (!currentToolCall || totalCalls === 0) return null;
 
-  const toolName = currentToolCall.assistantCall?.name || 'Tool Call';
-  const CurrentToolIcon = getToolIcon(toolName);
-  const isStreaming = currentToolCall.toolResult?.content === 'STREAMING';
-  const isSuccess = isStreaming ? true : getToolResultStatus(currentToolCall);
+  const taskDescription = extractTaskDescription(currentToolCall);
+  const isCompleted = isTaskCompleted(currentToolCall);
+  const taskProgress = getTaskProgressInfo(currentToolCall);
+  const hasTaskList = taskProgress.totalTasks > 0;
 
+  const getStatusInfo = () => {
+    switch (agentStatus) {
+      case 'stopped':
+        return {
+          text: 'Task Stopped',
+          icon: <XCircle className="h-3 w-3 text-white" />,
+          bgColor: 'bg-red-500',
+        };
+      case 'completed':
+        return {
+          text: 'Task Completed',
+          icon: <Check className="h-3 w-3 text-white" />,
+          bgColor: 'bg-helium-teal',
+        };
+      case 'running':
+        if (hasTaskList && taskProgress.currentTask) {
+          return {
+            text: taskProgress.currentTask,
+            icon: <ListTodo className="h-3 w-3 text-white" />,
+            bgColor: 'bg-blue-500',
+          };
+        }
+        return {
+          text: taskDescription || getUserFriendlyToolName(currentToolCall.assistantCall?.name) || 'Task Running...',
+          icon: <Loader className="h-3 w-3 text-white animate-spin" />,
+          bgColor: 'bg-blue-500',
+        };
+      case 'idle':
+      default:
+        return {
+          text: 'Task Starting...',
+          icon: <CircleDashed className="h-3 w-3 text-white" />,
+          bgColor: 'bg-gray-400',
+        };
+    }
+  };
+
+  const statusInfo = getStatusInfo();
   const handleClick = () => {
     setIsExpanding(true);
     requestAnimationFrame(() => {
@@ -108,95 +230,54 @@ export const FloatingToolPreview: React.FC<FloatingToolPreviewProps> = ({
               damping: 30
             }
           }}
-          className="-mb-4 w-full"
+          className="-mb-2 w-full"
           style={{ pointerEvents: 'auto' }}
         >
           <motion.div
             layoutId={CONTENT_LAYOUT_ID}
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.99 }}
-            className="bg-card border border-border rounded-3xl p-2 w-full cursor-pointer group"
+            className="bg-white dark:bg-sidebar-accent border border-gray-200 dark:border-ring/50 rounded-xl shadow-[0px_12px_32px_0px_rgba(0,0,0,0.05)] p-3 w-full cursor-pointer group transition-colors"
             onClick={handleClick}
             style={{ opacity: isExpanding ? 0 : 1 }}
           >
-            <div className="flex items-center gap-3">
-              <div className="flex-shrink-0">
-                <motion.div
-                  layoutId="tool-icon"
-                  className={cn(
-                    "w-10 h-10 rounded-2xl flex items-center justify-center",
-                    isStreaming
-                      ? "bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800"
-                      : isSuccess
-                        ? "bg-green-50 dark:bg-green-900/20 border border-green-300 dark:border-green-800"
-                        : "bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800"
-                  )}
-                  style={{ opacity: isExpanding ? 0 : 1 }}
-                >
-                  {isStreaming ? (
-                    <CircleDashed className="h-5 w-5 text-blue-500 dark:text-blue-400 animate-spin" style={{ opacity: isExpanding ? 0 : 1 }} />
-                  ) : (
-                    <CurrentToolIcon className="h-5 w-5 text-foreground" style={{ opacity: isExpanding ? 0 : 1 }} />
-                  )}
-                </motion.div>
-              </div>
-
+            <div className="flex items-center justify-between">
+              {/* Task description and progress */}
               <div className="flex-1 min-w-0" style={{ opacity: isExpanding ? 0 : 1 }}>
-                <motion.div layoutId="tool-title" className="flex items-center gap-2 mb-1">
-                  <h4 className="text-sm font-medium text-foreground truncate">
-                    {getUserFriendlyToolName(toolName)}
-                  </h4>
-                </motion.div>
+                <motion.div layoutId="tool-title" className="flex items-center gap-2">
 
-                <motion.div layoutId="tool-status" className="flex items-center gap-2">
-                  <div className={cn(
-                    "w-2 h-2 rounded-full",
-                    isStreaming
-                      ? "bg-blue-500 animate-pulse"
-                      : isSuccess
-                        ? "bg-green-500"
-                        : "bg-red-500"
-                  )} />
-                  <span className="text-xs text-muted-foreground truncate">
-                    {isStreaming
-                      ? `${agentName || 'Suna'} is working...`
-                      : isSuccess
-                        ? "Success"
-                        : "Failed"
-                    }
-                  </span>
+                  <div className={`w-5 h-5 rounded-full ${statusInfo.bgColor} flex items-center justify-center flex-shrink-0`}>
+                    {statusInfo.icon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 leading-tight">
+                      {statusInfo.text}
+                    </h4>
+                    {hasTaskList && !isCompleted && (
+                      <div className="flex items-center gap-2 mt-1">
+                        <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                          <div 
+                            className="bg-blue-500 h-1.5 rounded-full transition-all duration-300"
+                            style={{ width: `${taskProgress.progress}%` }}
+                          />
+                        </div>
+                        <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                          {taskProgress.progress}%
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </motion.div>
               </div>
 
-              {/* Apple-style notification indicators - only for multiple notification types */}
-              {showIndicators && indicatorTotal === 2 && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation(); // Prevent tool expansion
-                    // Toggle between the two notifications (binary switch)
-                    const nextIndex = indicatorIndex === 0 ? 1 : 0;
-                    onIndicatorClick?.(nextIndex);
-                  }}
-                  className="flex items-center gap-1.5 mr-3 px-2 py-1.5 rounded-lg hover:bg-muted/30 transition-colors"
-                  style={{ opacity: isExpanding ? 0 : 1 }}
-                >
-                  {Array.from({ length: indicatorTotal }).map((_, index) => (
-                    <div
-                      key={index}
-                      className={cn(
-                        "transition-all duration-300 ease-out rounded-full",
-                        index === indicatorIndex
-                          ? "w-6 h-2 bg-foreground"
-                          : "w-3 h-2 bg-muted-foreground/40"
-                      )}
-                    />
-                  ))}
-                </button>
-              )}
+              {/* Step count and expand button */}
+              <div className="flex items-center gap-3 flex-shrink-0" style={{ opacity: isExpanding ? 0 : 1 }}>
+                {/* Step count */}
+                <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                  {currentIndex + 1} / {totalCalls}
+                </span>
 
-              <Button value='ghost' className="bg-transparent hover:bg-transparent flex-shrink-0" style={{ opacity: isExpanding ? 0 : 1 }}>
-                <Maximize2 className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-              </Button>
+                {/* Expand button */}
+                <ChevronUp className="h-4 w-4 text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors" />
+              </div>
             </div>
           </motion.div>
         </motion.div>

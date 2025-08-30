@@ -1,7 +1,7 @@
 BEGIN;
 
--- Create RPC function to find Suna default agent for an account
-CREATE OR REPLACE FUNCTION find_suna_default_agent_for_account(p_account_id UUID)
+-- Create RPC function to find Helium default agent for an account
+CREATE OR REPLACE FUNCTION find_helium_default_agent_for_account(p_account_id UUID)
 RETURNS TABLE (
     agent_id UUID,
     account_id UUID,
@@ -54,14 +54,14 @@ BEGIN
         COALESCE(a.version_count, 1) as version_count
     FROM agents a
     WHERE a.account_id = p_account_id 
-    AND COALESCE((a.metadata->>'is_suna_default')::boolean, false) = true
+    AND COALESCE((a.metadata->>'is_helium_default')::boolean, false) = true
     ORDER BY a.created_at DESC
     LIMIT 1;
 END;
 $$;
 
 -- Create function to get all Suna default agents
-CREATE OR REPLACE FUNCTION get_all_suna_default_agents()
+CREATE OR REPLACE FUNCTION get_all_helium_default_agents()
 RETURNS TABLE (
     agent_id UUID,
     account_id UUID,
@@ -105,13 +105,13 @@ BEGIN
         a.metadata->>'management_version' as management_version,
         COALESCE((a.metadata->>'centrally_managed')::boolean, false) as centrally_managed
     FROM agents a
-    WHERE COALESCE((a.metadata->>'is_suna_default')::boolean, false) = true
+    WHERE COALESCE((a.metadata->>'is_helium_default')::boolean, false) = true
     ORDER BY a.created_at DESC;
 END;
 $$;
 
 -- Create function to count agents by management version
-CREATE OR REPLACE FUNCTION count_suna_agents_by_version(p_version TEXT)
+CREATE OR REPLACE FUNCTION count_helium_agents_by_version(p_version TEXT)
 RETURNS INTEGER
 SECURITY DEFINER
 LANGUAGE plpgsql
@@ -121,15 +121,15 @@ DECLARE
 BEGIN
     SELECT COUNT(*) INTO agent_count
     FROM agents a
-    WHERE COALESCE((a.metadata->>'is_suna_default')::boolean, false) = true
+    WHERE COALESCE((a.metadata->>'is_helium_default')::boolean, false) = true
     AND a.metadata->>'management_version' = p_version;
     
     RETURN COALESCE(agent_count, 0);
 END;
 $$;
 
--- Create function to get Suna default agent statistics
-CREATE OR REPLACE FUNCTION get_suna_default_agent_stats()
+-- Create function to get Helium default agent statistics
+CREATE OR REPLACE FUNCTION get_helium_default_agent_stats()
 RETURNS TABLE (
     total_agents INTEGER,
     active_agents INTEGER,
@@ -150,12 +150,12 @@ BEGIN
     -- Get total count
     SELECT COUNT(*) INTO total_count
     FROM agents a
-    WHERE COALESCE((a.metadata->>'is_suna_default')::boolean, false) = true;
+    WHERE COALESCE((a.metadata->>'is_helium_default')::boolean, false) = true;
     
-    -- Get active count (all Suna agents are considered active)
+    -- Get active count (all Helium agents are considered active)
     SELECT COUNT(*) INTO active_count
     FROM agents a
-    WHERE COALESCE((a.metadata->>'is_suna_default')::boolean, false) = true;
+    WHERE COALESCE((a.metadata->>'is_helium_default')::boolean, false) = true;
     
     -- Calculate inactive count
     inactive_count := total_count - active_count;
@@ -170,7 +170,7 @@ BEGIN
             COALESCE(a.metadata->>'management_version', 'unknown') as version,
             COUNT(*) as version_count
         FROM agents a
-        WHERE COALESCE((a.metadata->>'is_suna_default')::boolean, false) = true
+        WHERE COALESCE((a.metadata->>'is_helium_default')::boolean, false) = true
         GROUP BY COALESCE(a.metadata->>'management_version', 'unknown')
     ) version_data;
     
@@ -184,7 +184,7 @@ BEGIN
             TO_CHAR(a.created_at, 'YYYY-MM') as creation_month,
             COUNT(*) as month_count
         FROM agents a
-        WHERE COALESCE((a.metadata->>'is_suna_default')::boolean, false) = true
+        WHERE COALESCE((a.metadata->>'is_helium_default')::boolean, false) = true
         GROUP BY TO_CHAR(a.created_at, 'YYYY-MM')
         ORDER BY creation_month DESC
         LIMIT 12  -- Last 12 months
@@ -201,7 +201,7 @@ END;
 $$;
 
 -- Create function to find agents needing updates to a specific version
-CREATE OR REPLACE FUNCTION find_suna_agents_needing_update(p_target_version TEXT)
+CREATE OR REPLACE FUNCTION find_helium_agents_needing_update(p_target_version TEXT)
 RETURNS TABLE (
     agent_id UUID,
     account_id UUID,
@@ -221,7 +221,7 @@ BEGIN
         COALESCE(a.metadata->>'management_version', 'unknown') as current_version,
         (a.metadata->>'last_central_update')::timestamptz as last_central_update
     FROM agents a
-    WHERE COALESCE((a.metadata->>'is_suna_default')::boolean, false) = true
+    WHERE COALESCE((a.metadata->>'is_helium_default')::boolean, false) = true
     AND COALESCE((a.metadata->>'centrally_managed')::boolean, false) = true
     AND (
         a.metadata->>'management_version' IS NULL 
@@ -232,10 +232,10 @@ END;
 $$;
 
 -- Grant permissions to the functions
-GRANT EXECUTE ON FUNCTION find_suna_default_agent_for_account(UUID) TO authenticated, service_role;
-GRANT EXECUTE ON FUNCTION get_all_suna_default_agents() TO authenticated, service_role;
-GRANT EXECUTE ON FUNCTION count_suna_agents_by_version(TEXT) TO authenticated, service_role;
-GRANT EXECUTE ON FUNCTION get_suna_default_agent_stats() TO authenticated, service_role;
-GRANT EXECUTE ON FUNCTION find_suna_agents_needing_update(TEXT) TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION find_helium_default_agent_for_account(UUID) TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION get_all_helium_default_agents() TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION count_helium_agents_by_version(TEXT) TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION get_helium_default_agent_stats() TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION find_helium_agents_needing_update(TEXT) TO authenticated, service_role;
 
 COMMIT; 

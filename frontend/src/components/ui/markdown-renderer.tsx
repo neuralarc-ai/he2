@@ -13,7 +13,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
   className = '' 
 }) => {
   return (
-    <div className={cn('prose prose-sm dark:prose-invert max-w-none', className)}>
+    <div className={cn('prose prose-sm dark:prose-invert max-w-none chat-markdown', className)}>
       <ReactMarkdown 
         remarkPlugins={[remarkGfm]}
         components={{

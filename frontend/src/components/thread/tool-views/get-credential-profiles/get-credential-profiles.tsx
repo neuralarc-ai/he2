@@ -12,7 +12,7 @@ import {
   Crown
 } from 'lucide-react';
 import { ToolViewProps } from '../types';
-import { getToolTitle } from '../utils';
+import { formatTimestamp, getToolTitle } from '../utils';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -62,15 +62,13 @@ export function GetCredentialProfilesToolView({
 
 
   return (
-    <Card className="gap-0 flex border shadow-none border-t border-b-0 border-x-0 p-0 rounded-none flex-col h-full overflow-hidden bg-card">
-      <CardHeader className="h-14 bg-zinc-50/80 dark:bg-zinc-900/80 backdrop-blur-sm border-b p-2 px-4 space-y-2">
+    <Card className="gap-0 flex border shadow-none p-0 rounded-lg flex-col h-full overflow-hidden bg-card">
+      <CardHeader className="h-9 bg-gradient-to-t from-zinc-50/80 to-zinc-200/70 dark:from-zinc-900/90 dark:to-zinc-800/90 text-center backdrop-blur-lg border-b p-2 px-4 space-y-2 rounded-t-lg">
         <div className="flex flex-row items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="relative p-2 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/10 border border-blue-500/20">
-              <Users className="w-5 h-5 text-blue-500 dark:text-blue-400" />
-            </div>
+          <div className="flex w-full justify-center items-center gap-1">
+            <Users className="w-4 h-4 text-muted-foreground" />
             <div>
-              <CardTitle className="text-base font-medium text-zinc-900 dark:text-zinc-100">
+              <CardTitle className="text-sm font-semibold text-muted-foreground">
                 {toolTitle}
               </CardTitle>
               {toolkit_slug && (
@@ -83,18 +81,18 @@ export function GetCredentialProfilesToolView({
 
           {!isStreaming && (
             <Badge
-              variant="outline"
+              variant="secondary"
               className={cn(
                 "text-xs font-medium",
                 actualIsSuccess
-                  ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-800"
-                  : "bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800"
+                  ? "bg-gradient-to-b from-emerald-200 to-emerald-100 text-emerald-700 dark:from-emerald-800/50 dark:to-emerald-900/60 dark:text-emerald-300"
+                  : "bg-gradient-to-b from-rose-200 to-rose-100 text-rose-700 dark:from-rose-800/50 dark:to-emerald-900/60 dark:text-rose-300"
               )}
             >
               {actualIsSuccess ? (
-                <CheckCircle className="h-3 w-3" />
+                <CheckCircle className="h-3.5 w-3.5 mr-1" />
               ) : (
-                <AlertTriangle className="h-3 w-3" />
+                <AlertTriangle className="h-3.5 w-3.5 mr-1" />
               )}
               {total_count} {total_count === 1 ? 'profile' : 'profiles'}
             </Badge>
@@ -199,6 +197,24 @@ export function GetCredentialProfilesToolView({
           </div>
         )}
       </CardContent>
+
+      {/* Footer */}
+      <div className="px-4 py-2 h-fit bg-white dark:bg-zinc-900 backdrop-blur-sm border-t border-zinc-200 dark:border-zinc-800 flex justify-between items-center gap-4 rounded-b-lg">
+        <div className="h-full flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
+          <Badge className="h-6 py-0.5" variant="outline">
+            <Users className="h-3 w-3 mr-1" />
+            Credential Profiles
+          </Badge>
+        </div>
+
+        <div className="text-xs text-zinc-500 dark:text-zinc-400">
+          {actualToolTimestamp
+            ? formatTimestamp(actualToolTimestamp)
+            : actualAssistantTimestamp
+              ? formatTimestamp(actualAssistantTimestamp)
+              : ''}
+        </div>
+      </div>
     </Card>
   );
 } 

@@ -33,7 +33,7 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Define protected routes
+    // Define protected routes
   const protectedRoutes = ['/dashboard', '/agents', '/projects', '/settings', '/invitation']
   const authRoutes = ['/auth', '/login', '/signup']
   
@@ -43,7 +43,10 @@ export async function middleware(request: NextRequest) {
   const isAuthRoute = authRoutes.some(route => 
     request.nextUrl.pathname.startsWith(route)
   )
-
+  
+  // Check if user is accessing the root path (homepage)
+  const isRootPath = request.nextUrl.pathname === '/'
+  
   // Redirect unauthenticated users from protected routes
   if (isProtectedRoute && !user) {
     const redirectUrl = new URL('/auth', request.url)
@@ -53,6 +56,16 @@ export async function middleware(request: NextRequest) {
 
   // Redirect authenticated users away from auth routes
   if (isAuthRoute && user) {
+    return NextResponse.redirect(new URL('/dashboard', request.url))
+  }
+
+  // Redirect unauthenticated users from root path to auth page
+  if (isRootPath && !user) {
+    return NextResponse.redirect(new URL('/auth', request.url))
+  }
+
+  // Redirect authenticated users from root path to dashboard
+  if (isRootPath && user) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
