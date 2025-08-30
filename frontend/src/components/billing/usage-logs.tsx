@@ -286,8 +286,7 @@ export default function UsageLogs({ accountId }: Props) {
                           </div>
                           <div className="text-sm text-muted-foreground">
                             {day.requestCount} request
-                            {day.requestCount !== 1 ? 's' : ''} •{' '}
-                            {day.models.join(', ')}
+                            {day.requestCount !== 1 ? 's' : ''}
                           </div>
                         </div>
                         <div className="text-right">
@@ -310,21 +309,21 @@ export default function UsageLogs({ accountId }: Props) {
                                             <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead className="text-xs">Time</TableHead>
-                          <TableHead className="text-xs">Project</TableHead>
-                          <TableHead className="text-xs">Requests</TableHead>
-                          <TableHead className="text-xs">Total Tokens</TableHead>
-                          <TableHead className="text-xs">Credits Used</TableHead>
+                          <TableHead className="text-xs text-center">Time</TableHead>
+                          <TableHead className="text-xs text-center">Project</TableHead>
+                          <TableHead className="text-xs text-center">Requests</TableHead>
+                          <TableHead className="text-xs text-center">Total Tokens</TableHead>
+                          <TableHead className="text-xs text-center">Credits Used</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {day.logs.map((log, logIndex) => (
                           <TableRow key={`${day.date}-${logIndex}`}>
-                            <TableCell className="font-mono text-xs text-muted-foreground">
+                            <TableCell className="font-mono text-xs text-muted-foreground text-center">
                               {formatTime(log.created_at)}
                             </TableCell>
-                            <TableCell className="text-xs">
-                              <div className="max-w-[200px] truncate" title={log.project_name || 'Unknown Project'}>
+                            <TableCell className="text-xs text-center">
+                              <div className="max-w-[200px] truncate mx-auto" title={log.project_name || 'Unknown Project'}>
                                 {log.project_name || 'Unknown Project'}
                               </div>
                             </TableCell>
