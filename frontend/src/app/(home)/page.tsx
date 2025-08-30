@@ -13,7 +13,6 @@ import { HeroVideoSection } from '@/components/home/sections/hero-video-section'
 import { BackgroundAALChecker } from '@/components/auth/background-aal-checker';
 import { BentoSection } from '@/components/home/sections/bento-section';
 import { CompanyShowcase } from '@/components/home/sections/company-showcase';
-import { FeatureSection } from '@/components/home/sections/feature-section';
 import { QuoteSection } from '@/components/home/sections/quote-section';
 import { TestimonialSection } from '@/components/home/sections/testimonial-section';
 import { FAQSection } from '@/components/home/sections/faq-section';

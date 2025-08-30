@@ -135,8 +135,8 @@ export function BillingModal({ open, onOpenChange, returnUrl = typeof window !==
                                             Agent Usage This Month
                                         </span>
                                         <span className="text-sm font-medium">
-                                            ${subscriptionData.current_usage?.toFixed(2) || '0'} /{' '}
-                                            ${subscriptionData.cost_limit || '0'}
+                                            {Math.round((subscriptionData.current_usage || 0) * 100)} credits /{' '}
+                                            {Math.round((subscriptionData.cost_limit || 0) * 100)} credits
                                         </span>
                                     </div>
                                 </div>
@@ -173,7 +173,7 @@ export function BillingModal({ open, onOpenChange, returnUrl = typeof window !==
             <CreditPurchaseModal
                 open={showCreditPurchaseModal}
                 onOpenChange={setShowCreditPurchaseModal}
-                currentBalance={subscriptionData?.credit_balance || 0}
+                currentBalance={subscriptionData?.credit_balance_credits || Math.round((subscriptionData?.credit_balance || 0) * 100)}
                 canPurchase={subscriptionData?.can_purchase_credits || false}
                 onPurchaseComplete={() => {
                     // Refresh subscription data

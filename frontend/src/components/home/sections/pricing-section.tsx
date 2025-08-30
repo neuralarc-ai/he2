@@ -624,7 +624,7 @@ export function PricingSection({
               Choose the right plan for your needs
             </h2>
             <p className="text-muted-foreground text-center text-balance font-medium">
-              Start with our free plan or upgrade for more AI token credits
+              Start with our free plan or upgrade for more AI credits
             </p>
           </SectionHeader>
         )}

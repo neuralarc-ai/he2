@@ -471,6 +471,12 @@ export function NavUserWithTeams({
 
               {/* User Settings Section */}
               <DropdownMenuGroup>                
+                <DropdownMenuItem asChild className="rounded-full cursor-pointer">
+                  <Link href="/settings/billing">
+                    <CreditCard className="h-4 w-4 mb-0" />
+                    Billing
+                  </Link>
+                </DropdownMenuItem>
                 {!flagLoading && customAgentsEnabled && (
                   <DropdownMenuItem asChild className="rounded-full cursor-pointer">
                     <Link href="/settings/credentials">
