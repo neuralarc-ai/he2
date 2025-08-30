@@ -401,10 +401,50 @@ export default function AgentConfigurationPage() {
     } catch (error) {
       console.error('❌ Tools save error:', error);
       toast.error('Failed to save tools configuration');
+      setFormData(prev => ({ ...prev, agentpress_tools: originalData.agentpress_tools }));
     } finally {
       setIsSaving(false);
     }
   }, [isViewingOldVersion, formData, agent, agentId, createVersionMutation, isSaving, originalData]);
+
+  const handleDescriptionSave = useCallback(async (description: string) => {
+    if (!agent || isViewingOldVersion || isSaving) {
+      return;
+    }
+    
+    const isHeliumAgent = agent?.metadata?.is_helium_default || false;
+    const restrictions = agent?.metadata?.restrictions || {};
+    
+    if (isHeliumAgent && restrictions.description_editable === false) {
+      toast.error("Description cannot be edited", {
+        description: "Helium's description is managed centrally and cannot be changed.",
+      });
+      return;
+    }
+    
+    setFormData(prev => ({ ...prev, description }));
+    
+    setIsSaving(true);
+    
+    try {
+      await updateAgentMutation.mutateAsync({
+        agentId,
+        name: formData.name,
+        description,
+        is_default: formData.is_default,
+        profile_image_url: formData.profile_image_url || undefined,
+      });
+      
+      setOriginalData(prev => ({ ...prev, description }));
+      toast.success('Agent description saved');
+    } catch (error) {
+      console.error('❌ Description save error:', error);
+      toast.error('Failed to save agent description');
+      setFormData(prev => ({ ...prev, description: originalData.description }));
+    } finally {
+      setIsSaving(false);
+    }
+  }, [isViewingOldVersion, formData, agent, agentId, updateAgentMutation, isSaving, originalData]);
 
   const handleMCPChange = useCallback(async (updates: { configured_mcps: any[]; custom_mcps: any[] }) => {
     if (isViewingOldVersion) {
@@ -576,6 +616,7 @@ export default function AgentConfigurationPage() {
                 onSystemPromptSave={handleSystemPromptSave}
                 onModelSave={handleModelSave}
                 onToolsSave={handleToolsSave}
+                onDescriptionSave={handleDescriptionSave}
                 initialAccordion={initialAccordion}
                 agentMetadata={agent?.metadata}
                 isLoading={isSaving}
@@ -637,6 +678,7 @@ export default function AgentConfigurationPage() {
                 onSystemPromptSave={handleSystemPromptSave}
                 onModelSave={handleModelSave}
                 onToolsSave={handleToolsSave}
+                onDescriptionSave={handleDescriptionSave}
                 initialAccordion={initialAccordion}
                 agentMetadata={agent?.metadata}
                 isLoading={isSaving}

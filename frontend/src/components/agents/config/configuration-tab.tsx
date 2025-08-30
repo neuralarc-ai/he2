@@ -1,5 +1,5 @@
 import React from 'react';
-import { Settings, Wrench, Server, BookOpen, Workflow, Zap, ChevronDown, Brain } from 'lucide-react';
+import { Settings, Wrench, Server, BookOpen, Workflow, Zap, ChevronDown, Brain, FileText } from 'lucide-react';
 import { ExpandableMarkdownEditor } from '@/components/ui/expandable-markdown-editor';
 import { AgentToolsConfiguration } from '../agent-tools-configuration';
 import { AgentMCPConfiguration } from '../agent-mcp-configuration';
@@ -34,8 +34,9 @@ interface ConfigurationTabProps {
   onFieldChange: (field: string, value: any) => void;
   onMCPChange: (updates: { configured_mcps: any[]; custom_mcps: any[] }) => void;
   onSystemPromptSave?: (value: string) => void;
-  onModelSave?: (model: string) => void;  // Add model save handler
+  onModelSave?: (model: string) => void;
   onToolsSave?: (tools: Record<string, boolean | { enabled: boolean; description: string }>) => void;
+  onDescriptionSave?: (description: string) => void;  // Add description save handler
   initialAccordion?: string;
   agentMetadata?: {
     is_helium_default?: boolean;
@@ -61,6 +62,7 @@ export function ConfigurationTab({
   onSystemPromptSave,
   onModelSave,
   onToolsSave,
+  onDescriptionSave,
   initialAccordion,
   agentMetadata,
   isLoading = false,
@@ -68,15 +70,15 @@ export function ConfigurationTab({
   const isHeliumAgent = agentMetadata?.is_helium_default || false;
 
   const mapAccordion = (val?: string) => {
-          if (val === 'instructions') return isHeliumAgent ? 'integrations' : 'system';
+    if (val === 'instructions') return isHeliumAgent ? 'integrations' : 'system';
     if (val === 'workflows') return 'playbooks';
-          if (isHeliumAgent && (val === 'system' || val === 'tools')) {
+    if (isHeliumAgent && (val === 'system' || val === 'tools')) {
       return 'integrations';
     }
-    if (['system', 'tools', 'integrations', 'knowledge', 'playbooks', 'triggers'].includes(val || '')) {
+    if (['system', 'tools', 'integrations', 'knowledge', 'playbooks', 'triggers', 'description'].includes(val || '')) {
       return val!;
     }
-          return isHeliumAgent ? 'integrations' : 'system';
+    return isHeliumAgent ? 'integrations' : 'system';
   };
 
   const [openAccordion, setOpenAccordion] = React.useState<string>(mapAccordion(initialAccordion));
@@ -89,6 +91,7 @@ export function ConfigurationTab({
 
   const isSystemPromptEditable = !isViewingOldVersion && (restrictions.system_prompt_editable !== false);
   const areToolsEditable = !isViewingOldVersion && (restrictions.tools_editable !== false);
+  const isDescriptionEditable = !isViewingOldVersion && (restrictions.description_editable !== false);
 
   const handleSystemPromptChange = (value: string) => {
     if (!isSystemPromptEditable && isHeliumAgent) {
@@ -101,6 +104,20 @@ export function ConfigurationTab({
       onSystemPromptSave(value);
     } else {
       onFieldChange('system_prompt', value);
+    }
+  };
+
+  const handleDescriptionChange = (value: string) => {
+    if (!isDescriptionEditable && isHeliumAgent) {
+      toast.error("Description cannot be edited", {
+        description: "Helium's description is managed centrally and cannot be changed.",
+      });
+      return;
+    }
+    if (onDescriptionSave) {
+      onDescriptionSave(value);
+    } else {
+      onFieldChange('description', value);
     }
   };
 
@@ -139,6 +156,45 @@ export function ConfigurationTab({
           )}
 
           <div className="space-y-3">
+            <div className="group overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:border-primary/10">
+              <button
+                className="w-full p-4 text-left group-hover:bg-muted/30 transition-all duration-300"
+                onClick={() => setOpenAccordion(openAccordion === 'description' ? '' : 'description')}
+                disabled={isLoading}
+              >
+                <div className="flex items-center gap-4 w-full">
+                  <div className="relative flex-shrink-0">
+                    <div className="bg-muted rounded-xl h-10 w-10 flex items-center justify-center transition-all duration-300 group-hover:scale-105">
+                      <FileText className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                  </div>
+                  <div className="text-left flex-1 min-w-0">
+                    <h4 className="text-sm font-semibold text-foreground mb-1 group-hover:text-primary transition-colors duration-300">Description</h4>
+                    <p className="text-xs text-muted-foreground group-hover:text-foreground/70 transition-colors duration-300">Describe what this agent does and its capabilities</p>
+                  </div>
+                  <ChevronDown className={`h-4 w-4 flex-shrink-0 transition-transform duration-300 ease-out ${openAccordion === 'description' ? 'rotate-180' : ''}`} />
+                </div>
+              </button>
+              <div
+                className={`overflow-hidden transition-all duration-300 ease-out ${openAccordion === 'description'
+                  ? 'max-h-[400px] opacity-100'
+                  : 'max-h-0 opacity-0'
+                  }`}
+              >
+                <div className="px-6 pb-6 pt-2">
+                  <div className="pt-4">
+                    <ExpandableMarkdownEditor
+                      value={displayData.description}
+                      onSave={handleDescriptionChange}
+                      placeholder="Click to set agent description..."
+                      title="Agent Description"
+                      disabled={!isDescriptionEditable || isLoading}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {!isHeliumAgent && (
               <div className="group overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:border-primary/10">
                 <button
@@ -234,9 +290,9 @@ export function ConfigurationTab({
                 >
                   <div className="flex items-center gap-4 w-full">
                     <div className="relative flex-shrink-0">
-                                              <div className="bg-muted rounded-xl h-10 w-10 flex items-center justify-center transition-all duration-300 group-hover:scale-105">
-                          <Wrench className="h-5 w-5 text-muted-foreground" />
-                        </div>
+                      <div className="bg-muted rounded-xl h-10 w-10 flex items-center justify-center transition-all duration-300 group-hover:scale-105">
+                        <Wrench className="h-5 w-5 text-muted-foreground" />
+                      </div>
                     </div>
                     <div className="text-left flex-1 min-w-0">
                       <h4 className="text-sm font-semibold text-foreground mb-1 group-hover:text-primary transition-colors duration-300">Default Tools</h4>
