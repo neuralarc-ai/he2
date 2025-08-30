@@ -236,7 +236,7 @@ async def list_categories(
 
 @router.get("/toolkits")
 async def list_toolkits(
-    limit: int = Query(100, le=10000),
+    limit: int = Query(100, le=500),
     cursor: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
     category: Optional[str] = Query(None),

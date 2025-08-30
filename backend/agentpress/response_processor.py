@@ -1217,7 +1217,10 @@ class ResponseProcessor:
 
     # Tool execution methods
     async def _execute_tool(self, tool_call: Dict[str, Any]) -> ToolResult:
-        """Execute a single tool call and return the result."""
+        """Execute a single tool call and return the result.
+        
+        Handles both regular tools and MCP tools by checking for the _execute_mcp_tool method.
+        """
         span = self.trace.span(name=f"execute_tool.{tool_call['function_name']}", input=tool_call["arguments"])            
         try:
             function_name = tool_call["function_name"]
@@ -1243,10 +1246,21 @@ class ResponseProcessor:
                 return ToolResult(success=False, output=f"Tool function '{function_name}' not found")
             
             logger.debug(f"Found tool function for '{function_name}', executing...")
-            result = await tool_fn(**arguments)
+            
+            # Check if this is an MCP tool (wrapped in MCPToolWrapper)
+            if hasattr(tool_fn, '__self__') and hasattr(tool_fn.__self__, '_execute_mcp_tool'):
+                # This is an MCP tool, call it through the wrapper
+                logger.debug(f"Executing MCP tool: {function_name}")
+                result = await tool_fn.__self__._execute_mcp_tool(function_name, arguments)
+            else:
+                # Regular tool, call it directly
+                logger.debug(f"Executing regular tool: {function_name}")
+                result = await tool_fn(**arguments)
+                
             logger.debug(f"Tool execution complete: {function_name} -> {result}")
-            span.end(status_message="tool_executed", output=result)
+            span.end(status_message="tool_executed", output=result) 
             return result
+            
         except Exception as e:
             logger.error(f"Error executing tool {tool_call['function_name']}: {str(e)}", exc_info=True)
             span.end(status_message="tool_execution_error", output=f"Error executing tool: {str(e)}", level="ERROR")

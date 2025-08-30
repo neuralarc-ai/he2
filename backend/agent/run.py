@@ -598,10 +598,10 @@ class AgentRunner:
                     temporary_message=temporary_message,
                     processor_config=ProcessorConfig(
                         xml_tool_calling=True,
-                        native_tool_calling=False,
+                        native_tool_calling=True,  # Enable native tool calling for MCP tools
                         execute_tools=True,
                         execute_on_stream=True,
-                        tool_execution_strategy="parallel",
+                        tool_execution_strategy="parallel",  # Execute all tools in parallel
                         xml_adding_strategy="user_message"
                     ),
                     native_max_auto_continues=self.config.native_max_auto_continues,
