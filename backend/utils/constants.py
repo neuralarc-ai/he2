@@ -58,7 +58,7 @@ MODELS = {
     },
     # Vertex AI routes for Gemini (same pricing/tier)
     "vertex_ai/gemini-2.5-pro": {
-        "aliases": ["vertex/gemini-2.5-pro", "gemini-2.5-pro-vertex"],
+        "aliases": ["gemini-2.5-pro-vertex"],
         "pricing": {
             "input_cost_per_million_tokens": 1.25,
             "output_cost_per_million_tokens": 10.00
@@ -67,7 +67,7 @@ MODELS = {
         "tier_availability": ["paid"]
     },
     "vertex_ai/gemini-2.5-flash": {
-        "aliases": ["vertex/gemini-2.5-flash", "gemini-2.5-flash-vertex"],
+        "aliases": ["gemini-2.5-flash-vertex"],
         "pricing": {
             "input_cost_per_million_tokens": 0.15,
             "output_cost_per_million_tokens": 0.60
@@ -76,7 +76,7 @@ MODELS = {
         "tier_availability": ["paid"]
     },
     "vertex_ai/gemini-2.0-flash": {
-        "aliases": ["vertex/gemini-2.0-flash", "gemini-2.0-flash-vertex"],
+        "aliases": ["gemini-2.0-flash-vertex"],
         "pricing": {
             "input_cost_per_million_tokens": 0.15,
             "output_cost_per_million_tokens": 0.60
@@ -84,6 +84,18 @@ MODELS = {
         "context_window": 1_000_000,
         "tier_availability": ["paid"]
     },           
+    # Vertex AI Claude Sonnet 4 (using LiteLLM vertex_ai route)
+    
+    # Vertex AI Claude Sonnet 4 (using LiteLLM vertex_ai route)
+    "vertex_ai/claude-sonnet-4@20250514": {
+        "aliases": ["claude-sonnet-4-vertex"],
+        "pricing": {
+            "input_cost_per_million_tokens": 3.00,
+            "output_cost_per_million_tokens": 15.00
+        },
+        "context_window": 1_000_000,  # 1M tokens for Claude Sonnet 4
+        "tier_availability": ["paid"]
+    }                    
 }
 
 # Derived structures (auto-generated from MODELS)
@@ -113,6 +125,10 @@ def _generate_model_structures():
         # Add aliases
         for alias in config["aliases"]:
             aliases[alias] = model_name
+            # Also add pricing and context windows for aliases
+            pricing[alias] = config["pricing"]
+            if "context_window" in config:
+                context_windows[alias] = config["context_window"]
         
         # Add pricing
         pricing[model_name] = config["pricing"]
