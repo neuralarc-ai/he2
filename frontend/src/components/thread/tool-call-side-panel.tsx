@@ -17,8 +17,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { useMediumScreen } from '@/hooks/react-query/use-medium-screen';
 import { useCustomBreakpoint } from '@/hooks/use-custom-breakpoints';
-import { DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
-import { Badge } from '@/components/ui/badge';
 
 export interface ToolCallInput {
   assistantCall: {
