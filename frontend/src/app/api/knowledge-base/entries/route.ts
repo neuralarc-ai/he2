@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdmin } from '@/lib/supabase/admin'
-import { createClient as createServerSupabase } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 export const runtime = 'nodejs'
@@ -21,46 +21,54 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           error: 'Missing Supabase env vars for admin client',
-          details: {
-            hasUrl,
-            hasService,
-          },
+          details: { hasUrl, hasService },
         },
         { status: 500 }
       )
     }
 
-    // Resolve account_id if missing using server-side session
+    // Resolve account_id consistently with backend using user session
     let finalPayload = { ...payload }
+    const supabaseServer = await createClient()
+    const { data: userRes, error: userErr } = await supabaseServer.auth.getUser()
+    if (userErr || !userRes?.user) {
+      return NextResponse.json({ error: 'Unable to resolve user session for account lookup' }, { status: 401 })
+    }
+
     if (!finalPayload.account_id) {
-      const supabaseServer = await createServerSupabase()
-      const { data: userRes, error: userErr } = await supabaseServer.auth.getUser()
-      if (userErr || !userRes?.user) {
-        return NextResponse.json({ error: 'Unable to resolve user session for account lookup' }, { status: 401 })
+      // Prefer the same RPC the backend uses
+      let accountId: string | undefined
+      try {
+        const { data: defaultAccount, error: defaultErr } = await supabaseServer.rpc('get_user_default_account', {
+          p_user_id: userRes.user.id,
+        })
+        if (!defaultErr && defaultAccount) {
+          accountId = (defaultAccount as any).id || (defaultAccount as any).account_id || (defaultAccount as any)
+        }
+      } catch {}
+
+      if (!accountId) {
+        // Fallback: members table
+        const { data: member } = await supabaseServer
+          .from('basejump.members')
+          .select('account_id')
+          .eq('user_id', userRes.user.id)
+          .limit(1)
+          .maybeSingle()
+        if (member?.account_id) accountId = member.account_id as string
       }
 
-      // Try basejump.members first
-      const { data: member, error: memberErr } = await supabaseServer
-        .from('basejump.members')
-        .select('account_id')
-        .eq('user_id', userRes.user.id)
-        .limit(1)
-        .maybeSingle()
-
-      if (member && member.account_id) {
-        finalPayload.account_id = member.account_id
-      } else {
-        // Fallback to get_accounts RPC
-        const { data: accounts, error: accountsErr } = await supabaseServer.rpc('get_accounts')
-        if (accountsErr || !accounts || accounts.length === 0) {
-          return NextResponse.json({ error: 'Unable to resolve account_id for current user' }, { status: 400 })
-        }
-        // Accept common shapes: id or account_id
-        finalPayload.account_id = accounts[0]?.id || accounts[0]?.account_id
-        if (!finalPayload.account_id) {
-          return NextResponse.json({ error: 'Account ID not present in get_accounts result' }, { status: 400 })
-        }
+      if (!accountId) {
+        // Final fallback: get_accounts RPC
+        const { data: accounts } = await supabaseServer.rpc('get_accounts')
+        accountId = (accounts && accounts[0] && (accounts[0].id || accounts[0].account_id)) as string | undefined
       }
+
+      if (!accountId) {
+        return NextResponse.json({ error: 'Account ID could not be resolved' }, { status: 400 })
+      }
+
+      finalPayload.account_id = accountId
     }
 
     const admin = createAdmin()
@@ -83,17 +91,14 @@ export async function POST(req: NextRequest) {
             const tokens = Math.floor(text.length / 4)
             await admin.from(table).update({ content: text, content_tokens: tokens }).eq('id', kbId)
           } else {
-            // As a last resort, save a minimal placeholder so content is not EMPTY
             const placeholder = `File stored at ${bucket}/${path}`
             await admin.from(table).update({ content: placeholder, content_tokens: 0 }).eq('id', kbId)
           }
         }
       }
-    } catch (e) {
-      // Swallow extraction errors; leave content empty
-    }
+    } catch {}
 
-    return NextResponse.json({ ok: true, id: kbId })
+    return NextResponse.json({ ok: true, id: kbId, account_id: finalPayload.account_id })
   } catch (e: any) {
     return NextResponse.json({ error: e?.message || 'Internal error' }, { status: 500 })
   }
@@ -110,19 +115,16 @@ async function extractTextFromStorage(
   const arrayBuffer = await data.arrayBuffer()
   const lowerPath = path.toLowerCase()
 
-  // Plain text and markdown
   if (contentType.startsWith('text/') || lowerPath.endsWith('.txt') || lowerPath.endsWith('.md')) {
     const text = new TextDecoder('utf-8').decode(arrayBuffer)
     return text.trim().length ? text : null
   }
 
-  // CSV
   if (contentType.includes('csv') || lowerPath.endsWith('.csv')) {
     const text = new TextDecoder('utf-8').decode(arrayBuffer)
     return text.trim().length ? text : null
   }
 
-  // JSON
   if (contentType.includes('json') || lowerPath.endsWith('.json')) {
     try {
       const raw = new TextDecoder('utf-8').decode(arrayBuffer)
@@ -135,36 +137,7 @@ async function extractTextFromStorage(
     }
   }
 
-  // PDF (optional dependency)
-  if (contentType.includes('pdf') || lowerPath.endsWith('.pdf')) {
-    const buffer = Buffer.from(arrayBuffer)
-    try {
-      const pdfParse = (await import('pdf-parse')).default as any
-      const parsed = await pdfParse(buffer)
-      const text = parsed?.text || ''
-      return text.trim().length ? text : null
-    } catch {
-      // Try alternative extractor if available (optional)
-      try {
-        const pdfjs = await import('pdfjs-dist/legacy/build/pdf.js')
-        const loadingTask = pdfjs.getDocument({ data: buffer })
-        const pdf = await loadingTask.promise
-        let fullText = ''
-        for (let i = 1; i <= pdf.numPages; i++) {
-          const page = await pdf.getPage(i)
-          const content = await page.getTextContent()
-          const strings = (content.items || []).map((it: any) => it.str || '')
-          fullText += strings.join(' ') + '\n'
-        }
-        const txt = fullText.trim()
-        return txt.length ? txt : null
-      } catch {
-        return null
-      }
-    }
-  }
-
-  // Unsupported: return null to keep content empty
+  // PDF extraction omitted here
   return null
 }
 
@@ -183,7 +156,6 @@ async function insertWithUniqueName(
       .select('id')
       .single()
     if (!error && data) return data as { id: string }
-    // 23505 = unique_violation
     if (error && (error as any).code === '23505') {
       const originalName = (currentPayload as any).name || 'Untitled'
       const suffix = new Date().toISOString().replace(/[:.]/g, '-')
@@ -193,7 +165,6 @@ async function insertWithUniqueName(
     }
     throw new Error(error?.message || 'Insert failed')
   }
-  // Final attempt without checking code
   const { data, error } = await admin
     .from(table)
     .insert(currentPayload)

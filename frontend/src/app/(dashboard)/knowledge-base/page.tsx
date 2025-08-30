@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { BookOpen, Database, Globe, MessageSquare, Plus, Upload, Search, FileText, Bot, Settings } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { KnowledgeBaseEntryForm } from '@/components/knowledge-base/knowledge-base-entry-form';
 import { KnowledgeBaseEntryCard } from '@/components/knowledge-base/knowledge-base-entry-card';
 import { DocumentUpload } from '@/components/knowledge-base/document-upload';
+import { FileViewer } from '@/components/knowledge-base/file-viewer';
 import { useGlobalKnowledgeBase, useCreateGlobalKnowledgeBaseEntry, useUpdateGlobalKnowledgeBaseEntry, useDeleteGlobalKnowledgeBaseEntry } from '@/hooks/react-query/knowledge-base/use-global-knowledge-base';
 import { KnowledgeBaseEntry, CreateKnowledgeBaseEntryRequest } from '@/hooks/react-query/knowledge-base/types';
 
@@ -19,18 +21,16 @@ export default function KnowledgeBasePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [editingEntry, setEditingEntry] = useState<KnowledgeBaseEntry | null>(null);
+  const [viewingEntry, setViewingEntry] = useState<KnowledgeBaseEntry | null>(null);
   const [activeTab, setActiveTab] = useState('global');
 
   // Hooks for global knowledge base
-  const { data: globalKb, isLoading: globalLoading, error: globalError } = useGlobalKnowledgeBase();
+  const { data: globalKb, isLoading: globalLoading, error: globalError, refetch: refetchGlobalKb } = useGlobalKnowledgeBase();
   const createGlobalEntry = useCreateGlobalKnowledgeBaseEntry();
   const updateGlobalEntry = useUpdateGlobalKnowledgeBaseEntry();
   const deleteGlobalEntry = useDeleteGlobalKnowledgeBaseEntry();
 
-  // Debug logging
-  console.log('Knowledge base data:', globalKb);
-  console.log('Loading state:', globalLoading);
-  console.log('Error state:', globalError);
+
 
   const handleCreateEntry = async (data: CreateKnowledgeBaseEntryRequest) => {
     if (editingEntry) {
@@ -53,6 +53,10 @@ export default function KnowledgeBasePage() {
     }
   };
 
+  const handleViewEntry = (entry: KnowledgeBaseEntry) => {
+    setViewingEntry(entry);
+  };
+
   const filteredGlobalEntries = globalKb?.entries.filter(entry =>
     entry.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     entry.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -69,16 +73,97 @@ export default function KnowledgeBasePage() {
             Manage your global and thread-specific knowledge bases for enhanced AI responses
           </p>
         </div>
-        <Button 
-          className="flex items-center gap-2"
-          onClick={() => {
-            setEditingEntry(null);
-            setShowCreateDialog(true);
-          }}
-        >
-          <Plus className="h-4 w-4" />
-          Add Knowledge
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button 
+            className="flex items-center gap-2"
+            onClick={() => {
+              setEditingEntry(null);
+              setShowCreateDialog(true);
+            }}
+          >
+            <Plus className="h-4 w-4" />
+            Add Knowledge
+          </Button>
+          
+          <Button 
+            variant="outline"
+            className="flex items-center gap-2"
+            onClick={async () => {
+              try {
+                const response = await fetch('/api/knowledge-base/test-upload', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    fileName: 'test_sample_data.txt',
+                    content: 'This is a test file content for debugging purposes.\n\nIt contains multiple lines to test the file viewing functionality.\n\nFeatures to test:\n- Content display\n- File size calculation\n- Copy to clipboard\n- Download functionality'
+                  }),
+                });
+                
+                if (response.ok) {
+                  const result = await response.json();
+                  console.log('Test entry created:', result);
+                  toast.success('Test entry created successfully!');
+                  refetchGlobalKb();
+                } else {
+                  const error = await response.text();
+                  console.error('Failed to create test entry:', error);
+                  toast.error('Failed to create test entry');
+                }
+              } catch (error) {
+                console.error('Error creating test entry:', error);
+                toast.error('Error creating test entry');
+              }
+            }}
+          >
+            Create Test Entry
+          </Button>
+          
+          <Button 
+            variant="outline"
+            className="flex items-center gap-2"
+            onClick={async () => {
+              try {
+                // Get the first entry from global knowledge base
+                const globalKbData = globalKbData?.entries;
+                if (!globalKbData || globalKbData.length === 0) {
+                  toast.error('No entries found to test');
+                  return;
+                }
+                
+                const firstEntry = globalKbData[0];
+                console.log('Testing with entry:', firstEntry);
+                
+                const response = await fetch('/api/knowledge-base/debug-content', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    fileId: firstEntry.entry_id,
+                    kbType: 'global'
+                  }),
+                });
+                
+                if (response.ok) {
+                  const result = await response.json();
+                  console.log('Debug content result:', result);
+                  toast.success('Debug test completed! Check console for details.');
+                } else {
+                  const error = await response.text();
+                  console.error('Debug test failed:', error);
+                  toast.error('Debug test failed');
+                }
+              } catch (error) {
+                console.error('Error in debug test:', error);
+                toast.error('Error in debug test');
+              }
+            }}
+          >
+            Debug Content
+          </Button>
+        </div>
       </div>
 
       {/* Error Display */}
@@ -194,13 +279,14 @@ export default function KnowledgeBasePage() {
               ) : filteredGlobalEntries.length > 0 ? (
                 <div className="space-y-4">
                   {filteredGlobalEntries.map((entry) => (
-                    <KnowledgeBaseEntryCard
-                      key={entry.entry_id}
-                      entry={entry}
-                      kbType="global"
-                      onEdit={handleEditEntry}
-                      onDelete={handleDeleteEntry}
-                    />
+                                    <KnowledgeBaseEntryCard
+                  key={entry.entry_id}
+                  entry={entry}
+                  kbType="global"
+                  onView={handleViewEntry}
+                  onEdit={handleEditEntry}
+                  onDelete={handleDeleteEntry}
+                />
                   ))}
                 </div>
               ) : (
@@ -322,7 +408,7 @@ export default function KnowledgeBasePage() {
             kbType="thread"
             onUploadComplete={() => {
               // Refresh the knowledge base data after upload
-              window.location.reload();
+              refetchGlobalKb();
             }}
           />
         </TabsContent>
@@ -333,7 +419,7 @@ export default function KnowledgeBasePage() {
         kbType="global"
         onUploadComplete={() => {
           // Refresh the knowledge base data after upload
-          window.location.reload();
+          refetchGlobalKb();
         }}
       />
 
@@ -357,6 +443,17 @@ export default function KnowledgeBasePage() {
           />
         </DialogContent>
       </Dialog>
+
+      {/* File Viewer Modal */}
+      {viewingEntry && (
+        <FileViewer
+          isOpen={!!viewingEntry}
+          onClose={() => setViewingEntry(null)}
+          fileName={viewingEntry.name}
+          fileId={viewingEntry.entry_id}
+          kbType="global"
+        />
+      )}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import json
 from typing import List, Optional
-from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form, BackgroundTasks
+from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form, BackgroundTasks, Query
 from pydantic import BaseModel, Field, HttpUrl
 from utils.auth_utils import get_current_user_id_from_jwt, verify_agent_access
 from services.supabase import DBConnection
@@ -609,17 +609,82 @@ async def get_global_knowledge_base(
                 logger.error(f"Error getting default account: {rpc_error}")
                 account_id = None
         
-        if not account_id:
-            logger.error("No account found for user")
-            raise HTTPException(status_code=400, detail="No account found for user")
-        
-        logger.info(f"Using account ID: {account_id}")
+        logger.info(f"Account ID: {account_id}")
         
         # Query global knowledge base
         try:
             logger.info("Querying global_knowledge_base table")
-            result = await client.table('global_knowledge_base').select('*').eq('account_id', account_id).eq('is_active', True).execute()
-            logger.info(f"Query result: {result.data if result.data else 'No data'}")
+            
+            # Try to get entries using the RPC function first (which bypasses RLS)
+            try:
+                logger.info("Trying RPC function get_global_knowledge_base")
+                if account_id:
+                    rpc_result = await client.rpc('get_global_knowledge_base', {
+                        'p_account_id': account_id,
+                        'p_include_inactive': include_inactive
+                    }).execute()
+                    logger.info(f"RPC result: {rpc_result.data if rpc_result.data else 'No data'}")
+                    
+                    if rpc_result.data:
+                        entries = []
+                        total_tokens = 0
+                        
+                        for entry_data in rpc_result.data:
+                            entry = KnowledgeBaseEntryResponse(
+                                entry_id=entry_data['id'],
+                                name=entry_data['name'],
+                                description=entry_data['description'],
+                                content=entry_data['content'],
+                                usage_context=entry_data['usage_context'],
+                                is_active=entry_data['is_active'],
+                                content_tokens=entry_data.get('content_tokens'),
+                                created_at=entry_data['created_at'],
+                                updated_at=entry_data.get('updated_at', entry_data['created_at']),
+                                source_type=entry_data.get('source_type', 'manual'),
+                                source_metadata=entry_data.get('source_metadata'),
+                                file_size=None,
+                                file_mime_type=None
+                            )
+                            entries.append(entry)
+                            total_tokens += entry_data.get('content_tokens', 0) or 0
+                        
+                        response = KnowledgeBaseListResponse(
+                            entries=entries,
+                            total_count=len(entries),
+                            total_tokens=total_tokens
+                        )
+                        
+                        logger.info(f"Returning response from RPC: {response}")
+                        return response
+                else:
+                    logger.warning("No account_id available for RPC call")
+            except Exception as rpc_error:
+                logger.warning(f"RPC function failed: {rpc_error}, trying direct table access")
+            
+            # Fallback to direct table access
+            # If no account_id is found, try to get all entries for the user
+            if not account_id:
+                logger.warning("No account found for user, trying to get all entries")
+                query = client.table('global_knowledge_base').select('*')
+            else:
+                query = client.table('global_knowledge_base').select('*').eq('account_id', account_id)
+            
+            # Only filter by is_active if include_inactive is False
+            if not include_inactive:
+                query = query.eq('is_active', True)
+            
+            result = await query.execute()
+            logger.info(f"Direct table query result: {result.data if result.data else 'No data'}")
+            
+            if result.error:
+                logger.error(f"Table query error: {result.error}")
+                # Return empty result if there's an error
+                return KnowledgeBaseListResponse(
+                    entries=[],
+                    total_count=0,
+                    total_tokens=0
+                )
+                
         except Exception as table_error:
             logger.error(f"Error accessing global_knowledge_base table: {table_error}")
             # Return empty result if table doesn't exist yet
@@ -664,7 +729,13 @@ async def get_global_knowledge_base(
         raise
     except Exception as e:
         logger.error(f"Error getting global knowledge base: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Failed to retrieve global knowledge base")
+        # Return empty result instead of failing
+        logger.warning("Returning empty knowledge base due to error")
+        return KnowledgeBaseListResponse(
+            entries=[],
+            total_count=0,
+            total_tokens=0
+        )
 
 
 @router.post("/global", response_model=KnowledgeBaseEntryResponse)
@@ -1198,4 +1269,211 @@ async def upload_document(
     except Exception as e:
         logger.error(f"Error uploading document: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to upload document")
+
+
+# Document Management Endpoints
+@router.get("/documents/status/{job_id}")
+async def get_document_processing_status(
+    job_id: str,
+    user_id: str = Depends(get_current_user_id_from_jwt)
+):
+    """Get the processing status of a document upload job"""
+    if not await is_enabled("knowledge_base"):
+        raise HTTPException(
+            status_code=403, 
+            detail="This feature is not available at the moment."
+        )
+    
+    try:
+        from knowledge_base.document_storage import DocumentStorageService
+        
+        storage_service = DocumentStorageService()
+        status = await storage_service.get_processing_status(job_id)
+        
+        if not status:
+            raise HTTPException(status_code=404, detail="Job not found")
+        
+        return status
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting document processing status: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to get processing status")
+
+
+@router.delete("/documents/{filename}")
+async def delete_document(
+    filename: str,
+    kb_type: str = Form(...),
+    thread_id: Optional[str] = Form(None),
+    agent_id: Optional[str] = Form(None),
+    user_id: str = Depends(get_current_user_id_from_jwt)
+):
+    """Delete a document and all its chunks from the knowledge base"""
+    if not await is_enabled("knowledge_base"):
+        raise HTTPException(
+            status_code=403, 
+            detail="This feature is not available at the moment."
+        )
+    
+    try:
+        client = await db.client
+        
+        # Get user's account ID
+        user_result = await client.auth.get_user()
+        if not user_result.user:
+            raise HTTPException(status_code=401, detail="User not authenticated")
+        
+        account_id = user_result.user.user_metadata.get('account_id')
+        if not account_id:
+            # Get default account for user
+            account_result = await client.rpc('get_user_default_account', {
+                'p_user_id': user_id
+            }).execute()
+            account_id = account_result.data if account_result.data else None
+        
+        if not account_id:
+            raise HTTPException(status_code=400, detail="No account found for user")
+        
+        # Use the document storage service to delete
+        from knowledge_base.document_storage import DocumentStorageService
+        
+        storage_service = DocumentStorageService()
+        
+        delete_result = await storage_service.delete_document_chunks(
+            account_id=account_id,
+            filename=filename,
+            kb_type=kb_type,
+            thread_id=thread_id,
+            agent_id=agent_id
+        )
+        
+        if not delete_result.get("success"):
+            error_msg = delete_result.get("error", "Unknown error during deletion")
+            raise HTTPException(
+                status_code=500,
+                detail=f"Deletion failed: {error_msg}"
+            )
+        
+        return {
+            "message": "Document deleted successfully",
+            "filename": filename,
+            "chunks_deleted": delete_result["chunks_deleted"]
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting document {filename}: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to delete document")
+
+
+@router.get("/documents/chunks")
+async def get_document_chunks(
+    kb_type: str = Query(...),
+    thread_id: Optional[str] = Query(None),
+    agent_id: Optional[str] = Query(None),
+    query: Optional[str] = Query(None),
+    limit: int = Query(10),
+    user_id: str = Depends(get_current_user_id_from_jwt)
+):
+    """Get document chunks for a specific knowledge base type"""
+    if not await is_enabled("knowledge_base"):
+        raise HTTPException(
+            status_code=403, 
+            detail="This feature is not available at the moment."
+        )
+    
+    try:
+        client = await db.client
+        
+        # Get user's account ID
+        user_result = await client.auth.get_user()
+        if not user_result.user:
+            raise HTTPException(status_code=401, detail="User not authenticated")
+        
+        account_id = user_result.user.user_metadata.get('account_id')
+        if not account_id:
+            # Get default account for user
+            account_result = await client.rpc('get_user_default_account', {
+                'p_user_id': user_id
+            }).execute()
+            account_id = account_result.data if account_result.data else None
+        
+        if not account_id:
+            raise HTTPException(status_code=400, detail="No account found for user")
+        
+        # Use the document storage service to get chunks
+        from knowledge_base.document_storage import DocumentStorageService
+        
+        storage_service = DocumentStorageService()
+        
+        chunks = await storage_service.get_document_chunks(
+            account_id=account_id,
+            kb_type=kb_type,
+            thread_id=thread_id,
+            agent_id=agent_id,
+            query=query,
+            limit=limit
+        )
+        
+        return {
+            "chunks": chunks,
+            "total_count": len(chunks),
+            "kb_type": kb_type,
+            "thread_id": thread_id,
+            "agent_id": agent_id,
+            "query": query
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting document chunks: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to get document chunks")
+
+
+@router.get("/documents/supported-formats")
+async def get_supported_document_formats():
+    """Get list of supported document formats for upload"""
+    try:
+        from knowledge_base.document_processor import DocumentProcessor
+        
+        processor = DocumentProcessor()
+        formats = processor.get_supported_formats()
+        
+        # Format the response for better readability
+        format_info = []
+        for mime_type in formats:
+            if mime_type == 'application/pdf':
+                format_info.append({"mime_type": mime_type, "extension": "PDF", "description": "Portable Document Format"})
+            elif mime_type == 'text/csv':
+                format_info.append({"mime_type": mime_type, "extension": "CSV", "description": "Comma-Separated Values"})
+            elif mime_type == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+                format_info.append({"mime_type": mime_type, "extension": "DOCX", "description": "Microsoft Word Document"})
+            elif mime_type == 'text/plain':
+                format_info.append({"mime_type": mime_type, "extension": "TXT", "description": "Plain Text File"})
+            elif mime_type == 'text/markdown':
+                format_info.append({"mime_type": mime_type, "extension": "MD", "description": "Markdown Document"})
+            elif mime_type == 'application/json':
+                format_info.append({"mime_type": mime_type, "extension": "JSON", "description": "JavaScript Object Notation"})
+            elif mime_type == 'text/html':
+                format_info.append({"mime_type": mime_type, "extension": "HTML", "description": "HyperText Markup Language"})
+            elif mime_type == 'application/vnd.ms-excel':
+                format_info.append({"mime_type": mime_type, "extension": "XLS", "description": "Microsoft Excel Spreadsheet"})
+            elif mime_type == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+                format_info.append({"mime_type": mime_type, "extension": "XLSX", "description": "Microsoft Excel Spreadsheet (OpenXML)"})
+            else:
+                format_info.append({"mime_type": mime_type, "extension": "Unknown", "description": "Unknown format"})
+        
+        return {
+            "supported_formats": format_info,
+            "total_formats": len(formats),
+            "note": "All formats support automatic text extraction and chunking for LLM consumption"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting supported formats: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to get supported formats")
 

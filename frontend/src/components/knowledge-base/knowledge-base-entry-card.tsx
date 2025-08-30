@@ -13,7 +13,8 @@ import {
   FileText,
   Globe,
   MessageSquare,
-  Bot
+  Bot,
+  Eye
 } from 'lucide-react';
 import { KnowledgeBaseEntry } from '@/hooks/react-query/knowledge-base/types';
 import { cn } from '@/lib/utils';
@@ -24,6 +25,7 @@ interface KnowledgeBaseEntryCardProps {
   onEdit?: (entry: KnowledgeBaseEntry) => void;
   onDelete?: (entryId: string) => void;
   onSettings?: (entry: KnowledgeBaseEntry) => void;
+  onView?: (entry: KnowledgeBaseEntry) => void;
   className?: string;
 }
 
@@ -33,6 +35,7 @@ export function KnowledgeBaseEntryCard({
   onEdit,
   onDelete,
   onSettings,
+  onView,
   className
 }: KnowledgeBaseEntryCardProps) {
   const getIcon = () => {
@@ -110,7 +113,10 @@ export function KnowledgeBaseEntryCard({
   };
 
   return (
-    <Card className={cn('hover:shadow-md transition-shadow', className)}>
+    <Card 
+      className={cn('hover:shadow-md transition-shadow cursor-pointer', className)}
+      onClick={() => onView?.(entry)}
+    >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
@@ -132,11 +138,28 @@ export function KnowledgeBaseEntryCard({
           </div>
           
           <div className="flex items-center gap-1">
+            {onView && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onView(entry);
+                }}
+                className="h-8 w-8 p-0"
+                title="View content"
+              >
+                <Eye className="h-4 w-4" />
+              </Button>
+            )}
             {onSettings && (
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => onSettings(entry)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSettings(entry);
+                }}
                 className="h-8 w-8 p-0"
               >
                 <Settings className="h-4 w-4" />
@@ -146,7 +169,10 @@ export function KnowledgeBaseEntryCard({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => onEdit(entry)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(entry);
+                }}
                 className="h-8 w-8 p-0"
               >
                 <Edit2 className="h-4 w-4" />
@@ -156,7 +182,10 @@ export function KnowledgeBaseEntryCard({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => onDelete(entry.entry_id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(entry.entry_id);
+                }}
                 className="h-8 w-8 p-0 text-destructive hover:text-destructive"
               >
                 <Trash2 className="h-4 w-4" />

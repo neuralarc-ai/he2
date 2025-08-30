@@ -1,0 +1,37 @@
+# Document Processing Dependencies
+# These packages are required for full document processing functionality
+
+# PDF processing
+PyPDF2>=3.0.0
+
+# Excel and CSV processing
+pandas>=2.0.0
+openpyxl>=3.1.0
+
+# Word document processing
+python-docx>=0.8.11
+
+# Markdown and HTML processing
+markdown>=3.4.0
+beautifulsoup4>=4.12.0
+lxml>=4.9.0
+
+# Optional: For better PDF text extraction
+# pdfplumber>=0.9.0
+
+# Optional: For OCR capabilities (if needed)
+# pytesseract>=0.3.10
+# Pillow>=9.0.0
+
+# Note: Some packages may have system dependencies
+# - For PyPDF2: No additional system dependencies
+# - For pandas: No additional system dependencies  
+# - For openpyxl: No additional system dependencies
+# - For python-docx: No additional system dependencies
+# - For beautifulsoup4: No additional system dependencies
+# - For lxml: May require libxml2 and libxslt on some systems
+
+
+
+
+

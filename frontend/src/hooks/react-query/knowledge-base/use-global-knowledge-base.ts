@@ -1,19 +1,53 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '@/lib/api-client';
+import { toast } from 'sonner';
+import { createClient } from '@/lib/supabase/client';
 import { knowledgeBaseKeys } from './keys';
 import { KnowledgeBaseEntry, KnowledgeBaseListResponse, CreateKnowledgeBaseEntryRequest } from './types';
-import { toast } from 'sonner';
+
+const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || '';
+
+const useAuthHeaders = () => {
+  const getHeaders = async () => {
+    const supabase = createClient();
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session?.access_token) {
+      throw new Error('No access token available');
+    }
+    
+    return {
+      'Authorization': `Bearer ${session.access_token}`,
+      'Content-Type': 'application/json',
+    };
+  };
+  
+  return { getHeaders };
+};
 
 // Hook for fetching global knowledge base
 export function useGlobalKnowledgeBase(includeInactive: boolean = false) {
+  const { getHeaders } = useAuthHeaders();
+  
   return useQuery({
     queryKey: knowledgeBaseKeys.all,
     queryFn: async () => {
       try {
-        const response = await apiClient.get(`/knowledge-base/global?include_inactive=${includeInactive}`);
+        const headers = await getHeaders();
+        const url = `${API_URL}/knowledge-base/global?include_inactive=${includeInactive}`;
+        
+        const response = await fetch(url, { 
+          headers 
+        });
+        
+        if (!response.ok) {
+          const error = await response.text();
+          throw new Error(error || 'Failed to fetch global knowledge base');
+        }
+        
+        const data = await response.json();
         
         // Check if response exists and has data
-        if (!response || !response.data) {
+        if (!data) {
           console.warn('API response is empty or undefined');
           return {
             entries: [],
@@ -23,7 +57,6 @@ export function useGlobalKnowledgeBase(includeInactive: boolean = false) {
         }
         
         // Ensure the response has the expected structure
-        const data = response.data;
         if (!data.entries || !Array.isArray(data.entries)) {
           console.warn('API response missing entries array:', data);
           return {
@@ -60,18 +93,30 @@ export function useGlobalKnowledgeBase(includeInactive: boolean = false) {
 // Hook for creating global knowledge base entries
 export function useCreateGlobalKnowledgeBaseEntry() {
   const queryClient = useQueryClient();
+  const { getHeaders } = useAuthHeaders();
   
   return useMutation({
     mutationFn: async (entryData: CreateKnowledgeBaseEntryRequest) => {
-      const response = await apiClient.post('/knowledge-base/global', entryData);
-      return response.data as KnowledgeBaseEntry;
+      const headers = await getHeaders();
+      const response = await fetch(`${API_URL}/knowledge-base/global`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(entryData),
+      });
+      
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(error || 'Failed to create knowledge base entry');
+      }
+      
+      return await response.json() as KnowledgeBaseEntry;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: knowledgeBaseKeys.all });
       toast.success('Knowledge base entry created successfully');
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.detail || 'Failed to create knowledge base entry');
+      toast.error(error.message || 'Failed to create knowledge base entry');
     },
   });
 }
@@ -79,18 +124,30 @@ export function useCreateGlobalKnowledgeBaseEntry() {
 // Hook for updating global knowledge base entries
 export function useUpdateGlobalKnowledgeBaseEntry() {
   const queryClient = useQueryClient();
+  const { getHeaders } = useAuthHeaders();
   
   return useMutation({
     mutationFn: async ({ entryId, entryData }: { entryId: string; entryData: Partial<CreateKnowledgeBaseEntryRequest> }) => {
-      const response = await apiClient.put(`/knowledge-base/${entryId}`, entryData);
-      return response.data as KnowledgeBaseEntry;
+      const headers = await getHeaders();
+      const response = await fetch(`${API_URL}/knowledge-base/${entryId}`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify(entryData),
+      });
+      
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(error || 'Failed to update knowledge base entry');
+      }
+      
+      return await response.json() as KnowledgeBaseEntry;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: knowledgeBaseKeys.all });
       toast.success('Knowledge base entry updated successfully');
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.detail || 'Failed to update knowledge base entry');
+      toast.error(error.message || 'Failed to update knowledge base entry');
     },
   });
 }
@@ -98,24 +155,37 @@ export function useUpdateGlobalKnowledgeBaseEntry() {
 // Hook for deleting global knowledge base entries
 export function useDeleteGlobalKnowledgeBaseEntry() {
   const queryClient = useQueryClient();
+  const { getHeaders } = useAuthHeaders();
   
   return useMutation({
     mutationFn: async (entryId: string) => {
-      const response = await apiClient.delete(`/knowledge-base/${entryId}`);
-      return response.data;
+      const headers = await getHeaders();
+      const response = await fetch(`${API_URL}/knowledge-base/${entryId}`, {
+        method: 'DELETE',
+        headers,
+      });
+      
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(error || 'Failed to delete knowledge base entry');
+      }
+      
+      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: knowledgeBaseKeys.all });
       toast.success('Knowledge base entry deleted successfully');
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.detail || 'Failed to delete knowledge base entry');
+      toast.error(error.message || 'Failed to delete knowledge base entry');
     },
   });
 }
 
 // Hook for querying knowledge base
 export function useQueryKnowledgeBase() {
+  const { getHeaders } = useAuthHeaders();
+  
   return useMutation({
     mutationFn: async ({ query, kbType, threadId, agentId }: { 
       query: string; 
@@ -123,17 +193,31 @@ export function useQueryKnowledgeBase() {
       threadId?: string; 
       agentId?: string; 
     }) => {
+      const headers = await getHeaders();
       const formData = new FormData();
       formData.append('query', query);
       formData.append('kb_type', kbType);
       if (threadId) formData.append('thread_id', threadId);
       if (agentId) formData.append('agent_id', agentId);
       
-      const response = await apiClient.post('/knowledge-base/query', formData);
-      return response.data;
+      // Remove Content-Type header for FormData
+      const { 'Content-Type': _, ...uploadHeaders } = headers;
+      
+      const response = await fetch(`${API_URL}/knowledge-base/query`, {
+        method: 'POST',
+        headers: uploadHeaders,
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(error || 'Failed to query knowledge base');
+      }
+      
+      return await response.json();
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.detail || 'Failed to query knowledge base');
+      toast.error(error.message || 'Failed to query knowledge base');
     },
   });
 }

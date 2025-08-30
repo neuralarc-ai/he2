@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { Upload, FileText, X, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { Upload, FileText, X, CheckCircle, AlertCircle, Loader2, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -9,6 +9,7 @@ import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { uploadKbFile } from '@/lib/storage/uploadKbFile';
 import { createClient } from '@/lib/supabase/client';
+import { FileViewer } from './file-viewer';
 
 interface DocumentUploadProps {
   kbType: 'global' | 'thread' | 'agent';
@@ -28,6 +29,7 @@ interface UploadedFile {
   progress: number;
   error?: string;
   file?: File;
+  kbEntryId?: string; // ID from the knowledge base entry
 }
 
 const SUPPORTED_FORMATS = [
@@ -52,6 +54,7 @@ export function DocumentUpload({
 }: DocumentUploadProps) {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [viewingFile, setViewingFile] = useState<UploadedFile | null>(null);
   const { toast } = useToast();
 
   const validateFile = (file: File): string | null => {
@@ -137,8 +140,7 @@ export function DocumentUpload({
         )
       );
 
-      // Persist a KB entry in the appropriate table
-      const supabase = createClient();
+      // Persist a KB entry in the appropriate table (via server API to ensure RLS-safe write)
       const source_metadata = {
         storage_bucket: 'knowledge-base',
         storage_path: uploadResult.path,
@@ -152,43 +154,15 @@ export function DocumentUpload({
         content: '',
         usage_context: 'always',
         source_metadata,
+        is_active: true,
       };
-
-      // Resolve accountId if not provided via props
-      let effectiveAccountId = accountId;
-      if (!effectiveAccountId) {
-        const { data: authData, error: authErr } = await supabase.auth.getUser();
-        if (authErr || !authData?.user) {
-          throw new Error('Authentication required to resolve accountId');
-        }
-        // Try resolving from members table first
-        const { data: member, error: memberErr } = await supabase
-          .from('basejump.members')
-          .select('account_id')
-          .eq('user_id', authData.user.id)
-          .limit(1)
-          .maybeSingle();
-        if (member && member.account_id) {
-          effectiveAccountId = member.account_id as unknown as string;
-        } else {
-          // Fallback to RPC get_accounts and take the first account
-          const { data: accounts, error: accountsErr } = await supabase.rpc('get_accounts');
-          if (accountsErr || !accounts || accounts.length === 0) {
-            throw new Error('Unable to resolve accountId for current user');
-          }
-          effectiveAccountId = accounts[0]?.id as string;
-        }
-      }
 
       const tableName =
         kbType === 'thread' ? 'thread_knowledge_base' :
-        kbType === 'agent' ? 'agent_knowledge_base' :
+        kbType === 'agent' ? 'agent_knowledge_base_entries' :
         'global_knowledge_base';
 
-      const payload: Record<string, any> = {
-        ...baseEntry,
-        account_id: effectiveAccountId,
-      };
+      const payload: Record<string, any> = { ...baseEntry };
 
       if (kbType === 'thread') {
         if (!threadId) throw new Error('threadId is required for thread knowledge uploads');
@@ -200,31 +174,26 @@ export function DocumentUpload({
         payload.agent_id = agentId;
       }
 
-      let insertErrorMsg: string | null = null;
-      const { error: insertError } = await supabase.from(tableName).insert(payload);
-      if (insertError) {
-        insertErrorMsg = insertError.message;
+      let kbEntryId: string | undefined;
+      // Always write via server route (ensures account_id is set and bypasses client-side RLS issues)
+      const res = await fetch('/api/knowledge-base/entries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ table: tableName, payload }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(`Failed to save knowledge entry: ${err.error || res.statusText}`);
       }
-
-      if (insertErrorMsg) {
-        // Fallback: use server route with service role to bypass RLS safely
-        const res = await fetch('/api/knowledge-base/entries', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ table: tableName, payload }),
-        });
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          throw new Error(`Failed to save knowledge entry: ${err.error || res.statusText}`);
-        }
-      }
+      const resData = await res.json();
+      kbEntryId = resData.id;
 
       // Simulate processing completion
       setTimeout(() => {
         setUploadedFiles(prev => 
           prev.map(f => 
             f.id === fileInfo.id 
-              ? { ...f, status: 'completed' }
+              ? { ...f, status: 'completed', kbEntryId }
               : f
           )
         );
@@ -376,6 +345,17 @@ export function DocumentUpload({
                     {file.status === 'uploading' && (
                       <Progress value={file.progress} className="w-20" />
                     )}
+                    {file.status === 'completed' && file.kbEntryId && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setViewingFile(file)}
+                        className="h-8 w-8 p-0"
+                        title="View file content"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    )}
                     <Button
                       variant="ghost"
                       size="sm"
@@ -391,6 +371,19 @@ export function DocumentUpload({
           )}
         </CardContent>
       </Card>
+      
+      {/* File Viewer Modal */}
+      {viewingFile && (
+        <FileViewer
+          isOpen={!!viewingFile}
+          onClose={() => setViewingFile(null)}
+          fileName={viewingFile.name}
+          fileId={viewingFile.kbEntryId}
+          kbType={kbType}
+          agentId={agentId}
+          threadId={threadId}
+        />
+      )}
     </div>
   );
 }
