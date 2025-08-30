@@ -124,7 +124,14 @@ async def run_agent_background(
         if model_name != "openai/gpt-5-mini":
             logger.debug(f"Using user-selected model: {model_name} -> {effective_model}")
         else:
-            logger.debug(f"Using default model: {effective_model}")
+            # In production, randomly select from the three Vertex AI models for default
+            env_mode = os.getenv("ENV_MODE", "local").lower()
+            if env_mode == "production" and model_name == "openai/gpt-5-mini":
+                from utils.constants import get_random_production_model
+                effective_model = get_random_production_model()
+                logger.debug(f"Production environment: randomly selected model for background run: {effective_model}")
+            else:
+                logger.debug(f"Using default model: {effective_model}")
     
     logger.debug(f"🚀 Using model: {effective_model} (thinking: {enable_thinking}, reasoning_effort: {reasoning_effort})")
     if agent_config:

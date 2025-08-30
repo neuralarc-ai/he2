@@ -23,9 +23,10 @@ class SandboxFilesTool(SandboxToolsBase):
         # Get environment mode directly from environment variable
         env_mode = os.getenv("ENV_MODE", "local").lower()
         
-        # For production, use Vertex AI Gemini 2.5 Pro (same as in helium_config.py)
+        # For production, randomly select from the three Vertex AI models
         if env_mode == "production":
-            return "vertexai/gemini-2.5-pro"
+            from utils.constants import get_random_production_model
+            return get_random_production_model()
         
         # For local/development/staging, use free Qwen model
         return "openrouter/qwen/qwen3-coder:free"

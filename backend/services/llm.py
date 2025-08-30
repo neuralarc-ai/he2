@@ -227,13 +227,14 @@ def _configure_kimi_k2(params: Dict[str, Any], model_name: str) -> None:
 def _configure_vertex_ai(params: Dict[str, Any], model_name: str) -> None:
     """Configure Vertex AI-specific parameters for Gemini and Claude models via LiteLLM."""
     is_vertex_route = model_name.startswith("vertex_ai/")
+    is_vertex_legacy = model_name.startswith("vertex/")  # Handle legacy vertex/ prefix
     is_gemini_direct = model_name.startswith("gemini/")
-    if not (is_vertex_route or is_gemini_direct):
+    if not (is_vertex_route or is_vertex_legacy or is_gemini_direct):
         return
 
     # Extract region from model name if specified (e.g., vertex_ai/claude-sonnet-4@20250514-us-east5)
     model_region = None
-    if is_vertex_route and "-" in model_name:
+    if (is_vertex_route or is_vertex_legacy) and "-" in model_name:
         # Check if model name contains region specification
         parts = model_name.split("-")
         if len(parts) >= 2:
@@ -243,7 +244,7 @@ def _configure_vertex_ai(params: Dict[str, Any], model_name: str) -> None:
                 model_region = potential_region
 
     # If calling Vertex route, pass dynamic params when available
-    if is_vertex_route:
+    if is_vertex_route or is_vertex_legacy:
         # Credentials could be json string or path
         if config.VERTEXAI_CREDENTIALS:
             params["vertex_credentials"] = config.VERTEXAI_CREDENTIALS
@@ -277,7 +278,7 @@ def _configure_vertex_ai(params: Dict[str, Any], model_name: str) -> None:
                     logger.debug(f"Unknown model type, defaulting to us-east5 region")
 
     # Check if this is a Claude model on Vertex AI
-    is_vertex_claude = is_vertex_route and "claude" in model_name.lower()
+    is_vertex_claude = (is_vertex_route or is_vertex_legacy) and "claude" in model_name.lower()
     
     # Support reasoning mapping for Gemini per LiteLLM docs using reasoning_effort
     # For Claude models on Vertex AI, we use the thinking parameter
@@ -302,8 +303,8 @@ def _configure_thinking(params: Dict[str, Any], model_name: str, enable_thinking
     effort_level = reasoning_effort or 'low'
     is_anthropic = "anthropic" in model_name.lower() or "claude" in model_name.lower()
     is_xai = "xai" in model_name.lower() or model_name.startswith("xai/")
-    is_vertex_gemini = model_name.startswith("vertex_ai/") or model_name.startswith("gemini/")
-    is_vertex_claude = model_name.startswith("vertex_ai/") and "claude" in model_name.lower()
+    is_vertex_gemini = model_name.startswith("vertex_ai/") or model_name.startswith("vertex/") or model_name.startswith("gemini/")
+    is_vertex_claude = (model_name.startswith("vertex_ai/") or model_name.startswith("vertex/")) and "claude" in model_name.lower()
     
     if is_anthropic and not is_vertex_claude:
         # Standard Anthropic models (not on Vertex AI)
@@ -463,59 +464,10 @@ async def make_llm_api_call(
         enable_thinking=enable_thinking,
         reasoning_effort=reasoning_effort
     )
-    """
-    Make an API call to a language model using LiteLLM.
-
-    Args:
-        messages: List of message dictionaries for the conversation
-        model_name: Name of the model to use (e.g., "gpt-4", "claude-3", "openrouter/openai/gpt-4", "bedrock/anthropic.claude-3-sonnet-20240229-v1:0")
-        response_format: Desired format for the response
-        temperature: Sampling temperature (0-1)
-        max_tokens: Maximum tokens in the response
-        tools: List of tool definitions for function calling
-        tool_choice: How to select tools ("auto" or "none")
-        api_key: Override default API key
-        api_base: Override default API base URL
-        stream: Whether to stream the response
-        top_p: Top-p sampling parameter
-        model_id: Optional ARN for Bedrock inference profiles
-        enable_thinking: Whether to enable thinking
-        reasoning_effort: Level of reasoning effort
-
-    Returns:
-        Union[Dict[str, Any], AsyncGenerator]: API response or stream
-
-    Raises:
-        LLMRetryError: If API call fails after retries
-        LLMError: For other API-related errors
-    """
-    # Resolve model alias if present
-    from utils.constants import MODEL_NAME_ALIASES
-    resolved_model_name = MODEL_NAME_ALIASES.get(model_name, model_name)
-    
-    # debug <timestamp>.json messages
-    logger.debug(f"Making LLM API call to model: {resolved_model_name} (original: {model_name}, Thinking: {enable_thinking}, Effort: {reasoning_effort})")
-    logger.debug(f"📡 API Call: Using model {resolved_model_name}")
-    params = prepare_params(
-        messages=messages,
-        model_name=resolved_model_name,
-        temperature=temperature,
-        max_tokens=max_tokens,
-        response_format=response_format,
-        tools=tools,
-        tool_choice=tool_choice,
-        api_key=api_key,
-        api_base=api_base,
-        stream=stream,
-        top_p=top_p,
-        model_id=model_id,
-        enable_thinking=enable_thinking,
-        reasoning_effort=reasoning_effort
-    )
     try:
         # Use LiteLLM for models
         response = await litellm.acompletion(**params)
-        logger.debug(f"Successfully received API response from {model_name}")
+        logger.debug(f"Successfully received API response from {resolved_model_name}")
         # logger.debug(f"Response: {response}")
         return response
 
